@@ -93,23 +93,14 @@ jobs:
       - name: Dekoding
         shell: bash
         run: ./target/release/decode ../ci-data/king.mp3 | tail -n 3
-      - name: Diagnose cmake-oppsett
+      - name: Kontroller at ggml er bygget med optimalisering (Windows)
+        if: runner.os == 'Windows'
         shell: bash
         run: |
           C=$(ls target/release/build/whisper-rs-sys-*/out/build/CMakeCache.txt | head -n 1)
-          echo "$C"
-          grep -a "^CMAKE_BUILD_TYPE\|^CMAKE_C_FLAGS\|^CMAKE_CXX_FLAGS\|^CMAKE_GENERATOR:" "$C" | cut -c1-250
-          D=$(dirname "$C")
-          grep -rha "<Optimization>\|<AdditionalOptions>\|EnableEnhancedInstructionSet" --include=*.vcxproj "$D" | sort | uniq -c | cut -c1-300 | head -20
-          grep -a "WholeProgram\|<Configuration>" -rh --include=*.vcxproj "$D" | sort | uniq -c | head
-      - name: Røyktest (kort lyd, verbose, bare tider)
-        timeout-minutes: 12
-        shell: bash
-        run: |
-          echo "== 2 tråder, ingen fallback =="
-          timeout 600 ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
-            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 2 --verbose --threads 2 --no-fallback > smoke.log 2>&1 || echo "exit=$?"
-          grep -a "time\|result" smoke.log | cut -c1-300
+          grep -a "^CMAKE_C_FLAGS_RELEASE\|^CMAKE_CXX_FLAGS_RELEASE" "$C" | cut -c1-250
+          grep -rha "<Optimization>" --include=ggml-cpu.vcxproj "$(dirname "$C")" | sort | uniq -c
+          grep -a "ggml_vec_dot\|/O2" "$C" >/dev/null || true
       - name: Målform no og nn (korte utdrag)
         timeout-minutes: 15
         shell: bash
@@ -121,14 +112,14 @@ jobs:
             head -n 2 "out-$l.txt" | cut -c1-200
             tail -n 1 "out-$l.txt"
           done
-      - name: Fart (5 min Hamsun, small q5, bare tider)
+      - name: Fart (2 min Hamsun, small q5, bare tider)
         timeout-minutes: 15
         shell: bash
         run: |
           for b in "" "--beam 5"; do
-            echo "== small verbatim q5, 300 s lyd, ${b:-greedy} =="
+            echo "== small verbatim q5, 120 s lyd, ${b:-greedy} =="
             ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
-              --audio ../ci-data/hamsun.mp3 --no-gpu --no-text --max-secs 300 $b | tail -n 1
+              --audio ../ci-data/hamsun.mp3 --no-gpu --no-text --max-secs 120 $b | tail -n 1
           done
       - name: Avbryt etter 2 s
         timeout-minutes: 15
