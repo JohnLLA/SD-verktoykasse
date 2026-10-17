@@ -4,14 +4,14 @@ Dato: 2026-10-17. Kjørt av `transkriberingsbygger`. Koden ligger i `spike/` og 
 
 ## Kort fortalt
 
-- **Anbefaling: bruk bindingen (`whisper-rs`, lenket inn).** Den bygget uten problemer på Mac med Metal (25 s), alle kjøringene virket, avbryt stopper på under 15 ms, og segmentene kommer fortløpende. Sidecar trengs ikke på Mac. På Windows ser bindingen grei ut på papiret, men **den er ikke bygget eller kjørt på Windows ennå**. Det må bekreftes i CI og på en ekte PC før steg 1 regnes som ferdig (se «Windows»).
+- **Anbefaling: bruk bindingen (`whisper-rs`, lenket inn).** Den bygget uten problemer på Mac med Metal (25 s), alle kjøringene virket, avbryt stopper på under 15 ms, og segmentene kommer fortløpende. Sidecar trengs ikke på Mac. På Windows bygger og kjører bindingen i CI (windows-latest, MSVC, AVX2), men **bare etter en rettelse i byggeoppsettet** (ggml ble ellers bygget uten optimalisering og var 50 ganger tregere, se «Windows»). Resultatene derfra er fra en CI-runner med 2 vCPU, ikke fra en ekte redaksjons-PC, og må bekreftes på ekte maskin.
 - **`nn` gir nynorsk** med alle tre modellvariantene (verbatim, semantic og hovedmodellen). Med verbatim blir nynorsken mindre stabil: enkelte bokmålsformer blir stående.
 - **Semantic-modellene finnes bare i `NbAiLabBeta`** (release candidate fra desember 2023). I `NbAiLab` finnes hovedmodellen og verbatim. Lenkene til `NbAiLab/nb-whisper-*-semantic` på modellkortet gir 401, altså finnes de ikke. Dette er en **beslutning for John Inge** (se under).
 - **Faktiske størrelser (q5_0):** small 175 MB, medium 539 MB, large 1081 MB. Det stemmer omtrent med anslagene i spesifikasjonen. `models.json` er fylt ut med URL låst til commit, størrelse og SHA-256 for 18 filer.
 - **Fart, Mac (M5 Max, Metal):** medium q5 med beam 5 kjører 30 ganger raskere enn sanntid. Et intervju på 30 minutter tar da omtrent 1 minutt. Med small tar det omtrent 30 sekunder. M1 er mye tregere og må måles der.
 - **q5_0 er ikke merkbart dårligere** enn full modell (f16) på testsetningene.
 - **Dekoding:** alle formatene i spesifikasjonen (mp3, m4a/AAC, wav, flac, ogg/Vorbis, mp4, mov med videospor først) leses og resamples riktig. En fil på 3 timer bruker 662 MB minne til dekoding, og det er bare utdatabufferet (16 kHz f32).
-- **Fire ting steg 1 må ta hensyn til:** (1) `set_abort_callback_safe` i whisper-rs 0.16 har en minnefeil og skal ikke brukes. (2) ggml må bygges med `GGML_NATIVE=OFF`, ellers kan appen krasje på andre maskiner. (3) Verbatim-modellen gir dårlige tidskoder: hele 30-sekundersvinduer. (4) Whisper bør få lyden i biter, ikke hele filen på én gang. En fil på 3 timer brukte 2 GB med small.
+- **Fem ting steg 1 må ta hensyn til:** (0) På Windows må ggml bygges med `/O2` via `CMAKE_PROJECT_INCLUDE` (se «Windows»), ellers er det ubrukelig tregt. (1) `set_abort_callback_safe` i whisper-rs 0.16 har en minnefeil og skal ikke brukes. (2) ggml må bygges med `GGML_NATIVE=OFF`, ellers kan appen krasje på andre maskiner. (3) Verbatim-modellen gir dårlige tidskoder: hele 30-sekundersvinduer. (4) Whisper bør få lyden i biter, ikke hele filen på én gang. En fil på 3 timer brukte 2 GB med small.
 
 ## Hva som ble kjørt
 
@@ -254,17 +254,51 @@ Utdatabufferet for 3 timer i 16 kHz f32 er 691 MB (= 659 MiB). Dekodingen legger
 
 ## Windows
 
-**Ikke bygget og ikke kjørt.** Det finnes ingen Windows-maskin her, og mappen er ikke et git-repo, så CI er ikke kjørt.
+### Resultater fra CI (GitHub Actions, windows-latest) – ikke ekte redaksjons-PC
 
-Teoretisk vurdering: whisper-rs-sys har egen MSVC-håndtering (`/utf-8`, lenker `advapi32`, C++-standardbiblioteket via MSVC). Den bygger statisk (`BUILD_SHARED_LIBS=OFF`), så det blir ingen ekstra DLL-er i installasjonen. CPU-backenden har en egen MSVC-gren som setter `/arch:AVX2` når `GGML_AVX2=ON` og `GGML_NATIVE=OFF`. Jeg ser ingen grunn til at det ikke skal bygge på `windows-latest` med cmake og LLVM, som er forhåndsinstallert der. Men det er en vurdering, ikke et resultat.
+Kjøring: <https://github.com/JohnLLA/lla-verktoykasse/actions/runs/39045943504> (grønn på både Windows x64 og macOS arm64). Arbeidsflyt: `.github/workflows/spike-build.yml`.
+
+Runneren er en virtuell maskin med **2 vCPU** (Intel Xeon Platinum 8573C, en annen kjøring fikk AMD EPYC 9V74), ingen GPU. Det er langt svakere enn en typisk redaksjons-PC, så tallene under er **nedre grenser, ikke mål på hva en ekte PC klarer**. Mac-kolonnen er `macos-14` (virtuell M1, 3 kjerner, CPU uten Metal), tatt fra samme kjøring, så de to kan sammenlignes.
+
+| | Windows (CI, 2 vCPU) | macOS M1 (CI, CPU) |
+|---|---|---|
+| `cargo build --release` | **lykkes** (MSVC, VS 2026-generator, AVX2, `GGML_NATIVE=OFF`), 2,5 min uten hurtigbuffer | lykkes, 13 s med hurtigbuffer |
+| SHA-256 small verbatim q5_0 | stemmer (`8982b4a4…`) | stemmer |
+| whisper.cpp system | `AVX = 1 \| AVX2 = 1 \| F16C = 1 \| FMA = 1 \| BMI2 = 1`, ingen AVX-512 | – |
+| Dekoding av king.mp3 (85 s) | 0,11 s | 0,11 s |
+| `no`, kongens tale, lydrett | bokmål: «nordmenn er nordlendinger trøndere sørlendinger og folk fra alle andre regioner …» (6 segmenter) | samme tekst |
+| `nn`, kongens tale, lydrett | nynorsk: «nordmenn er nordlendingar trøndere sørlendingar …» (4 segmenter) | samme tekst (6 segmenter) |
+| Fart `no`, 85 s, greedy | 319 s (0,3× sanntid) | 67 s (1,3×) |
+| Fart `nn`, 85 s, greedy | 229 s (0,4×) | 108 s (0,8×) |
+| Fart, 120 s Hamsun, small verbatim, greedy | 176 s (0,7×) | 46 s (2,6×) |
+| Fart, 120 s Hamsun, small verbatim, beam 5 | 206 s (0,6×) | 58 s (2,1×) |
+| Modellsti `…/Brukernavn æøå/modell.bin` | lastes og kjører | lastes og kjører |
+| Avbryt (flagg satt etter 2 s, 23 min lyd) | `GenericError(-6)`, **19,0 s** fra flagget til retur | `GenericError(-6)`, **2,0 s** |
+
+Merknader:
+
+- Målform: `no` gir bokmål og `nn` gir nynorsk også på Windows. Samme tekst som på Mac. Verbatim + `nn` blander som før («trøndere» står igjen på bokmål).
+- **Fart:** medium q5 (som er «Anbefalt») er ikke målt på CI. Small verbatim er den tregeste kombinasjonen (se fallback-funnet under «Fart»), så tallene er pessimistiske for «Rask» men sier lite om medium. Med bare 2 vCPU er det ikke overraskende at det er under sanntid. **Hvor fort det går på en vanlig redaksjons-PC (4–8 kjerner), vet vi ikke ennå.** Oppskriften under må kjøres.
+- **Avbryt-forsinkelsen er ikke millisekunder på treg CPU.** På M5 Max var den 3–11 ms. På CI var den 2 s (M1) og 19 s (Windows) når det ble avbrutt tidlig. Årsaken er at whisper.cpp regner ut mel-spektrogrammet for **hele** lydbufferet (23 min her) før noe sjekker avbryt-flagget, og first segment kom aldri (`segments=0`). Det støtter anbefalingen om å mate whisper i biter på ca. 10 minutter: da blir både minnet og avbrytforsinkelsen begrenset til én bit.
+- Ingen krasj, ingen manglende DLL-er (statisk lenking), ingen sidecar nødvendig for å få det til å kjøre. **Binding er fortsatt anbefalingen.**
+
+### Funn: ggml ble bygget uten optimalisering på MSVC (må med i steg 1 og i release-bygget)
+
+Første forsøk på Windows-CI bygget og kjørte, men var **uten rimelig fart**: 2 sekunder lyd tok 230 s (mot 4,6 s på Mac-runneren), og 85 s lyd kom ikke ferdig på 27 minutter. Det så ut som et hang, men var det ikke. `CMakeCache.txt` viste at `CMAKE_C_FLAGS_RELEASE` og `CMAKE_CXX_FLAGS_RELEASE` bare var `-nologo -MD -Brepro -W0`, altså uten `/O2`. `cmake-rs` (brukt av `whisper-rs-sys`) overstyrer standardflaggene for Release-konfigurasjonen med flaggene den henter fra `cc`, og optimaliseringsflaggene fjernes. Resultat: `<Optimization>` ble tom/Disabled for ggml. Å sette `CFLAGS`/`CXXFLAGS` hjalp ikke (`/O2` ble filtrert bort).
+
+Løsningen som virker: en liten cmake-fil, `spike/ci/msvc-optimize.cmake`, som setter `CMAKE_C_FLAGS_RELEASE`/`CMAKE_CXX_FLAGS_RELEASE` til `/O2 /Ob2 /DNDEBUG …`, lastet via miljøvariabelen `CMAKE_PROJECT_INCLUDE` (whisper-rs-sys sender alle `CMAKE_*`-variabler videre). Med den gikk samme røyktest fra 230 s til 16 s. **Steg 1 må ta med dette i Tauri-bygget** (`.cargo/config.toml` `[env]` for MSVC-målet, eller `build.rs`), og Windows-CI-en må ha en sjekk som feiler hvis ggml bygges uten `/O2`. Verdt å melde til whisper-rs (Codeberg), men det er John Inges valg.
+
+### Vurdering av risiko
+
+Teoretisk vurdering som nå er delvis bekreftet: whisper-rs-sys har egen MSVC-håndtering (`/utf-8`, lenker `advapi32`). Den bygger statisk (`BUILD_SHARED_LIBS=OFF`), så det blir ingen ekstra DLL-er. CPU-backenden setter `/arch:AVX2` (`EnableEnhancedInstructionSet = AdvancedVectorExtensions2` i genererte prosjektfiler).
 
 Kjente risikoer på Windows:
 
-- **PC-er uten AVX2.** Eldre Celeron og Pentium Silver (Gemini Lake, Jasper Lake), som er vanlige i billige jobblaptoper, mangler AVX2. Et AVX2-bygg krasjer der med «illegal instruction». Forslag: sjekk `is_x86_feature_detected!("avx2")` og `"fma"` ved oppstart og vis en tydelig melding i stedet for å krasje. Alternativet er å bygge alle CPU-varianter (`GGML_BACKEND_DL` + `GGML_CPU_ALL_VARIANTS`), men det krever delte biblioteker og gjør pakkingen mer komplisert. **Beslutning for John Inge.**
+- **PC-er uten AVX2.** Eldre Celeron og Pentium Silver (Gemini Lake, Jasper Lake), som er vanlige i billige jobblaptoper, mangler AVX2. Et AVX2-bygg krasjer der med «illegal instruction». Forslag: sjekk `is_x86_feature_detected!("avx2")` og `"fma"` ved oppstart og vis en tydelig melding i stedet for å krasje. Alternativet er å bygge alle CPU-varianter (`GGML_BACKEND_DL` + `GGML_CPU_ALL_VARIANTS`), men det krever delte biblioteker og gjør pakkingen mer komplisert. **Beslutning for John Inge.** Ikke testet (CI-runnerne har AVX2).
 - **MSVC mot clang-cl:** ggml er ofte raskere bygget med clang enn med MSVC. Det bør måles hvis Windows-farten blir for dårlig.
-- Antall tråder: spiken bruker min(logiske kjerner, 8). På PC-er med hyperthreading kan antall fysiske kjerner være bedre. Det må måles.
+- Antall tråder: spiken bruker min(logiske kjerner, 8). På PC-er med hyperthreading kan antall fysiske kjerner være bedre. På CI (2 vCPU) ble 4 tråder katastrofalt tregere enn 2, fordi ggml-trådene venter aktivt. Aldri sett flere tråder enn det finnes kjerner. Det må måles på ekte PC.
 
-**CI-utkast:** `spike/ci/spike-build.yml`. Det er ikke aktivert og ligger ikke i `.github/workflows/`, fordi CI er `byggmester` sitt ansvar. Det bygger spiken på `windows-latest` og `macos-14` med portable flagg, sjekker SHA-256 på small-modellen og kjører `no`, `nn` og avbryt med `--no-text`, så bare tider havner i loggen.
+**CI:** `.github/workflows/spike-build.yml` bygger spiken på `windows-latest` og `macos-14` med portable flagg (`GGML_NATIVE=OFF`; Windows: AVX2, ikke AVX-512), hurtigbuffer for cargo, bygg, modell og testlyd, sjekker SHA-256 på small-modellen og kjører dekoding, `no`/`nn` (to linjer, 200 tegn), fart, avbryt og æøå-sti. Loggen får ellers bare tider. Ingen versjonstagger, ingen releaser. Arbeidsflyten er en del av PR #1, og `byggmester` bygger release-arbeidsflyten videre fra den.
 
 ### Oppskrift for John Inge: kjør spiken på en Windows-PC (ikke kjørt på enhet)
 
@@ -281,6 +315,7 @@ I PowerShell (åpne «Developer PowerShell for VS 2022»):
 cd C:\spike
 $env:GGML_NATIVE="OFF"; $env:GGML_AVX="ON"; $env:GGML_AVX2="ON"; $env:GGML_FMA="ON"; $env:GGML_F16C="ON"; $env:GGML_BMI2="ON"
 $env:LIBCLANG_PATH="C:\Program Files\LLVM\bin"
+$env:CMAKE_PROJECT_INCLUDE="C:\spike\ci\msvc-optimize.cmake"   # uten denne blir ggml bygget uten /O2
 cargo build --release
 
 mkdir data
@@ -320,18 +355,24 @@ Send meg: PC-modell og CPU (`Get-CimInstance Win32_Processor | Select Name,Numbe
 3. **PC-er uten AVX2:** vis en melding (enkelt) eller støtt dem (mer komplisert pakking)?
 4. **Beam 5 eller greedy som standard?** Beam 5 er NbAiLabs anbefaling og ca. 1,6× tregere. Forslag: beam 5 på Mac, avgjøres etter Windows-målingen der.
 5. **Nye crates til steg 1** (ikke i spesifikasjonen, krever ja): en HTTP-klient for modellnedlasting med Range (`reqwest` eller `ureq`), `sha2` for SHA-256, `serde`/`serde_json` for `models.json` (kommer allerede med Tauri), og `docx-rs` som spesifikasjonen nevner. Eventuelt `symphonia` 0.6 i stedet for 0.5.
-6. **Git:** mappen er ikke et git-repo. Steg 1 trenger repo og gren (`steg-1-kjerne`) for å kunne lage PR og kjøre CI på Windows. Spiken selv bør ligge på en gren `steg-0-spike`.
+6. **Git:** løst. Spiken ligger på `steg-0-spike` (PR #1) og CI kjører på begge plattformer.
 
 ## Sjekkliste – ikke kjørt på enhet
 
-- [ ] Windows: `cargo build --release` av `spike/` lykkes med MSVC og portable flagg (CI og/eller oppskriften over).
-- [ ] Windows: `no`/`nn` gir bokmål og nynorsk på kongens tale.
-- [ ] Windows: fart med medium q5, beam 5 og greedy, på en vanlig redaksjons-PC (4–8 kjerner, uten GPU).
-- [ ] Windows: avbryt stopper innen få sekunder.
-- [ ] Windows: modell i en mappe med æøå i stien lastes.
-- [ ] Windows: hva skjer på en PC uten AVX2 (forventet krasj, må fanges i steg 1).
-- [ ] Mac M1 (eller eldste støttede): fart med medium q5, beam 5 og greedy, på et intervju på 30 min.
-- [ ] Mac: binær bygget med `GGML_NATIVE=OFF` og `MACOSX_DEPLOYMENT_TARGET=13.0` kjører på macOS 13 og M1.
+Avkrysset = kjørt i CI (GitHub Actions-runner, 2 vCPU), **ikke på ekte maskin**. «Ekte maskin» står som egen linje der det fortsatt trengs.
+
+- [x] Windows (CI): `cargo build --release` av `spike/` lykkes med MSVC og portable flagg (krever `msvc-optimize.cmake`).
+- [x] Windows (CI): `no`/`nn` gir bokmål og nynorsk på kongens tale.
+- [ ] Windows, **ekte PC**: kjør oppskriften over og send tallene.
+- [ ] Windows, **ekte PC**: fart med medium q5, beam 5 og greedy, på en vanlig redaksjons-PC (4–8 kjerner, uten GPU). CI målte bare small verbatim på 2 vCPU (0,6–0,7× sanntid).
+- [x] Windows (CI): avbryt returnerer (`GenericError(-6)`), men med 19 s forsinkelse på 23 min lyd, fordi mel-spektrogrammet regnes ut for hele filen først. Må løses med biter i steg 1 og måles på ekte PC.
+- [x] Windows (CI): modell i en mappe med æøå i stien lastes.
+- [ ] Windows, **ekte PC**: en brukermappe med æøå i det virkelige brukernavnet (OneDrive-omdirigerte mapper o.l.).
+- [ ] Windows, **ekte PC uten AVX2**: hva skjer (forventet krasj, må fanges i steg 1). Ikke mulig på CI.
+- [ ] Windows, **ekte PC**: SmartScreen/antivirus reagerer ikke på spike-binæren (gjelder først signert installasjon, steg 4).
+- [ ] Mac M1 (eller eldste støttede), **ekte maskin**: fart med medium q5, beam 5 og greedy, med Metal, på et intervju på 30 min. (CI-runneren kjører bare CPU: small verbatim 2,1–2,6× sanntid.)
+- [x] Mac (CI): bygger på `macos-14` med `GGML_NATIVE=OFF` og `MACOSX_DEPLOYMENT_TARGET=13.0`.
+- [ ] Mac: binæren kjører på macOS 13 og en ekte M1 (CI kjører macOS 14 på virtuell M1).
 - [ ] Large q5 (1,1 GB): fart og minne på en Mac med 16 GB.
 
 ## Kjøre spiken selv
