@@ -94,12 +94,16 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          for secs in 2 6; do
-            echo "== max-secs $secs, 2 tråder =="
-            timeout 120 ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
-              --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs $secs --threads 2 --verbose > smoke.log 2>&1 || echo "exit=$?"
-            grep -a "system\|result\|run_s\|AVX" smoke.log | cut -c1-600
+          ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 2 --threads 2 --verbose > smoke.log 2>&1 &
+          PID=$!
+          for t in 10 20 40 80 160; do
+            sleep $t
+            echo "t+${t}s: $(pwsh -c "Get-Process transcribe -ErrorAction SilentlyContinue | ForEach-Object { 'cpu_s=' + [int]\$_.CPU + ' threads=' + \$_.Threads.Count + ' ws_mb=' + [int](\$_.WorkingSet64/1MB) }")"
+            grep -a "result\|run_s" smoke.log | cut -c1-300 && break
           done
+          kill $PID 2>/dev/null || true
+          grep -a "system" smoke.log | cut -c1-300
       - name: Målform no og nn (korte utdrag)
         timeout-minutes: 15
         shell: bash
