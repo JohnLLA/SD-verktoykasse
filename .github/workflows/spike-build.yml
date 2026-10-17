@@ -99,7 +99,10 @@ jobs:
         run: |
           C=$(ls target/release/build/whisper-rs-sys-*/out/build/CMakeCache.txt | head -n 1)
           echo "$C"
-          grep -a "^CMAKE_BUILD_TYPE\|^CMAKE_C_FLAGS\|^CMAKE_CXX_FLAGS\|^GGML_[A-Z0-9_]*:" "$C" | grep -v "RELWITHDEBINFO\|MINSIZEREL\|DEBUG" | cut -c1-250
+          grep -a "^CMAKE_BUILD_TYPE\|^CMAKE_C_FLAGS\|^CMAKE_CXX_FLAGS\|^CMAKE_GENERATOR:" "$C" | cut -c1-250
+          D=$(dirname "$C")
+          grep -rha "<Optimization>\|<AdditionalOptions>\|EnableEnhancedInstructionSet" --include=*.vcxproj "$D" | sort | uniq -c | cut -c1-300 | head -20
+          grep -a "WholeProgram\|<Configuration>" -rh --include=*.vcxproj "$D" | sort | uniq -c | head
       - name: Røyktest (kort lyd, verbose, bare tider)
         timeout-minutes: 12
         shell: bash
