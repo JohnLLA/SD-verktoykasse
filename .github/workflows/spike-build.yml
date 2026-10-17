@@ -91,11 +91,15 @@ jobs:
         shell: bash
         run: ./target/release/decode ../ci-data/king.mp3 | tail -n 3
       - name: Røyktest (15 s lyd, verbose, bare tider)
-        timeout-minutes: 5
+        timeout-minutes: 8
         shell: bash
         run: |
-          ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
-            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 15 --verbose 2>&1 | cut -c1-200 | tail -n 25
+          for v in "" "--threads 1" "--threads 2 --no-fallback"; do
+            echo "== variant: ${v:-standard} =="
+            timeout 90 ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+              --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 15 --verbose $v > smoke.log 2>&1 || echo "exit=$?"
+            cut -c1-200 smoke.log | tail -n 25
+          done
       - name: Målform no og nn (korte utdrag)
         timeout-minutes: 15
         shell: bash
