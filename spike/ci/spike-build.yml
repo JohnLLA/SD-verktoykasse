@@ -1,0 +1,71 @@
+# UTKAST, ikke aktivert. Flyttes til .github/workflows/ av byggmester når repoet finnes.
+# Formål (steg 0): bekrefte at whisper-rs bygger og kjører på Windows (MSVC, CPU)
+# og macOS (Metal-feature), med portable CPU-flagg. Skriver bare tider, aldri tekst.
+name: spike-build
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["spike/**"]
+
+env:
+  CARGO_TERM_COLOR: always
+  # Viktig: uten dette bygger ggml med -march=native / CPU-deteksjon for CI-maskinen
+  # (kan være AVX-512) og krasjer med «illegal instruction» på vanlige PC-er og M1.
+  GGML_NATIVE: "OFF"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            ggml_flags: "AVX2"
+          - os: macos-14
+            ggml_flags: ""
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: spike
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Portable x86-flagg (AVX2-baseline)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "GGML_AVX=ON"  >> $env:GITHUB_ENV
+          "GGML_AVX2=ON" >> $env:GITHUB_ENV
+          "GGML_FMA=ON"  >> $env:GITHUB_ENV
+          "GGML_F16C=ON" >> $env:GITHUB_ENV
+          "GGML_BMI2=ON" >> $env:GITHUB_ENV
+          "GGML_AVX512=OFF" >> $env:GITHUB_ENV
+          # bindgen trenger libclang; LLVM er forhåndsinstallert på windows-latest
+          "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+      - name: macOS deployment target
+        if: runner.os == 'macOS'
+        run: echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> "$GITHUB_ENV"
+      - name: Verktøy
+        run: |
+          cmake --version
+          rustc --version
+      - name: Bygg
+        run: cargo build --release
+      - name: Hent testlyd og small-modell (bare til spiken)
+        shell: bash
+        run: |
+          mkdir -p ../ci-data
+          curl -sSL --fail -o ../ci-data/king.mp3 https://github.com/NbAiLab/nb-whisper/raw/main/audio/king.mp3
+          curl -sSL --fail -o ../ci-data/small-verbatim-q5_0.bin \
+            https://huggingface.co/NbAiLab/nb-whisper-small-verbatim/resolve/6ecf80f5084aae499964121ea34651aa6bfc5b51/ggml-model-q5_0.bin
+          echo "8982b4a4e365f3f64a60ca12abb7382132e59b2a1040d52ab8ddd577948a5c96  ../ci-data/small-verbatim-q5_0.bin" > ../ci-data/sum
+          (command -v sha256sum >/dev/null && sha256sum -c ../ci-data/sum) || shasum -a 256 -c ../ci-data/sum
+      - name: Kjør (CPU, bare tider)
+        shell: bash
+        run: |
+          for l in no nn; do
+            ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang $l \
+              --audio ../ci-data/king.mp3 --no-gpu --no-text | tail -n 1
+          done
+          ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+            --audio ../ci-data/king.mp3 --no-gpu --no-text --cancel-after-ms 2000 | tail -n 2
