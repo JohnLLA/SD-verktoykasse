@@ -91,19 +91,16 @@ jobs:
         shell: bash
         run: ./target/release/decode ../ci-data/king.mp3 | tail -n 3
       - name: Røyktest (kort lyd, verbose, bare tider)
-        timeout-minutes: 10
+        timeout-minutes: 12
         shell: bash
         run: |
-          ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
-            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 2 --threads 2 --verbose > smoke.log 2>&1 &
-          PID=$!
-          for t in 10 20 40 80 160; do
-            sleep $t
-            echo "t+${t}s: $(pwsh -c "Get-Process transcribe -ErrorAction SilentlyContinue | ForEach-Object { 'cpu_s=' + [int]\$_.CPU + ' threads=' + \$_.Threads.Count + ' ws_mb=' + [int](\$_.WorkingSet64/1MB) }")"
-            grep -a "result\|run_s" smoke.log | cut -c1-300 && break
+          nproc || true
+          for v in "--no-fallback --threads 4" "--no-fallback --threads 1"; do
+            echo "== variant: $v =="
+            timeout 300 ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+              --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 2 --verbose $v > smoke.log 2>&1 || echo "exit=$?"
+            grep -a "time\|result" smoke.log | cut -c1-300
           done
-          kill $PID 2>/dev/null || true
-          grep -a "system" smoke.log | cut -c1-300
       - name: Målform no og nn (korte utdrag)
         timeout-minutes: 15
         shell: bash
