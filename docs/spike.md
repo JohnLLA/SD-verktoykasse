@@ -256,7 +256,7 @@ Utdatabufferet for 3 timer i 16 kHz f32 er 691 MB (= 659 MiB). Dekodingen legger
 
 ### Resultater fra CI (GitHub Actions, windows-latest) – ikke ekte redaksjons-PC
 
-Kjøring: <https://github.com/JohnLLA/lla-verktoykasse/actions/runs/39045943504> (grønn på både Windows x64 og macOS arm64). Arbeidsflyt: `.github/workflows/spike-build.yml`.
+Tallene er fra kjøring <https://github.com/JohnLLA/lla-verktoykasse/actions/runs/39045943504>. Siste grønne kjøring (etter opprydding, samme bygg): <https://github.com/JohnLLA/lla-verktoykasse/actions/runs/39047556814>. Begge grønne på Windows x64 og macOS arm64. Arbeidsflyt: `.github/workflows/spike-build.yml`.
 
 Runneren er en virtuell maskin med **2 vCPU** (Intel Xeon Platinum 8573C, en annen kjøring fikk AMD EPYC 9V74), ingen GPU. Det er langt svakere enn en typisk redaksjons-PC, så tallene under er **nedre grenser, ikke mål på hva en ekte PC klarer**. Mac-kolonnen er `macos-14` (virtuell M1, 3 kjerner, CPU uten Metal), tatt fra samme kjøring, så de to kan sammenlignes.
 
