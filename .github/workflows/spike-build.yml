@@ -90,17 +90,20 @@ jobs:
       - name: Dekoding
         shell: bash
         run: ./target/release/decode ../ci-data/king.mp3 | tail -n 3
+      - name: Diagnose cmake-oppsett
+        shell: bash
+        run: |
+          C=$(ls target/release/build/whisper-rs-sys-*/out/build/CMakeCache.txt | head -n 1)
+          echo "$C"
+          grep -a "^CMAKE_BUILD_TYPE\|^CMAKE_C_FLAGS\|^CMAKE_CXX_FLAGS\|^GGML_[A-Z0-9_]*:" "$C" | grep -v "RELWITHDEBINFO\|MINSIZEREL\|DEBUG" | cut -c1-250
       - name: Røyktest (kort lyd, verbose, bare tider)
         timeout-minutes: 12
         shell: bash
         run: |
-          nproc || true
-          for v in "--no-fallback --threads 4" "--no-fallback --threads 1"; do
-            echo "== variant: $v =="
-            timeout 300 ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
-              --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 2 --verbose $v > smoke.log 2>&1 || echo "exit=$?"
-            grep -a "time\|result" smoke.log | cut -c1-300
-          done
+          echo "== 2 tråder, ingen fallback =="
+          timeout 600 ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 2 --verbose --threads 2 --no-fallback > smoke.log 2>&1 || echo "exit=$?"
+          grep -a "time\|result" smoke.log | cut -c1-300
       - name: Målform no og nn (korte utdrag)
         timeout-minutes: 15
         shell: bash
