@@ -90,7 +90,14 @@ jobs:
       - name: Dekoding
         shell: bash
         run: ./target/release/decode ../ci-data/king.mp3 | tail -n 3
+      - name: Røyktest (15 s lyd, verbose, bare tider)
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 15 --verbose 2>&1 | cut -c1-200 | tail -n 25
       - name: Målform no og nn (korte utdrag)
+        timeout-minutes: 15
         shell: bash
         run: |
           for l in no nn; do
@@ -101,6 +108,7 @@ jobs:
             tail -n 1 "out-$l.txt"
           done
       - name: Fart (5 min Hamsun, small q5, bare tider)
+        timeout-minutes: 15
         shell: bash
         run: |
           for b in "" "--beam 5"; do
@@ -109,11 +117,13 @@ jobs:
               --audio ../ci-data/hamsun.mp3 --no-gpu --no-text --max-secs 300 $b | tail -n 1
           done
       - name: Avbryt etter 2 s
+        timeout-minutes: 15
         shell: bash
         run: |
           ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
             --audio ../ci-data/hamsun.mp3 --no-gpu --no-text --cancel-after-ms 2000 | tail -n 2
       - name: Modellsti med æøå
+        timeout-minutes: 15
         shell: bash
         run: |
           mkdir -p "../ci-data/Brukernavn æøå"
