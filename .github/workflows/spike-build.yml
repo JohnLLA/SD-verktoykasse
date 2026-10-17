@@ -1,0 +1,122 @@
+# Steg 0: bekrefter at whisper-rs bygger og kjører på Windows (MSVC, CPU) og
+# macOS (Metal-feature) med portable CPU-flagg. Resultatene er fra CI-runnere,
+# ikke ekte redaksjons-PC-er. Lyden er offentlig (NbAiLab-eksempler); loggen
+# får bare tider og korte utdrag (to linjer, 200 tegn) for å vise målform.
+name: spike-build
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["spike/**", ".github/workflows/spike-build.yml"]
+
+env:
+  CARGO_TERM_COLOR: always
+  # Uten dette bygger ggml for CPU-en på byggemaskinen (kan ha AVX-512).
+  GGML_NATIVE: "OFF"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: macos-14
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: spike
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Portable x86-flagg (AVX2 som mål, ikke AVX-512)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "GGML_AVX=ON"  >> $env:GITHUB_ENV
+          "GGML_AVX2=ON" >> $env:GITHUB_ENV
+          "GGML_FMA=ON"  >> $env:GITHUB_ENV
+          "GGML_F16C=ON" >> $env:GITHUB_ENV
+          "GGML_BMI2=ON" >> $env:GITHUB_ENV
+          "GGML_AVX512=OFF" >> $env:GITHUB_ENV
+          "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+      - name: macOS deployment target
+        if: runner.os == 'macOS'
+        run: echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> "$GITHUB_ENV"
+      - name: Cache cargo og bygg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            spike/target
+          key: spike-${{ runner.os }}-${{ hashFiles('spike/Cargo.lock') }}
+          restore-keys: spike-${{ runner.os }}-
+      - name: Verktøy og CPU
+        shell: bash
+        run: |
+          cmake --version | head -n 1
+          rustc --version
+          if [ "$RUNNER_OS" = Windows ]; then
+            pwsh -c "Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | Format-List"
+            pwsh -c "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB"
+          else
+            sysctl -n machdep.cpu.brand_string hw.ncpu hw.memsize
+          fi
+      - name: Bygg
+        run: cargo build --release
+      - name: Cache testdata og modell
+        id: data
+        uses: actions/cache@v4
+        with:
+          path: ci-data
+          key: spike-data-v1-small-verbatim-8982b4a4
+      - name: Hent testlyd og small-modell
+        if: steps.data.outputs.cache-hit != 'true'
+        working-directory: .
+        shell: bash
+        run: |
+          mkdir -p ci-data
+          curl -sSL --fail -o ci-data/king.mp3 https://github.com/NbAiLab/nb-whisper/raw/main/audio/king.mp3
+          curl -sSL --fail -o ci-data/hamsun.mp3 https://github.com/NbAiLab/nb-whisper/raw/main/audio/knuthamsun.mp3
+          curl -sSL --fail -o ci-data/small-verbatim-q5_0.bin \
+            https://huggingface.co/NbAiLab/nb-whisper-small-verbatim/resolve/6ecf80f5084aae499964121ea34651aa6bfc5b51/ggml-model-q5_0.bin
+      - name: Verifiser SHA-256
+        working-directory: .
+        shell: bash
+        run: |
+          echo "8982b4a4e365f3f64a60ca12abb7382132e59b2a1040d52ab8ddd577948a5c96  ci-data/small-verbatim-q5_0.bin" > sum.txt
+          (command -v sha256sum >/dev/null && sha256sum -c sum.txt) || shasum -a 256 -c sum.txt
+      - name: Dekoding
+        shell: bash
+        run: ./target/release/decode ../ci-data/king.mp3 | tail -n 3
+      - name: Målform no og nn (korte utdrag)
+        shell: bash
+        run: |
+          for l in no nn; do
+            ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang $l \
+              --audio ../ci-data/king.mp3 --no-gpu > "out-$l.txt"
+            echo "== $l =="
+            head -n 2 "out-$l.txt" | cut -c1-200
+            tail -n 1 "out-$l.txt"
+          done
+      - name: Fart (5 min Hamsun, small q5, bare tider)
+        shell: bash
+        run: |
+          for b in "" "--beam 5"; do
+            echo "== small verbatim q5, 300 s lyd, ${b:-greedy} =="
+            ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+              --audio ../ci-data/hamsun.mp3 --no-gpu --no-text --max-secs 300 $b | tail -n 1
+          done
+      - name: Avbryt etter 2 s
+        shell: bash
+        run: |
+          ./target/release/transcribe --model ../ci-data/small-verbatim-q5_0.bin --lang no \
+            --audio ../ci-data/hamsun.mp3 --no-gpu --no-text --cancel-after-ms 2000 | tail -n 2
+      - name: Modellsti med æøå
+        shell: bash
+        run: |
+          mkdir -p "../ci-data/Brukernavn æøå"
+          cp ../ci-data/small-verbatim-q5_0.bin "../ci-data/Brukernavn æøå/modell.bin"
+          ./target/release/transcribe --model "../ci-data/Brukernavn æøå/modell.bin" --lang no \
+            --audio ../ci-data/king.mp3 --no-gpu --no-text --max-secs 20 | tail -n 1
