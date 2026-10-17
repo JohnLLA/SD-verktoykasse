@@ -33,6 +33,7 @@ NB-Whisper finnes i to varianter som passer nøyaktig til de to stilene:
 
 - **Lydrett → verbatim-modellene** (`nb-whisper-<størrelse>-verbatim`). Mer bokstavelig, retter ikke grammatikk. Gir små bokstaver og lite tegnsetting. Det er slik modellen er trent, ikke en feil.
 - **Tolket → semantic-modellene** (`nb-whisper-<størrelse>-semantic`). Fanger innholdet heller enn hvert ord, egnet til referat og teksting.
+  - *Åpent etter spiken:* semantic finnes bare som uferdig utgave i `NbAiLabBeta` (desember 2023) og hoppet over setninger i testen. I steg 3 måler kvalitetsmaleren semantic mot hovedmodellen (`nb-whisper-<størrelse>` i `NbAiLab`) for tolket. John Inge velger modell etter målingen.
 
 Målform styres med språkparameteren til Whisper: `no` for bokmål og `nn` for nynorsk. Spiken (steg 0) bekrefter at dette virker i whisper.cpp med NB-Whisper-modellene, og at begge stilene kan gi nynorsk.
 
@@ -85,7 +86,7 @@ Appen gjør bare disse nettkallene:
 1. Nedlasting av modeller, når brukeren trykker «Last ned».
 2. Sjekk etter ny versjon ved oppstart. Kan slås av i innstillingene.
 
-Ingenting annet. Ingen analyse, ingen feilrapportering til nett, ingen innlogging. Lyd, tekst og filnavn sendes aldri noe sted. Tauri sin CSP og `capabilities` skal låse nettilgangen til nettopp de to domenene.
+Ingenting annet. Ingen analyse, ingen feilrapportering til nett, ingen innlogging. Lyd, tekst og filnavn sendes aldri noe sted. Tauri sin CSP og `capabilities` skal låse nettilgangen til nettopp disse vertene: `huggingface.co` og `*.hf.co` for modellnedlasting (Hugging Face sender videre til CDN), og GitHub for versjonssjekk.
 
 Logger skrives lokalt og inneholder aldri transkribert tekst eller filnavn utover det brukeren selv eksporterer.
 
@@ -102,17 +103,18 @@ Logger skrives lokalt og inneholder aldri transkribert tekst eller filnavn utove
 |---|---|
 | Rammeverk | Tauri 2 (Rust + webgrensesnitt) |
 | Transkribering | whisper.cpp via `whisper-rs`, lenket inn i appen. Sidecar med `whisper-cli` er reserve hvis bindingen skaper problemer (avgjøres i spiken) |
-| Akselerasjon | Mac: Metal. Windows: CPU (AVX2) i v1. Vulkan for GPU vurderes etter måling |
+| Akselerasjon | Mac: Metal. Windows: CPU (AVX2) i v1. Vulkan for GPU vurderes etter måling. whisper.cpp bygges med `GGML_NATIVE=OFF` |
 | Lyddekoding | `symphonia` + resampling til 16 kHz mono med `rubato`. Ingen ffmpeg i v1 |
 | Frontend | Vanilla TypeScript + Vite, ingen tungt rammeverk |
-| docx | Rust-crate (`docx-rs` eller tilsvarende) – krever ja fra John Inge som alle avhengigheter |
+| docx | `docx-rs` |
+| Nedlasting og sjekksum | HTTP-klient (`reqwest` eller `ureq`) og `sha2`. Godkjent etter spiken, sammen med `docx-rs` og ev. symphonia 0.6 i stedet for 0.5 |
 | Lagring av innstillinger | Tauri `store`-plugin, lokalt |
 | Oppdatering | Tauri `updater`-plugin mot GitHub Releases, signerte oppdateringer |
 
 ### Plattformer
 
 - **Mac:** macOS 13 eller nyere, Apple Silicon. Intel-Mac er ikke med i v1.
-- **Windows:** Windows 10 og 11, 64-bit x86. ARM-Windows er ikke med i v1.
+- **Windows:** Windows 10 og 11, 64-bit x86 med AVX2. ARM-Windows er ikke med i v1. PC-er uten AVX2 (eldre Celeron/Pentium Silver) støttes ikke; appen sier tydelig fra i stedet for å krasje.
 - Minst 8 GB minne. «Best» anbefales bare med 16 GB eller mer; appen sier fra hvis maskinen har mindre.
 
 ### Ytelsesmål
