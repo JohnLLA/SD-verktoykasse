@@ -40,6 +40,10 @@ jobs:
           "GGML_BMI2=ON" >> $env:GITHUB_ENV
           "GGML_AVX512=OFF" >> $env:GITHUB_ENV
           "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+          # cmake-rs (via whisper-rs-sys) overstyrer CMAKE_C(XX)_FLAGS_RELEASE med bare
+          # "-nologo -MD -Brepro -W0", så ggml bygges uten /O2 (50-100x tregere).
+          "CFLAGS=/O2 /Ob2 /DNDEBUG" >> $env:GITHUB_ENV
+          "CXXFLAGS=/O2 /Ob2 /DNDEBUG" >> $env:GITHUB_ENV
       - name: macOS deployment target
         if: runner.os == 'macOS'
         run: echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> "$GITHUB_ENV"
@@ -50,8 +54,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             spike/target
-          key: spike-${{ runner.os }}-${{ hashFiles('spike/Cargo.lock') }}
-          restore-keys: spike-${{ runner.os }}-
+          key: spike-v2-${{ runner.os }}-${{ hashFiles('spike/Cargo.lock') }}
+          restore-keys: spike-v2-${{ runner.os }}-
       - name: Verktøy og CPU
         shell: bash
         run: |
