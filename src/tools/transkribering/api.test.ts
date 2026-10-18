@@ -3,15 +3,23 @@
 // feiler hvis noen endrer bare den ene siden.
 
 import { describe, expect, it } from "vitest";
-import errorRs from "../../../src-tauri/src/tools/transkribering/error.rs?raw";
-import commandsRs from "../../../src-tauri/src/tools/transkribering/commands.rs?raw";
-import commandNamesRs from "../../../src-tauri/src/tools/transkribering/command_names.rs?raw";
-import exportRs from "../../../src-tauri/src/tools/transkribering/export.rs?raw";
-import typesRs from "../../../src-tauri/src/tools/transkribering/types.rs?raw";
+import errorRsRaw from "../../../src-tauri/src/tools/transkribering/error.rs?raw";
+import commandsRsRaw from "../../../src-tauri/src/tools/transkribering/commands.rs?raw";
+import commandNamesRsRaw from "../../../src-tauri/src/tools/transkribering/command_names.rs?raw";
+import exportRsRaw from "../../../src-tauri/src/tools/transkribering/export.rs?raw";
+import typesRsRaw from "../../../src-tauri/src/tools/transkribering/types.rs?raw";
 import { COMMANDS, ERROR_CODES, EVENTS, MODEL_DIR_KEY, SETTINGS_FILE } from "./api";
 import { t } from "../../i18n/nb";
 
 /** Som serdes `snake_case`: understrek foran hver stor bokstav, bortsett fra den første. */
+// Windows kan sjekke ut filene med CRLF.
+const lf = (s: string) => s.replace(/\r\n/g, "\n");
+const errorRs = lf(errorRsRaw);
+const commandsRs = lf(commandsRsRaw);
+const commandNamesRs = lf(commandNamesRsRaw);
+const exportRs = lf(exportRsRaw);
+const typesRs = lf(typesRsRaw);
+
 const snake = (s: string) => s.replace(/(?<!^)([A-Z])/g, "_$1").toLowerCase();
 
 function enumVariants(src: string, name: string): string[] {
