@@ -136,6 +136,7 @@ Målene justeres etter første måling. Viser det seg at Windows uten GPU blir f
 ### Nedlastingssiden på Railway
 
 - Verktøykassen har en offentlig nedlastingsside med Mac- og Windows-knapp, systemkrav, personvernavsnitt og installasjonsveiledning med skjermbilder.
+- LLA-logoen står øverst på siden (`site/lla-logo.png`, samme fil som i LLAs andre verktøy).
 - Siden kjøres på **Railway under LLA-kontoen (john@lla.no)**, i et eget prosjekt, aldri på John Inges private konto.
 - Siden er statisk (HTML/CSS) servert av en liten webserver i en container. Den leser siste versjon fra GitHub Releases, så knappene alltid peker på nyeste bygg uten ny deploy.
 - **Selve installasjonsfilene ligger ikke på Railway.** De ligger på GitHub Releases, som tåler store filer og mange nedlastinger uten trafikkostnad. Det krever at releasene er offentlige: enten et offentlig repo, eller et eget offentlig repo bare for releaser (`lla-verktoykasse-releases`) mens koden er privat. Den samme adressen brukes av oppdateringsfunksjonen i appen.
