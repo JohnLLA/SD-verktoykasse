@@ -51,7 +51,7 @@ Lydrett med små bokstaver: vis teksten slik modellen gir den i v1. Ikke legg p�
 
 ### Filer inn
 
-Lyd: mp3, m4a/AAC, wav, flac, ogg/Vorbis. Video: mp4 og mov (lydsporet brukes). Flere filer kan legges i kø. Lange filer (minst 3 timer) skal virke uten å gå tom for minne.
+Lyd: mp3, m4a/AAC (også rå `.aac`), wav, flac, ogg/Vorbis (`.ogg`, `.oga`). Video: mp4 og mov (lydsporet brukes). Flere filer kan legges i kø. Lange filer (minst 3 timer) skal virke uten å gå tom for minne.
 
 Ikke støttet i v1: webm/Opus og andre format symphonia ikke leser. Appen sier tydelig hvilket format filen har og hva som støttes, og foreslår å konvertere til mp3 eller wav.
 
@@ -66,7 +66,7 @@ Ikke støttet i v1: webm/Opus og andre format symphonia ikke leser. Appen sier t
 
 - Tekst delt i segmenter med tidskode. Klikk på et segment spiller av lyden fra det punktet.
 - Teksten kan rettes direkte i appen.
-- Lagre som: **.txt** (med eller uten tidskoder), **.srt**, **.vtt**, **.docx**. Kopier alt til utklippstavlen.
+- Lagre som: **.txt** og **.docx** (begge med eller uten tidskoder, brukeren velger), **.srt**, **.vtt**. «Lagre som» åpner alltid lagringsdialogen, forhåndsutfylt med standard navn og mappe (under). Kopier alt legger teksten på utklippstavlen, uten tidskoder.
 - Standard lagringssted: samme mappe som lydfilen, filnavn `<lydfil>.<målform>.<stil>.<ending>`, f.eks. `intervju.nynorsk.tolket.docx`. Målform skrives `bokmal` (uten å) eller `nynorsk`.
 - Øverst i eksportert tekst: filnavn, dato, målform, stil, modell og en linje om at teksten er maskintranskribert og må kontrolleres mot lyden. I .vtt står dette som `NOTE`. .srt har ingen topptekst, siden den ville blitt vist som undertekst.
 
