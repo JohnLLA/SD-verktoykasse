@@ -12,7 +12,6 @@ import type { Platform } from "../../platform/types";
 import { announce } from "../../ui/announce";
 import { h, nextId, replace } from "../../ui/dom";
 import { icon } from "../../ui/icons";
-import { confirmDialog } from "../../ui/modal";
 import { progressBar, type ProgressBar } from "../../ui/progress";
 import type { ControllerChange, TranskriberingController } from "./controller";
 import { kvalitetLabel, malformLabel, stilLabel } from "./labels";
@@ -421,38 +420,21 @@ export function createFileView(c: TranskriberingController, platform: Platform, 
     );
   }
 
-  async function doSave(kind: SaveKind, opts: { chooseLocation?: boolean; overwrite?: boolean }): Promise<void> {
+  async function doSave(kind: SaveKind): Promise<void> {
     if (resultRefs) resultRefs.error.hidden = true;
-    const r = await c.save(id, kind, opts);
+    const r = await c.save(id, kind);
     const i = item();
-    switch (r.status) {
-      case "saved":
-        if (i) renderStatus(i);
-        announce(T.result.saved(fileName(r.path)));
-        break;
-      case "exists": {
-        const ok = await confirmDialog({
-          title: T.save.overwriteTitle,
-          body: T.save.overwriteBody(r.name),
-          confirmLabel: T.save.overwriteConfirm,
-          danger: true,
-        });
-        if (ok) await doSave(kind, { ...opts, overwrite: true });
-        break;
-      }
-      case "failed":
-        showSaveError(errorText(r.error));
-        break;
-      case "cancelled":
-        break;
+    if (r.status === "saved") {
+      if (i) renderStatus(i);
+      announce(T.result.saved(fileName(r.path)));
+    } else if (r.status === "failed") {
+      showSaveError(errorText(r.error));
     }
   }
 
   function openSaveDialog(): void {
     const previous = document.activeElement as HTMLElement | null;
     const titleId = nextId("save-title");
-    const checkId = nextId("save-place");
-    const choose = h("input", { type: "checkbox", id: checkId });
     const buttons = SAVE_OPTIONS.map((o) => {
       const f = T.save.formats[o.kind];
       return h(
@@ -461,9 +443,8 @@ export function createFileView(c: TranskriberingController, platform: Platform, 
           type: "button",
           class: "save-option",
           onclick: () => {
-            const chooseLocation = choose.checked;
             dialog.close();
-            void doSave(o.kind, { chooseLocation });
+            void doSave(o.kind);
           },
         },
         h("span", { class: "save-label", text: f.label }),
@@ -475,7 +456,6 @@ export function createFileView(c: TranskriberingController, platform: Platform, 
       { class: "modal modal-save", "aria-labelledby": titleId },
       h("h2", { id: titleId, text: T.save.title }),
       h("div", { class: "save-list" }, ...buttons),
-      h("div", { class: "check" }, choose, h("label", { for: checkId, text: T.save.choosePlace })),
       h("div", { class: "modal-actions" }, h("button", { type: "button", class: "btn", text: t.common.close, onclick: () => dialog.close() })),
     );
     dialog.addEventListener("close", () => {

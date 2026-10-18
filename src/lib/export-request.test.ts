@@ -9,12 +9,15 @@ const base = {
   stil: "lydrett" as const,
   modelId: "nb-whisper-small-verbatim-q5_0",
   now: new Date(2026, 9, 18, 14, 30),
+  targetPath: "/Users/kari/intervju.nynorsk.lydrett.txt",
+  overwrite: true,
 };
 
 describe("eksportforespørsel", () => {
-  it("tilbyr txt med og uten tidskoder, srt, vtt og docx", () => {
+  it("tilbyr docx og txt med og uten tidskoder, srt og vtt", () => {
     expect(SAVE_OPTIONS.map((o) => `${o.format}:${o.timestamps}`)).toEqual([
       "docx:true",
+      "docx:false",
       "txt:true",
       "txt:false",
       "srt:false",
@@ -22,11 +25,18 @@ describe("eksportforespørsel", () => {
     ]);
   });
 
-  it("bruker standard filnavn og mappe (ingen målsti) og spør før overskriving", () => {
-    const r = buildExportRequest({ ...base, option: saveOption("docx") });
-    expect(r.target_path).toBeNull();
-    expect(r.overwrite).toBe(false);
+  it("sender stien fra lagringsdialogen, og overwrite siden dialogen har spurt", () => {
+    const r = buildExportRequest({ ...base, option: saveOption("docx-time") });
+    expect(r.target_path).toBe(base.targetPath);
+    expect(r.overwrite).toBe(true);
     expect(r.audio_path).toBe(base.audioPath);
+  });
+
+  it("lar docx være med eller uten tidskoder, som txt", () => {
+    expect(buildExportRequest({ ...base, option: saveOption("docx-time") }).timestamps).toBe(true);
+    const plain = buildExportRequest({ ...base, option: saveOption("docx-plain") });
+    expect(plain.timestamps).toBe(false);
+    expect(plain.format).toBe("docx");
   });
 
   it("tar med dato og topptekster fra språkfilen", () => {
@@ -44,16 +54,5 @@ describe("eksportforespørsel", () => {
     expect(r.malform).toBe("nynorsk");
     expect(r.stil).toBe("lydrett");
     expect(r.model_id).toBe(base.modelId);
-  });
-
-  it("sender valgt sted og bekreftet overskriving", () => {
-    const r = buildExportRequest({
-      ...base,
-      option: saveOption("vtt"),
-      targetPath: "/Users/kari/Skrivebord/min.vtt",
-      overwrite: true,
-    });
-    expect(r.target_path).toBe("/Users/kari/Skrivebord/min.vtt");
-    expect(r.overwrite).toBe(true);
   });
 });

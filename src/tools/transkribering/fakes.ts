@@ -142,7 +142,8 @@ export interface FakePlatform extends Platform {
   announced: string[];
   copied: string[];
   revealed: string[];
-  picked: { files: string[]; folder: string | null; save: string | null };
+  /** `save`: undefined = brukeren godtar forslaget, null = lukker dialogen, tekst = valgt sti. */
+  picked: { files: string[]; folder: string | null; save: string | null | undefined };
   savePathRequests: string[];
 }
 
@@ -154,7 +155,7 @@ export function fakePlatform(): FakePlatform {
     copied: [],
     revealed: [],
     savePathRequests: [],
-    picked: { files: [], folder: null, save: null },
+    picked: { files: [], folder: null, save: undefined },
     async pickFiles() {
       return p.picked.files;
     },
@@ -163,7 +164,7 @@ export function fakePlatform(): FakePlatform {
     },
     async pickSavePath(opts) {
       p.savePathRequests.push(opts.defaultPath);
-      return p.picked.save;
+      return p.picked.save === undefined ? opts.defaultPath : p.picked.save;
     },
     async onDrop() {
       return () => undefined;

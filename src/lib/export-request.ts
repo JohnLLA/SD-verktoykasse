@@ -5,7 +5,7 @@ import type { ExportFormat, ExportRequest, Malform, Segment, Stil } from "../too
 import { t } from "../i18n/nb";
 import { formatDate } from "./format";
 
-export type SaveKind = "docx" | "txt-time" | "txt-plain" | "srt" | "vtt";
+export type SaveKind = "docx-time" | "docx-plain" | "txt-time" | "txt-plain" | "srt" | "vtt";
 
 export interface SaveOption {
   kind: SaveKind;
@@ -15,7 +15,8 @@ export interface SaveOption {
 
 /** Valgene i «Lagre som», i den rekkefølgen de vises. */
 export const SAVE_OPTIONS: readonly SaveOption[] = [
-  { kind: "docx", format: "docx", timestamps: true },
+  { kind: "docx-time", format: "docx", timestamps: true },
+  { kind: "docx-plain", format: "docx", timestamps: false },
   { kind: "txt-time", format: "txt", timestamps: true },
   { kind: "txt-plain", format: "txt", timestamps: false },
   { kind: "srt", format: "srt", timestamps: false },
@@ -36,19 +37,19 @@ export interface ExportInput {
   stil: Stil;
   modelId: string;
   now: Date;
-  /** Valgt sted fra «Lagre som»-dialogen. Utelatt: standard ved siden av lydfilen. */
-  targetPath?: string | null;
-  /** Bare etter at brukeren har bekreftet overskriving (eller valgt stedet selv i dialogen). */
-  overwrite?: boolean;
+  /** Stien brukeren valgte i «Lagre som»-dialogen (forhåndsutfylt med standard navn og mappe). */
+  targetPath: string;
+  /** Dialogen har spurt om overskriving, så svaret er alltid ja her. */
+  overwrite: boolean;
 }
 
 export function buildExportRequest(i: ExportInput): ExportRequest {
   return {
     audio_path: i.audioPath,
-    target_path: i.targetPath ?? null,
+    target_path: i.targetPath,
     format: i.option.format,
     timestamps: i.option.timestamps,
-    overwrite: i.overwrite ?? false,
+    overwrite: i.overwrite,
     segments: i.segments.map((s) => ({ start_ms: s.start_ms, end_ms: s.end_ms, text: s.text })),
     malform: i.malform,
     stil: i.stil,

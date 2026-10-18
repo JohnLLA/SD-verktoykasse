@@ -330,43 +330,50 @@ describe("resultat", () => {
     expect(item.revision).toBe(1);
   });
 
-  it("lagrer til standard sted og filnavn, og sender den rettede teksten", async () => {
+  it("åpner alltid lagringsdialogen med standard filnavn og mappe, og sender den rettede teksten", async () => {
     const item = await finished();
     c.edit(item.id, 1, "Rettet.");
-    const r = await c.save(item.id, "docx");
+    const r = await c.save(item.id, "docx-time");
+    expect(platform.savePathRequests).toEqual(["/a/intervju.bokmal.tolket.docx"]);
     expect(r).toEqual({ status: "saved", path: "/a/intervju.bokmal.tolket.docx" });
     const req = backend.exportCalls[0];
-    expect(req?.target_path).toBeNull();
-    expect(req?.overwrite).toBe(false);
+    expect(req?.target_path).toBe("/a/intervju.bokmal.tolket.docx");
     expect(req?.format).toBe("docx");
+    expect(req?.timestamps).toBe(true);
     expect(req?.segments[1]?.text).toBe("Rettet.");
     expect(req?.date).toBe("18. oktober 2026");
     expect(req?.model_id).toBe("medium-semantic");
     expect(c.busy()).toBeNull(); // lagret
   });
 
-  it("spør før overskriving, og overskriver bare når brukeren har sagt ja", async () => {
+  it("lar docx lagres uten tidskoder", async () => {
     const item = await finished();
-    backend.exportError = { code: "file_exists" };
-    const r = await c.save(item.id, "txt-time");
-    expect(r).toEqual({ status: "exists", name: "intervju.bokmal.tolket.txt" });
-    expect(c.busy()).toBe("unsaved");
-    backend.exportError = null;
-    const r2 = await c.save(item.id, "txt-time", { overwrite: true });
-    expect(r2.status).toBe("saved");
-    expect(backend.exportCalls.at(-1)?.overwrite).toBe(true);
+    await c.save(item.id, "docx-plain");
+    expect(backend.exportCalls[0]?.timestamps).toBe(false);
+    expect(backend.exportCalls[0]?.format).toBe("docx");
   });
 
-  it("lar brukeren velge sted selv, og avbryter uten å lagre hvis dialogen lukkes", async () => {
+  it("gir kjernen overwrite når brukeren har bekreftet i dialogen, også for en fil som finnes fra før", async () => {
+    const item = await finished();
+    await c.save(item.id, "txt-time");
+    await c.save(item.id, "txt-time"); // samme sti igjen: dialogen har spurt og brukeren sa ja
+    expect(backend.exportCalls.map((r) => r.overwrite)).toEqual([true, true]);
+  });
+
+  it("bruker stien brukeren velger i dialogen", async () => {
+    const item = await finished();
+    platform.picked.save = "/Users/kari/Skrivebord/min.srt";
+    const r = await c.save(item.id, "srt");
+    expect(r).toEqual({ status: "saved", path: "/Users/kari/Skrivebord/min.srt" });
+    expect(backend.exportCalls[0]?.target_path).toBe("/Users/kari/Skrivebord/min.srt");
+  });
+
+  it("lagrer ingenting hvis dialogen lukkes, og teksten er fortsatt ulagret", async () => {
     const item = await finished();
     platform.picked.save = null;
-    expect((await c.save(item.id, "srt", { chooseLocation: true })).status).toBe("cancelled");
+    expect((await c.save(item.id, "srt")).status).toBe("cancelled");
     expect(backend.exportCalls).toHaveLength(0);
-    platform.picked.save = "/Users/kari/Skrivebord/min.srt";
-    const r = await c.save(item.id, "srt", { chooseLocation: true });
-    expect(r).toEqual({ status: "saved", path: "/Users/kari/Skrivebord/min.srt" });
-    expect(platform.savePathRequests[0]).toBe("/a/intervju.bokmal.tolket.srt");
-    expect(backend.exportCalls[0]?.overwrite).toBe(true);
+    expect(c.busy()).toBe("unsaved");
   });
 
   it("gir feilen videre når lagring mislykkes, og lar teksten være ulagret", async () => {
@@ -387,7 +394,7 @@ describe("resultat", () => {
     const item = await finished();
     await c.reveal(item.id);
     expect(platform.revealed.at(-1)).toBe("/a/intervju.mp3");
-    await c.save(item.id, "docx");
+    await c.save(item.id, "docx-time");
     await c.reveal(item.id);
     expect(platform.revealed.at(-1)).toBe("/a/intervju.bokmal.tolket.docx");
   });

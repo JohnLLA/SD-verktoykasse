@@ -338,19 +338,15 @@ const nb = {
 
     save: {
       title: "Lagre som",
-      choosePlace: "La meg velge hvor filen skal lagres",
       formats: {
-        docx: { label: "Word-dokument", ext: ".docx", hint: "Med tidskoder" },
+        "docx-time": { label: "Word med tidskoder", ext: ".docx", hint: "" },
+        "docx-plain": { label: "Word uten tidskoder", ext: ".docx", hint: "" },
         "txt-time": { label: "Tekst med tidskoder", ext: ".txt", hint: "" },
         "txt-plain": { label: "Tekst uten tidskoder", ext: ".txt", hint: "" },
         srt: { label: "Undertekster", ext: ".srt", hint: "Til video" },
         vtt: { label: "Undertekster for nett", ext: ".vtt", hint: "" },
       },
       dialogTitle: "Lagre transkripsjonen",
-      overwriteTitle: "Erstatte filen?",
-      overwriteBody: (name: string) =>
-        `Det finnes allerede en fil som heter ${name}. Hvis du erstatter den, går den gamle teksten tapt.`,
-      overwriteConfirm: "Erstatt",
     },
 
     mock: {

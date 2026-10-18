@@ -33,8 +33,8 @@ For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-s
 - [ ] Flere filer i kø: de kjører én og én, og listen viser status for hver.
 - [ ] Resultat: segmenter med tidskode til venstre. Klikk på tidskoden spiller lyden fra det punktet (test mp3, m4a og en mp4/mov). Segmentet som spilles, er fremhevet.
 - [ ] Rett i teksten (inkludert Enter, som flytter til neste segment, og lim inn tekst med linjeskift). Lagre: rettelsene er med i filen.
-- [ ] Lagre som: docx, txt med og uten tidskoder, srt og vtt. Filnavn og mappe er `<lydfil>.<målform>.<stil>.<ending>` ved siden av lydfilen. Lagre samme format en gang til: «Erstatte filen?» vises, og «Avbryt» lar filen være.
-- [ ] «La meg velge hvor filen skal lagres» åpner lagringsdialogen med riktig forslag.
+- [ ] Lagre som: Word med og uten tidskoder, txt med og uten tidskoder, srt og vtt. Lagringsdialogen åpnes hver gang, forhåndsutfylt med `<lydfil>.<målform>.<stil>.<ending>` i samme mappe som lydfilen. Velg en annen mappe og et annet navn: filen havner der. Velg en fil som finnes: dialogen spør om erstatning (macOS og Windows), og filen erstattes ved «Ja». Lukk dialogen: ingenting lagres.
+- [ ] Åpne Word-filen med og uten tidskoder: tidskoder er bare med i den første.
 - [ ] «Vis i Finder» viser den lagrede filen (eller lydfilen hvis ingenting er lagret).
 - [ ] «Kopier alt» legger teksten på utklippstavlen (lim inn i Pages/Word).
 - [ ] Åpne docx og txt: toppteksten (fil, dato på norsk, målform, stil, modell og linjen om maskintranskribert) stemmer med språkfilen.
@@ -49,6 +49,10 @@ For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-s
 - [ ] Fyll disken (eller bruk en liten minnepinne) ved nedlasting eller lagring: «Det er ikke nok plass på disken».
 - [ ] Lagre til en mappe uten skrivetilgang: «Appen har ikke tilgang».
 - [ ] Ingen feilmelding viser filsti, kode eller teknisk tekst.
+
+## Til steg 4 (distribusjon)
+
+- [ ] Full lisenstekst for NB-Whisper (Apache 2.0) og øvrige komponenter (whisper.cpp, Tauri, Symphonia m.fl.) tas med i appen, som en tredjepartsmelding i Om-vinduet. Om-vinduet har i dag bare navn, eier og lisensnavn.
 
 ### Skall og innstillinger
 
@@ -76,7 +80,7 @@ For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-s
 - [ ] Dra-og-slipp fra Utforsker, også fra OneDrive-mappe og nettverksdisk, og fra mappe med æøå i navnet.
 - [ ] Avspilling av mp3, m4a (AAC) og wav ved klikk på tidskode. Prøv også flac og ogg: WebView2 spiller dem, WKWebView på Mac spiller kanskje ikke alle (da vises «Lyden kan ikke spilles av her», og teksten virker likevel).
 - [ ] Knappen sier «Vis i Utforsker», og Utforsker åpnes med filen markert.
-- [ ] «Lagre som» med egen plassering: lagringsdialogen viser riktig filendelse; lagre til nettverksdisk og minnepinne.
+- [ ] «Lagre som»: dialogen viser riktig filendelse; lagre til nettverksdisk og minnepinne.
 - [ ] Kopier alt og lim inn i Word.
 - [ ] PC uten AVX2: etter at filer er lagt til, vises «Denne maskinen er for gammel til å transkribere» i stedet for Start.
 - [ ] Skalering 125 % og 150 %: ingenting er avkuttet i minstestørrelsen på vinduet (720 × 520).

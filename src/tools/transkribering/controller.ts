@@ -45,8 +45,6 @@ export interface ControllerDeps {
 
 export type SaveResult =
   | { status: "saved"; path: string }
-  /** Filen finnes. Bekreft med brukeren og kall på nytt med `overwrite`. */
-  | { status: "exists"; name: string }
   | { status: "cancelled" }
   | { status: "failed"; error: CoreError };
 
@@ -389,11 +387,12 @@ export class TranskriberingController {
     }
   }
 
-  async save(
-    id: number,
-    kind: SaveKind,
-    opts: { chooseLocation?: boolean; overwrite?: boolean } = {},
-  ): Promise<SaveResult> {
+  /**
+   * Åpner alltid lagringsdialogen, forhåndsutfylt med standard filnavn og
+   * mappe fra kjernen. Dialogen spør selv om overskriving, så kjernen får
+   * `overwrite: true` når brukeren har valgt en sti.
+   */
+  async save(id: number, kind: SaveKind): Promise<SaveResult> {
     const item = this.queue.get(id);
     if (!item || item.state !== "done" || !item.choices || !item.modelId) {
       return { status: "failed", error: { code: "internal" } };
@@ -401,8 +400,6 @@ export class TranskriberingController {
     const option = saveOption(kind);
     const { backend, platform } = this.deps;
     const revision = item.revision;
-    let target: string | null = null;
-    let overwrite = opts.overwrite ?? false;
     try {
       const suggested = await backend.suggestExportPath(
         item.path,
@@ -410,16 +407,13 @@ export class TranskriberingController {
         item.choices.stil,
         option.format,
       );
-      if (opts.chooseLocation) {
-        target = await platform.pickSavePath({
-          title: t.transkribering.save.dialogTitle,
-          defaultPath: suggested,
-          extension: option.format,
-          filterName: t.transkribering.save.formats[kind].label,
-        });
-        if (!target) return { status: "cancelled" };
-        overwrite = true; // operativsystemet har allerede spurt om overskriving
-      }
+      const target = await platform.pickSavePath({
+        title: t.transkribering.save.dialogTitle,
+        defaultPath: suggested,
+        extension: option.format,
+        filterName: t.transkribering.save.formats[kind].label,
+      });
+      if (!target) return { status: "cancelled" };
       const path = await backend.exportFile(
         buildExportRequest({
           audioPath: item.path,
@@ -430,20 +424,13 @@ export class TranskriberingController {
           modelId: item.modelId,
           now: this.now(),
           targetPath: target,
-          overwrite,
+          overwrite: true,
         }),
       );
       this.queue.markSaved(item.id, path, revision);
       return { status: "saved", path };
     } catch (e) {
-      const error = toCoreError(e);
-      if (error.code === "file_exists") {
-        const name = (await backend
-          .suggestExportPath(item.path, item.choices.malform, item.choices.stil, option.format)
-          .catch(() => "")) as string;
-        return { status: "exists", name: name.split(/[\\/]/).pop() ?? name };
-      }
-      return { status: "failed", error };
+      return { status: "failed", error: toCoreError(e) };
     }
   }
 }
