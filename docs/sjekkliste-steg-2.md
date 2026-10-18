@@ -50,10 +50,6 @@ For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-s
 - [ ] Lagre til en mappe uten skrivetilgang: «Appen har ikke tilgang».
 - [ ] Ingen feilmelding viser filsti, kode eller teknisk tekst.
 
-## Til steg 4 (distribusjon)
-
-- [ ] Full lisenstekst for NB-Whisper (Apache 2.0) og øvrige komponenter (whisper.cpp, Tauri, Symphonia m.fl.) tas med i appen, som en tredjepartsmelding i Om-vinduet. Om-vinduet har i dag bare navn, eier og lisensnavn.
-
 ### Skall og innstillinger
 
 - [ ] Menyen til venstre viser Transkribering, Innstillinger og Om. Tastaturet virker (Tab, Enter, piltaster i de segmenterte valgene). Fokus er synlig overalt. «Hopp til innholdet» vises ved første Tab.
@@ -89,3 +85,7 @@ For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-s
 ## Prøvd på Mac under bygging
 
 Se PR-beskrivelsen for hva som faktisk ble kjørt (`npm run tauri dev`, prøvevisning i Chrome med skjermbilder av alle tilstander i lys og mørk modus, og hva som ikke lot seg prøve uten ekte hender på maskinen).
+
+## Til steg 4 (distribusjon)
+
+- [ ] Full lisenstekst for NB-Whisper (Apache 2.0) og øvrige komponenter (whisper.cpp, Tauri, Symphonia m.fl.) tas med i appen, som en tredjepartsmelding i Om-vinduet. Om-vinduet har i dag bare navn, eier og lisensnavn.
