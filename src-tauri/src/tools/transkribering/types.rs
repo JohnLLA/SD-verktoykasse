@@ -26,9 +26,10 @@ impl Malform {
     }
 
     /// Ordet som brukes i filnavnet `<lydfil>.<målform>.<stil>.<ending>`.
+    /// `bokmal` uten å (John Inges beslutning, se spesifikasjonen).
     pub fn file_word(self) -> &'static str {
         match self {
-            Malform::Bokmal => "bokmål",
+            Malform::Bokmal => "bokmal",
             Malform::Nynorsk => "nynorsk",
         }
     }

@@ -28,7 +28,7 @@ Testene skriver bare tall (tider, antall segmenter), aldri transkribert tekst.
 - [ ] PC **uten AVX2** (eldre Celeron/Pentium Silver): `check_system` gir `cpu_supported: false` med `missing_cpu_features`, og `transcribe` gir feilen `cpu_unsupported` i stedet for å krasje.
 - [ ] Brukernavn eller mapper med æøå (også OneDrive-omdirigerte mapper): modellnedlasting, egen modellmappe og lydfil i slik mappe.
 - [ ] Dvale: start en lang jobb, la PC-en stå urørt lenger enn dvaletiden i strøminnstillingene. Den skal ikke gå i dvale mens jobben kjører, og skal kunne gå i dvale etter at jobben er ferdig eller avbrutt. `powercfg /requests` (som administrator) viser appen under `SYSTEM` mens jobben kjører.
-- [ ] Modellnedlasting bak bedriftens brannmur/proxy (hvis redaksjonen har det). Appen bruker systemets sertifikatlager. Proxy leses fra miljøvariablene `HTTPS_PROXY`/`HTTP_PROXY`; systemets proxyinnstillinger i Windows leses ikke i steg 1.
+- [ ] Modellnedlasting bak bedriftens brannmur/proxy (hvis redaksjonen har det). Appen bruker systemets sertifikatlager. Proxy leses fra miljøvariablene `HTTPS_PROXY`/`HTTP_PROXY`, ellers fra den faste proxyen i Windows' innstillinger (Innstillinger → Nettverk → Proxy, «Bruk en proxyserver»). Automatisk oppsett med skript (PAC/WPAD) leses ikke; noter om redaksjonen bruker det.
 - [ ] Nedlasting brytes (slå av nettet midt i), slå på igjen, last ned på nytt: fortsetter fra der den slapp. Avslutt appen midt i og start igjen: fortsetter også.
 - [ ] Lagre eksport til en nettverksdisk og en minnepinne (FAT/exFAT): txt, srt, vtt og docx. Lagre på nytt uten bekreftelse skal gi `file_exists`; med bekreftelse skrives filen over.
 - [ ] docx åpnes i Word uten feilmelding; topptekst og tidskoder ser riktige ut.

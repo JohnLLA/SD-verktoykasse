@@ -511,21 +511,21 @@ mod tests {
             Stil::Lydrett,
             ExportFormat::Srt,
         );
-        assert_eq!(p, Path::new("møte i bystyret.bokmål.lydrett.srt"));
+        assert_eq!(p, Path::new("møte i bystyret.bokmal.lydrett.srt"));
         let p = default_export_path(
             Path::new("/a/opptak.2026.10.18.wav"),
             Malform::Bokmal,
             Stil::Tolket,
             ExportFormat::Txt,
         );
-        assert_eq!(p, Path::new("/a/opptak.2026.10.18.bokmål.tolket.txt"));
+        assert_eq!(p, Path::new("/a/opptak.2026.10.18.bokmal.tolket.txt"));
         let p = default_export_path(
             Path::new("/a/.mp3"),
             Malform::Bokmal,
             Stil::Tolket,
             ExportFormat::Vtt,
         );
-        assert_eq!(p.file_name().unwrap(), ".mp3.bokmål.tolket.vtt");
+        assert_eq!(p.file_name().unwrap(), ".mp3.bokmal.tolket.vtt");
     }
 
     #[test]
@@ -533,7 +533,7 @@ mod tests {
         let d = std::env::temp_dir().join(format!("lla-eksport-{} æøå", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(&d).unwrap();
-        let p = d.join("intervju.bokmål.tolket.txt");
+        let p = d.join("intervju.bokmal.tolket.txt");
         write_file(&p, b"forste", false).unwrap();
         assert_eq!(write_file(&p, b"andre", false), Err(CoreError::FileExists));
         assert_eq!(std::fs::read(&p).unwrap(), b"forste");

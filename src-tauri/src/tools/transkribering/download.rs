@@ -73,6 +73,8 @@ impl HostPolicy {
 
 /// Lager HTTP-klienten. Systemets sertifikatlager brukes (rustls-platform-verifier),
 /// så nedlasting virker også bak bedriftsproxyer med egne rotsertifikater.
+/// Proxy: `HTTPS_PROXY`/`HTTP_PROXY`/`ALL_PROXY` først, ellers (Windows) den
+/// faste proxyen i Windows' Internett-innstillinger (`win-system-proxy`).
 fn agent(policy: &HostPolicy) -> ureq::Agent {
     use ureq::tls::{RootCerts, TlsConfig};
     let tls = TlsConfig::builder()
