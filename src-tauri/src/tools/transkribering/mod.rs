@@ -12,6 +12,7 @@
 //! - `export`: txt, srt, vtt, docx, filnavn og topptekst.
 //! - `keepawake`: hindrer dvale under jobber.
 //! - `system`: CPU-sjekk (AVX2), kjerner, minne.
+//! - `jobs`: jobbtabell, avbryt og «opptatt».
 //! - `commands`: Tauri-kommandoene og -hendelsene.
 
 pub mod chunk;
@@ -21,6 +22,7 @@ pub mod download;
 pub mod engine;
 pub mod error;
 pub mod export;
+pub mod jobs;
 pub mod keepawake;
 pub mod models;
 pub mod system;

@@ -91,7 +91,9 @@ export interface ModelList {
 // ---- download_model({ modelId }) -> JobId
 // ---- delete_model({ modelId }) -> void
 // ---- set_model_dir({ path: string | null }) -> void
-// ---- cancel({ jobId }) -> void   (transkribering og nedlasting)
+// ---- cancel({ jobId }) -> void   Transkribering: `done` (cancelled) kommer med en gang,
+//      og en ny jobb kan startes; whisper kan regne noen sekunder til i bakgrunnen.
+//      Nedlasting: `download-done` kommer når nedlastingen har stoppet.
 
 // ---- transcribe({ request }) -> JobId
 export interface TranscribeRequest {

@@ -2,8 +2,11 @@
 //!
 //! [`run_job`] kjører i en bakgrunnstråd (commands.rs starter den): dekoder
 //! lyden strømmende, gir whisper biter på omtrent 10 minutter (chunk.rs),
-//! sender segmenter og framdrift fortløpende via `emit`, og stopper innen få
-//! sekunder når `cancel` settes.
+//! sender segmenter og framdrift fortløpende via `emit`, og stopper når
+//! `cancel` settes. whisper.cpp sjekker flagget før og etter hvert
+//! 30-sekundersvindu og i dekoderen, men ikke midt i koderen; på en treg PC
+//! kan det ta ett vindu (Windows-CI, 2 vCPU: 13,9 s). Grensesnittet venter
+//! ikke på det: `cancel`-kommandoen svarer med en gang (jobs.rs).
 //!
 //! Funn fra spiken som er tatt hensyn til her:
 //! - `set_abort_callback_safe` i whisper-rs 0.16 har en minnefeil. Vi bruker
@@ -669,6 +672,7 @@ mod tests {
     fn real_cancel_stops_within_seconds() {
         // Avbryter mens whisper regner (ved første framdrift fra whisper i den
         // første biten på 10 min), og måler tiden til run_job returnerer.
+        // Bitene gjør at det ikke venter på mel-spektrogrammet for hele filen.
         let (m, a) = real_or_skip("nb-whisper-small-semantic-q5_0", "knuthamsun.mp3");
         let mut req = JobRequest::new(a, m, Malform::Bokmal, VariantOptions::default());
         req.use_gpu = use_gpu();
@@ -691,6 +695,9 @@ mod tests {
             "avbryt: satt etter {:.1} s, {latency:.2} s fra flagg til retur",
             at.duration_since(t).as_secs_f64()
         );
-        assert!(latency < 10.0, "avbryt tok {latency:.1} s");
+        // whisper.cpp sjekker flagget mellom 30-sekundersvinduene, ikke midt i
+        // koderen. Grensesnittet får `done` med en gang (jobs.rs); her måles
+        // hvor lenge maskinen fortsatt regner. Windows-CI (2 vCPU): 13,9 s.
+        assert!(latency < 30.0, "avbryt tok {latency:.1} s");
     }
 }

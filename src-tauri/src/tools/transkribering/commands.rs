@@ -10,7 +10,7 @@
 //! | `delete_model` | `model_id` | – |
 //! | `set_model_dir` | `path` (eller `null` for å fjerne) | – |
 //! | `transcribe` | [`TranscribeRequest`] | jobb-ID; hendelser `progress`/`segment`/`done` |
-//! | `cancel` | `job_id` | – (gjelder både transkribering og nedlasting) |
+//! | `cancel` | `job_id` | – (transkribering: `done` sendes med en gang; nedlasting) |
 //! | `suggest_export_path` | lydfil, målform, stil, format | sti |
 //! | `export` | [`ExportRequest`] | stien som ble skrevet |
 //!
@@ -23,11 +23,10 @@
 //! Feil er [`CoreError`] (`{"code": ...}`). Grensesnittet lager teksten.
 //! Ingenting her logger; transkribert tekst går bare til grensesnittet.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
@@ -40,6 +39,7 @@ use super::error::{CoreError, CoreResult};
 use super::export::{
     default_export_path, render, write_file, ExportFormat, ExportMeta, HeaderLabels,
 };
+use super::jobs::{CancelEffect, JobTable};
 use super::models::{self, Catalog, Choice, ModelDirs, ModelStatus, VerifyCache};
 use super::system::{self, SystemInfo};
 use super::types::{Decoding, Kvalitet, Malform, Segment, Stil};
@@ -55,7 +55,7 @@ pub const EV_DONE: &str = "transkribering:done";
 pub const EV_DOWNLOAD_PROGRESS: &str = "transkribering:download-progress";
 pub const EV_DOWNLOAD_DONE: &str = "transkribering:download-done";
 
-pub type JobId = u64;
+pub use super::jobs::JobId;
 
 /// Tilstanden til verktøyet, lagt i Tauri med `manage`.
 pub struct Transkribering {
@@ -64,10 +64,11 @@ pub struct Transkribering {
     app_model_dir: PathBuf,
     verify_cache_path: PathBuf,
     verify_cache: Mutex<VerifyCache>,
-    jobs: Mutex<HashMap<JobId, Arc<AtomicBool>>>,
+    jobs: JobTable,
+    /// Modeller som lastes ned nå (samme modell to ganger ville skrevet til samme `.part`).
     downloads: Mutex<HashSet<String>>,
-    transcribing: AtomicBool,
-    next_id: AtomicU64,
+    /// Holdes mens whisper kjører, så en ny jobb venter til en avbrutt er helt ute.
+    run_lock: Mutex<()>,
 }
 
 impl Transkribering {
@@ -81,26 +82,10 @@ impl Transkribering {
             app_model_dir: app_data_dir.join("modeller"),
             catalog,
             policy,
-            jobs: Mutex::new(HashMap::new()),
+            jobs: JobTable::default(),
             downloads: Mutex::new(HashSet::new()),
-            transcribing: AtomicBool::new(false),
-            next_id: AtomicU64::new(1),
+            run_lock: Mutex::new(()),
         })
-    }
-
-    fn new_job(&self) -> (JobId, Arc<AtomicBool>) {
-        let id = self.next_id.fetch_add(1, Ordering::Relaxed);
-        let flag = Arc::new(AtomicBool::new(false));
-        if let Ok(mut j) = self.jobs.lock() {
-            j.insert(id, flag.clone());
-        }
-        (id, flag)
-    }
-
-    fn end_job(&self, id: JobId) {
-        if let Ok(mut j) = self.jobs.lock() {
-            j.remove(&id);
-        }
     }
 
     fn dirs<R: Runtime>(&self, app: &AppHandle<R>) -> ModelDirs {
@@ -116,14 +101,6 @@ fn custom_model_dir<R: Runtime>(app: &AppHandle<R>) -> Option<PathBuf> {
     let v = store.get(MODEL_DIR_KEY)?;
     let s = v.as_str()?.trim().to_string();
     (!s.is_empty()).then(|| PathBuf::from(s))
-}
-
-/// Slipper «opptatt»-flagget også ved panikk.
-struct BusyGuard<'a>(&'a AtomicBool);
-impl Drop for BusyGuard<'_> {
-    fn drop(&mut self) {
-        self.0.store(false, Ordering::SeqCst);
-    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
@@ -221,7 +198,9 @@ pub async fn download_model<R: Runtime>(
         }
     }
     let dirs = state.dirs(&app);
-    let (job_id, cancel) = state.new_job();
+    let job = state.jobs.start_download(&model_id);
+    let job_id = job.id;
+    let job_on_error = job.clone();
     let app2 = app.clone();
     let spawned = std::thread::Builder::new()
         .name("modellnedlasting".into())
@@ -233,7 +212,7 @@ pub async fn download_model<R: Runtime>(
                     &entry,
                     &dirs,
                     &state.policy,
-                    &cancel,
+                    &job.cancel,
                     &mut |downloaded, total| {
                         if last.is_none_or(|t| t.elapsed() >= Duration::from_millis(200))
                             || downloaded == total
@@ -257,7 +236,7 @@ pub async fn download_model<R: Runtime>(
             if let Ok(mut d) = state.downloads.lock() {
                 d.remove(&entry.id);
             }
-            state.end_job(job_id);
+            state.jobs.finish(&job);
             let _ = app2.emit(
                 EV_DOWNLOAD_DONE,
                 DownloadDoneEvent {
@@ -272,7 +251,7 @@ pub async fn download_model<R: Runtime>(
         if let Ok(mut d) = state.downloads.lock() {
             d.remove(&model_id);
         }
-        state.end_job(job_id);
+        state.jobs.finish(&job_on_error);
         return Err(CoreError::Internal);
     }
     Ok(job_id)
@@ -386,53 +365,55 @@ pub async fn transcribe<R: Runtime>(
     if !audio.is_file() {
         return Err(CoreError::FileNotFound);
     }
-    if state
-        .transcribing
-        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-        .is_err()
-    {
-        return Err(CoreError::Busy);
-    }
-    let (job_id, cancel) = state.new_job();
+    let handle = state.jobs.start_transcription(&entry.id)?;
+    let job_id = handle.id;
     let mut job = JobRequest::new(audio, model_path.clone(), request.malform, options);
     job.decoding = request.decoding;
     let app2 = app.clone();
+    let handle2 = handle.clone();
     let spawned = std::thread::Builder::new()
         .name("transkribering".into())
         .spawn(move || {
             let state = app2.state::<Transkribering>();
-            let _busy = BusyGuard(&state.transcribing);
+            let cancel = &handle.cancel;
+            // Venter til en avbrutt jobb er helt ferdig (whisper sjekker bare
+            // avbryt mellom vinduene), så to jobber aldri kjører samtidig.
+            let _run = state.run_lock.lock().unwrap_or_else(|e| e.into_inner());
             let mut duration_ms = 0;
             let result = catch_unwind(AssertUnwindSafe(|| -> CoreResult<Vec<Segment>> {
                 // Modeller i egen mappe sjekkes mot SHA-256 første gang.
                 {
                     let mut cache = state.verify_cache.lock().map_err(|_| CoreError::Internal)?;
-                    if models::ensure_verified(&model_path, location, &entry, &mut cache, &cancel)?
-                    {
+                    if models::ensure_verified(&model_path, location, &entry, &mut cache, cancel)? {
                         let _ = cache.save(&state.verify_cache_path);
                     }
                 }
-                let r = run_job(&job, &cancel, &mut |ev| match ev {
-                    EngineEvent::Progress { percent, eta_ms } => {
-                        let _ = app2.emit(
-                            EV_PROGRESS,
-                            ProgressEvent {
-                                job_id,
-                                percent,
-                                eta_ms,
-                            },
-                        );
+                let r = run_job(&job, cancel, &mut |ev| {
+                    if handle.is_abandoned() {
+                        return;
                     }
-                    EngineEvent::Segment(s) => {
-                        let _ = app2.emit(
-                            EV_SEGMENT,
-                            SegmentEvent {
-                                job_id,
-                                start_ms: s.start_ms,
-                                end_ms: s.end_ms,
-                                text: &s.text,
-                            },
-                        );
+                    match ev {
+                        EngineEvent::Progress { percent, eta_ms } => {
+                            let _ = app2.emit(
+                                EV_PROGRESS,
+                                ProgressEvent {
+                                    job_id,
+                                    percent,
+                                    eta_ms,
+                                },
+                            );
+                        }
+                        EngineEvent::Segment(s) => {
+                            let _ = app2.emit(
+                                EV_SEGMENT,
+                                SegmentEvent {
+                                    job_id,
+                                    start_ms: s.start_ms,
+                                    end_ms: s.end_ms,
+                                    text: &s.text,
+                                },
+                            );
+                        }
                     }
                 })?;
                 duration_ms = r.duration_ms;
@@ -440,22 +421,22 @@ pub async fn transcribe<R: Runtime>(
             }))
             .unwrap_or(Err(CoreError::Internal));
             let (outcome, error) = outcome_of(&result);
-            state.end_job(job_id);
-            let _ = app2.emit(
-                EV_DONE,
-                DoneEvent {
-                    job_id,
-                    outcome,
-                    error,
-                    model_id: entry.id.clone(),
-                    duration_ms,
-                    segments: result.unwrap_or_default(),
-                },
-            );
+            if state.jobs.finish(&handle) {
+                let _ = app2.emit(
+                    EV_DONE,
+                    DoneEvent {
+                        job_id,
+                        outcome,
+                        error,
+                        model_id: entry.id.clone(),
+                        duration_ms,
+                        segments: result.unwrap_or_default(),
+                    },
+                );
+            }
         });
     if spawned.is_err() {
-        state.transcribing.store(false, Ordering::SeqCst);
-        state.end_job(job_id);
+        state.jobs.finish(&handle2);
         return Err(CoreError::Internal);
     }
     Ok(job_id)
@@ -463,12 +444,27 @@ pub async fn transcribe<R: Runtime>(
 
 // ---------- cancel ----------
 
+/// Avbryter en transkribering eller nedlasting. En transkribering slippes med
+/// en gang: `done` (avbrutt) sendes nå, og en ny jobb kan startes, selv om
+/// whisper bruker noen sekunder på å bli ferdig med vinduet sitt (jobs.rs).
 #[tauri::command]
-pub async fn cancel(state: State<'_, Transkribering>, job_id: JobId) -> Result<(), CoreError> {
-    if let Ok(j) = state.jobs.lock() {
-        if let Some(f) = j.get(&job_id) {
-            f.store(true, Ordering::Relaxed);
-        }
+pub async fn cancel<R: Runtime>(
+    app: AppHandle<R>,
+    state: State<'_, Transkribering>,
+    job_id: JobId,
+) -> Result<(), CoreError> {
+    if let CancelEffect::Abandoned { model_id } = state.jobs.cancel(job_id) {
+        let _ = app.emit(
+            EV_DONE,
+            DoneEvent {
+                job_id,
+                outcome: Outcome::Cancelled,
+                error: None,
+                model_id,
+                duration_ms: 0,
+                segments: Vec::new(),
+            },
+        );
     }
     Ok(())
 }
