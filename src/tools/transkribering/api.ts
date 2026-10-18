@@ -1,6 +1,7 @@
 // Typer for Rust-kommandoene og -hendelsene i Transkribering (steg 1).
-// Kilde: src-tauri/src/tools/transkribering/commands.rs. Bare typer her;
-// selve kallene og grensesnittet lages i steg 2.
+// Kilde: src-tauri/src/tools/transkribering/commands.rs. Bare typer og
+// konstanter her; selve kallene ligger i backend.ts.
+// `api.test.ts` sammenligner med Rust-filene, så de ikke kan komme ut av takt.
 //
 // Kommandoene kalles som `invoke("plugin:transkribering|<navn>", args)`.
 // Merk: argumentnavn på toppnivå skrives i camelCase fra JS (Tauri gjør dem
@@ -49,6 +50,39 @@ export type CoreError =
   | { code: "permission_denied" }
   | { code: "io"; kind: string }
   | { code: "internal" };
+
+/** Alle feilkoder, i samme rekkefølge som i `error.rs`. Språkfilen må ha en tekst for hver. */
+export const ERROR_CODES = [
+  "file_not_found",
+  "unsupported_format",
+  "no_audio_track",
+  "empty_audio",
+  "decode_failed",
+  "unknown_model",
+  "model_missing",
+  "model_load_failed",
+  "model_in_shared_folder",
+  "invalid_catalog",
+  "host_not_allowed",
+  "http_status",
+  "network",
+  "checksum_mismatch",
+  "size_mismatch",
+  "disk_full",
+  "cpu_unsupported",
+  "busy",
+  "already_downloading",
+  "cancelled",
+  "whisper",
+  "file_exists",
+  "not_a_directory",
+  "invalid_path",
+  "permission_denied",
+  "io",
+  "internal",
+] as const satisfies readonly CoreError["code"][];
+
+export type ErrorCode = CoreError["code"];
 
 // ---- check_system() -> SystemInfo
 export interface SystemInfo {
@@ -186,3 +220,16 @@ export interface DownloadDoneEvent {
 /** Innstillingsfil og nøkkel (store-plugin) som Rust leser egen modellmappe fra. */
 export const SETTINGS_FILE = "settings.json";
 export const MODEL_DIR_KEY = "transkribering.modelDir";
+
+/** Kommandonavn (Rust: `command_names.rs`). Kalles som `plugin:transkribering|<navn>`. */
+export const COMMANDS = [
+  "check_system",
+  "list_models",
+  "download_model",
+  "delete_model",
+  "set_model_dir",
+  "transcribe",
+  "cancel",
+  "suggest_export_path",
+  "export",
+] as const;

@@ -1,0 +1,61 @@
+/* Farger for lys og mørk modus. Mørk følger systemet (prefers-color-scheme).
+   Kontrasten (WCAG AA) kontrolleres i src/styles/theme.test.ts: tekst 4,5:1,
+   kantlinjer og fokusring 3:1. Endrer du en farge her, kjør `npm test`. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-2: #efece4;
+  --text: #1a1a1a;
+  --text-muted: #55524b;
+  --border: #d6d1c4;
+  --border-strong: #8c877b;
+
+  --accent: #1a1a1a;
+  --on-accent: #ffffff;
+  --accent-soft: #f3ecda;
+  --gold: #75591f;
+  --focus: #0b57d0;
+
+  --danger: #b3261e;
+  --danger-bg: #fdecea;
+  --danger-solid: #b3261e;
+  --on-danger-solid: #ffffff;
+  --success: #1e6b35;
+  --success-bg: #e8f4ec;
+  --warning: #7a4b00;
+  --warning-bg: #fff4dc;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 8%), 0 4px 16px rgb(0 0 0 / 6%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --surface: #1c1c1c;
+    --surface-2: #2a2a2a;
+    --text: #f1efe9;
+    --text-muted: #b8b3a7;
+    --border: #3a3a3a;
+    --border-strong: #8f8a7f;
+
+    --accent: #e6c98f;
+    --on-accent: #1a1a1a;
+    --accent-soft: #2b2619;
+    --gold: #d9b673;
+    --focus: #8ab4ff;
+
+    --danger: #ff9a91;
+    --danger-bg: #3b1a18;
+    --danger-solid: #f2958d;
+    --on-danger-solid: #1a1a1a;
+    --success: #8fd6a3;
+    --success-bg: #17301f;
+    --warning: #f0c36d;
+    --warning-bg: #3a2c0c;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 16px rgb(0 0 0 / 30%);
+  }
+}

@@ -1,4 +1,6 @@
-# Bygger og tester appen (src-tauri) på macOS arm64 og Windows x64 (regel 9).
+# Bygger og tester appen på macOS arm64 og Windows x64 (regel 9).
+# - Frontend (src/): `npm ci`, `npm test` (vitest), typesjekk og `npm run build`.
+#   Byggingen må komme før `cargo test`, siden Tauri bygger inn `dist/`.
 # - `cargo test`: alle enhetstester (dekoding, eksport, filnavn, topptekst,
 #   sjekksum, gjenopptak, tidskoder på tvers av biter, osv.).
 # - Windows: feiler hvis ggml er bygget uten /O2 (docs/spike.md).
@@ -12,6 +14,12 @@ on:
   pull_request:
     paths:
       - "src-tauri/**"
+      - "src/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "vite.config.ts"
       - "models.json"
       - ".cargo/**"
       - ".github/workflows/app-build.yml"
@@ -19,6 +27,12 @@ on:
     branches: [main]
     paths:
       - "src-tauri/**"
+      - "src/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "vite.config.ts"
       - "models.json"
       - ".cargo/**"
       - ".github/workflows/app-build.yml"
@@ -45,6 +59,28 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer frontend-pakker (npm ci)
+        working-directory: .
+        run: npm ci
+
+      - name: Frontend-tester (npm test)
+        working-directory: .
+        run: npm test
+
+      - name: Typesjekk
+        working-directory: .
+        run: npm run typecheck
+
+      - name: Bygg frontend (dist/)
+        working-directory: .
+        run: npm run build
+
       - uses: dtolnay/rust-toolchain@stable
 
       - name: libclang (Windows)

@@ -1,5 +1,6 @@
 //! LLAs verktøykasse: skallet. Selve verktøyene ligger i `tools/`.
 
+pub mod shell;
 pub mod tools;
 
 /// Panikkmeldinger kan inneholde data fra der panikken skjedde. Vi skriver
@@ -17,7 +18,11 @@ fn install_panic_hook() {
 
 pub fn run() {
     install_panic_hook();
-    let builder = tauri::Builder::default().plugin(tauri_plugin_store::Builder::new().build());
+    let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![shell::allow_playback]);
     let builder = tools::register(builder);
     if builder.run(tauri::generate_context!()).is_err() {
         eprintln!("the app failed to start");
