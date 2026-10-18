@@ -17,12 +17,16 @@ use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use sha2::{Digest, Sha256};
 
 use super::error::{CoreError, CoreResult};
-use super::models::{hex, host_matches, url_host, Catalog, ModelDirs, ModelEntry, ALLOWED_HOSTS};
+use super::models::{
+    ensure_verified, hex, host_matches, url_host, Catalog, Location, ModelDirs, ModelEntry,
+    VerifyCache, ALLOWED_HOSTS,
+};
 
 /// Størrelse på hver Range-forespørsel.
 pub const PIECE_BYTES: u64 = 16 * 1024 * 1024;
@@ -280,10 +284,16 @@ impl PartFile {
 
 /// Laster ned (eller gjenopptar) en modell til appens modellmappe og sjekker
 /// SHA-256. Returnerer stien til den ferdige filen.
+///
+/// Ligger filen der fra før med riktig størrelse, sjekkes den mot SHA-256 én
+/// gang (resultatet huskes i `cache`). Feil sum: filen slettes og lastes ned
+/// på nytt. En ferdig nedlasting merkes som sjekket i `cache`; kalleren lagrer
+/// cachen.
 pub fn download_model(
     entry: &ModelEntry,
     dirs: &ModelDirs,
     policy: &HostPolicy,
+    cache: &Mutex<VerifyCache>,
     cancel: &AtomicBool,
     progress: ProgressFn,
 ) -> CoreResult<PathBuf> {
@@ -294,8 +304,15 @@ pub fn download_model(
         .map(|m| m.len() == entry.bytes)
         .unwrap_or(false)
     {
-        progress(entry.bytes, entry.bytes);
-        return Ok(dest);
+        match ensure_verified(&dest, Location::App, entry, cache, cancel) {
+            Ok(_) => {
+                progress(entry.bytes, entry.bytes);
+                return Ok(dest);
+            }
+            // Filen er slettet av ensure_verified; last ned på nytt.
+            Err(CoreError::ChecksumMismatch) => {}
+            Err(e) => return Err(e),
+        }
     }
     let part_path = dirs.part_path(entry);
     let total = entry.bytes;
@@ -388,6 +405,10 @@ pub fn download_model(
         return Err(CoreError::ChecksumMismatch);
     }
     std::fs::rename(&part_path, &dest)?;
+    cache
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .mark(&dest, entry);
     Ok(dest)
 }
 
@@ -596,6 +617,60 @@ pub(crate) mod tests {
         AtomicBool::new(false)
     }
 
+    fn cache() -> Mutex<VerifyCache> {
+        Mutex::new(VerifyCache::default())
+    }
+
+    #[test]
+    fn existing_file_with_right_size_but_wrong_content_is_not_used() {
+        let data = Arc::new(test_data(120_000));
+        let srv = TestServer::start(Behaviour {
+            data: data.clone(),
+            cut_requests: 0,
+            cut_after: 0,
+            ignore_range: false,
+            then_status: None,
+        });
+        let e = entry_for(srv.url("/m.bin"), &data);
+        let d = dirs("feil-innhold");
+        std::fs::create_dir_all(&d.app_dir).unwrap();
+        // Riktig størrelse, feil innhold.
+        std::fs::write(d.app_path(&e), vec![0u8; data.len()]).unwrap();
+        let c = cache();
+        let p = download_model(&e, &d, &policy(), &c, &no_cancel(), &mut |_, _| {}).unwrap();
+        assert_eq!(
+            std::fs::read(&p).unwrap(),
+            *data,
+            "filen skal være lastet ned på nytt"
+        );
+        assert_eq!(srv.ranges().len(), 1);
+        // Den nye filen er merket som sjekket: neste kall verken hasher på nytt
+        // (cachen sier ja) eller går på nett.
+        assert!(c.lock().unwrap().is_verified(&p, &e));
+        download_model(&e, &d, &policy(), &c, &no_cancel(), &mut |_, _| {}).unwrap();
+        assert_eq!(srv.ranges().len(), 1);
+    }
+
+    #[test]
+    fn existing_correct_file_is_checked_once_without_network() {
+        let data = Arc::new(test_data(50_000));
+        let srv = TestServer::start(Behaviour {
+            data: data.clone(),
+            cut_requests: 0,
+            cut_after: 0,
+            ignore_range: false,
+            then_status: None,
+        });
+        let e = entry_for(srv.url("/m.bin"), &data);
+        let d = dirs("riktig-fra-for");
+        std::fs::create_dir_all(&d.app_dir).unwrap();
+        std::fs::write(d.app_path(&e), &*data).unwrap();
+        let c = cache();
+        download_model(&e, &d, &policy(), &c, &no_cancel(), &mut |_, _| {}).unwrap();
+        assert!(srv.ranges().is_empty());
+        assert!(c.lock().unwrap().is_verified(&d.app_path(&e), &e));
+    }
+
     #[test]
     fn downloads_via_redirect_in_pieces_and_verifies() {
         let data = Arc::new(test_data((PIECE_BYTES as usize) * 2 + 12345));
@@ -609,7 +684,10 @@ pub(crate) mod tests {
         let e = entry_for(srv.url("/start"), &data);
         let d = dirs("ok");
         let mut last = (0, 0);
-        let p = download_model(&e, &d, &policy(), &no_cancel(), &mut |a, b| last = (a, b)).unwrap();
+        let p = download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |a, b| {
+            last = (a, b)
+        })
+        .unwrap();
         assert_eq!(std::fs::read(&p).unwrap(), *data);
         assert_eq!(last, (data.len() as u64, data.len() as u64));
         assert!(!d.part_path(&e).exists());
@@ -625,7 +703,7 @@ pub(crate) mod tests {
             Some(format!("bytes={}-{}", 2 * PIECE_BYTES, data.len() - 1).as_str())
         );
         // Allerede nedlastet: ingen nye forespørsler.
-        download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}).unwrap();
+        download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}).unwrap();
         assert_eq!(srv.ranges().len(), 3);
     }
 
@@ -641,7 +719,7 @@ pub(crate) mod tests {
         });
         let e = entry_for(srv.url("/abs"), &data);
         let d = dirs("brudd");
-        let p = download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}).unwrap();
+        let p = download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}).unwrap();
         assert_eq!(std::fs::read(&p).unwrap(), *data);
         let r = srv.ranges();
         assert_eq!(r[0].as_deref(), Some("bytes=0-299999"));
@@ -662,7 +740,7 @@ pub(crate) mod tests {
         });
         let e = entry_for(srv.url("/m.bin"), &data);
         let d = dirs("gjenoppta");
-        let first = download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {});
+        let first = download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {});
         assert_eq!(first, Err(CoreError::HttpStatus { status: 404 }));
         let have = std::fs::metadata(d.part_path(&e)).unwrap().len();
         assert_eq!(have, 50_000);
@@ -675,7 +753,7 @@ pub(crate) mod tests {
             then_status: None,
         });
         let e2 = entry_for(srv2.url("/m.bin"), &data);
-        let p = download_model(&e2, &d, &policy(), &no_cancel(), &mut |_, _| {}).unwrap();
+        let p = download_model(&e2, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}).unwrap();
         assert_eq!(std::fs::read(&p).unwrap(), *data);
         assert_eq!(srv2.ranges(), vec![Some(format!("bytes={have}-199999"))]);
     }
@@ -694,7 +772,7 @@ pub(crate) mod tests {
         e.sha256 = sha(b"noe helt annet");
         let d = dirs("feilsum");
         assert_eq!(
-            download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}),
+            download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}),
             Err(CoreError::ChecksumMismatch)
         );
         assert!(!d.part_path(&e).exists());
@@ -716,12 +794,12 @@ pub(crate) mod tests {
         std::fs::create_dir_all(&d.app_dir).unwrap();
         std::fs::write(d.part_path(&e), vec![0u8; 40_000]).unwrap();
         assert_eq!(
-            download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}),
+            download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}),
             Err(CoreError::ChecksumMismatch)
         );
         assert!(!d.part_path(&e).exists());
         // Neste forsøk starter fra null og lykkes.
-        download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}).unwrap();
+        download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}).unwrap();
     }
 
     #[test]
@@ -738,7 +816,7 @@ pub(crate) mod tests {
         let d = dirs("200");
         std::fs::create_dir_all(&d.app_dir).unwrap();
         std::fs::write(d.part_path(&e), &data[..30_000]).unwrap();
-        let p = download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}).unwrap();
+        let p = download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}).unwrap();
         assert_eq!(std::fs::read(&p).unwrap(), *data);
     }
 
@@ -755,7 +833,7 @@ pub(crate) mod tests {
         let e = entry_for(srv.url("/evil"), &data);
         let d = dirs("vert");
         assert_eq!(
-            download_model(&e, &d, &policy(), &no_cancel(), &mut |_, _| {}),
+            download_model(&e, &d, &policy(), &cache(), &no_cancel(), &mut |_, _| {}),
             Err(CoreError::HostNotAllowed {
                 host: "evil.example.com".into()
             })
@@ -796,7 +874,7 @@ pub(crate) mod tests {
         let cancel = AtomicBool::new(false);
         // Avbryt ved første framdriftsmelding etter start.
         let mut calls = 0;
-        let r = download_model(&e, &d, &policy(), &cancel, &mut |_, _| {
+        let r = download_model(&e, &d, &policy(), &cache(), &cancel, &mut |_, _| {
             calls += 1;
             if calls == 1 {
                 cancel.store(true, Ordering::Relaxed);
@@ -834,7 +912,8 @@ pub(crate) mod tests {
         for id in CI_MODELS {
             let e = c.get(id).unwrap();
             let t = std::time::Instant::now();
-            let p = download_model(e, &dirs, &policy, &no_cancel(), &mut |_, _| {}).unwrap();
+            let p =
+                download_model(e, &dirs, &policy, &cache(), &no_cancel(), &mut |_, _| {}).unwrap();
             assert_eq!(std::fs::metadata(&p).unwrap().len(), e.bytes);
             println!("{id}: klar etter {:.1} s", t.elapsed().as_secs_f64());
         }
@@ -851,7 +930,7 @@ pub(crate) mod tests {
         let d = dirs("hf");
         for target in [1u64 << 20, 2 << 20] {
             let cancel = AtomicBool::new(false);
-            let r = download_model(e, &d, &policy, &cancel, &mut |got, _| {
+            let r = download_model(e, &d, &policy, &cache(), &cancel, &mut |got, _| {
                 if got >= target {
                     cancel.store(true, Ordering::Relaxed);
                 }

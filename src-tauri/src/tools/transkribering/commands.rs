@@ -88,6 +88,11 @@ impl Transkribering {
         })
     }
 
+    fn save_verify_cache(&self) {
+        let c = self.verify_cache.lock().unwrap_or_else(|e| e.into_inner());
+        let _ = c.save(&self.verify_cache_path);
+    }
+
     fn dirs<R: Runtime>(&self, app: &AppHandle<R>) -> ModelDirs {
         ModelDirs {
             app_dir: self.app_model_dir.clone(),
@@ -212,6 +217,7 @@ pub async fn download_model<R: Runtime>(
                     &entry,
                     &dirs,
                     &state.policy,
+                    &state.verify_cache,
                     &job.cancel,
                     &mut |downloaded, total| {
                         if last.is_none_or(|t| t.elapsed() >= Duration::from_millis(200))
@@ -233,6 +239,7 @@ pub async fn download_model<R: Runtime>(
             }))
             .unwrap_or(Err(CoreError::Internal));
             let (outcome, error) = outcome_of(&result);
+            state.save_verify_cache();
             if let Ok(mut d) = state.downloads.lock() {
                 d.remove(&entry.id);
             }
@@ -277,7 +284,15 @@ pub async fn delete_model<R: Runtime>(
     {
         return Err(CoreError::AlreadyDownloading);
     }
-    models::delete(entry, &state.dirs(&app))
+    let dirs = state.dirs(&app);
+    models::delete(entry, &dirs)?;
+    state
+        .verify_cache
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .forget(&dirs.app_path(entry));
+    state.save_verify_cache();
+    Ok(())
 }
 
 // ---------- set_model_dir ----------
@@ -381,12 +396,15 @@ pub async fn transcribe<R: Runtime>(
             let _run = state.run_lock.lock().unwrap_or_else(|e| e.into_inner());
             let mut duration_ms = 0;
             let result = catch_unwind(AssertUnwindSafe(|| -> CoreResult<Vec<Segment>> {
-                // Modeller i egen mappe sjekkes mot SHA-256 første gang.
-                {
-                    let mut cache = state.verify_cache.lock().map_err(|_| CoreError::Internal)?;
-                    if models::ensure_verified(&model_path, location, &entry, &mut cache, cancel)? {
-                        let _ = cache.save(&state.verify_cache_path);
-                    }
+                // Modellen sjekkes mot SHA-256 første gang den brukes (begge mapper).
+                if models::ensure_verified(
+                    &model_path,
+                    location,
+                    &entry,
+                    &state.verify_cache,
+                    cancel,
+                )? {
+                    state.save_verify_cache();
                 }
                 let r = run_job(&job, cancel, &mut |ev| {
                     if handle.is_abandoned() {

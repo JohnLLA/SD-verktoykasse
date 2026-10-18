@@ -447,6 +447,10 @@ impl VerifyCache {
             .unwrap_or(false)
     }
 
+    pub fn forget(&mut self, path: &Path) {
+        self.entries.remove(&path.to_string_lossy().to_string());
+    }
+
     pub fn mark(&mut self, path: &Path, m: &ModelEntry) {
         if let Some((bytes, mtime)) = fingerprint(path) {
             self.entries.insert(
@@ -461,24 +465,31 @@ impl VerifyCache {
     }
 }
 
-/// Sjekker en modell i egen mappe mot SHA-256 hvis det ikke er gjort før.
-/// Modeller i appens mappe er sjekket ved nedlasting. En fil med feil sum i
-/// egen mappe slettes ikke (den kan være delt), men brukes heller ikke.
+/// Sjekker en modell mot SHA-256 hvis det ikke er gjort før (samme cache for
+/// appens mappe og egen mappe; nedlastinger merkes som sjekket når de er
+/// ferdige). Feil sum: filen brukes ikke. I appens mappe slettes den (så den
+/// kan lastes ned på nytt); i egen mappe slettes den ikke, den kan være delt.
+/// Låsen holdes bare kort, ikke mens filen hashes. `Ok(true)`: cachen er endret.
 pub fn ensure_verified(
     path: &Path,
     loc: Location,
     m: &ModelEntry,
-    cache: &mut VerifyCache,
+    cache: &std::sync::Mutex<VerifyCache>,
     cancel: &AtomicBool,
 ) -> CoreResult<bool> {
-    if loc == Location::App || cache.is_verified(path, m) {
+    let lock = || cache.lock().unwrap_or_else(|e| e.into_inner());
+    if lock().is_verified(path, m) {
         return Ok(false);
     }
     let sum = hash_file(path, cancel)?;
     if sum != m.sha256 {
+        lock().forget(path);
+        if loc == Location::App {
+            let _ = std::fs::remove_file(path);
+        }
         return Err(CoreError::ChecksumMismatch);
     }
-    cache.mark(path, m);
+    lock().mark(path, m);
     Ok(true)
 }
 
@@ -707,29 +718,57 @@ mod tests {
         let real = hash_file(&p, &AtomicBool::new(false)).unwrap();
         assert_eq!(real.len(), 64);
         assert_ne!(real, other);
-        let mut cache = VerifyCache::default();
+        let cache = std::sync::Mutex::new(VerifyCache::default());
         let cancel = AtomicBool::new(false);
         let wrong = fake_entry(3, other);
         assert_eq!(
-            ensure_verified(&p, Location::Custom, &wrong, &mut cache, &cancel),
+            ensure_verified(&p, Location::Custom, &wrong, &cache, &cancel),
             Err(CoreError::ChecksumMismatch)
         );
         assert!(p.exists(), "filer i egen mappe slettes ikke");
         let right = fake_entry(3, &real);
         assert_eq!(
-            ensure_verified(&p, Location::Custom, &right, &mut cache, &cancel),
+            ensure_verified(&p, Location::Custom, &right, &cache, &cancel),
             Ok(true)
         );
         assert_eq!(
-            ensure_verified(&p, Location::Custom, &right, &mut cache, &cancel),
+            ensure_verified(&p, Location::Custom, &right, &cache, &cancel),
             Ok(false)
         );
         // Lagres og leses.
         let cp = d.join("verified.json");
-        cache.save(&cp).unwrap();
+        cache.lock().unwrap().save(&cp).unwrap();
         let back = VerifyCache::load(&cp);
         assert!(back.is_verified(&p, &right));
         assert!(!back.is_verified(&p, &wrong));
+    }
+
+    #[test]
+    fn app_dir_file_with_right_size_and_wrong_content_is_rejected_and_removed() {
+        let d = tmpdir("app-feil");
+        let p = d.join("m.bin");
+        std::fs::write(&p, b"hei").unwrap();
+        let real = hash_file(&p, &AtomicBool::new(false)).unwrap();
+        let cache = std::sync::Mutex::new(VerifyCache::default());
+        let cancel = AtomicBool::new(false);
+        // Riktig størrelse (3 byte), men summen er for et annet innhold.
+        let other = fake_entry(3, &"ab".repeat(32));
+        assert_eq!(
+            ensure_verified(&p, Location::App, &other, &cache, &cancel),
+            Err(CoreError::ChecksumMismatch)
+        );
+        assert!(!p.exists(), "feil fil i appens mappe skal fjernes");
+        // Riktig fil: sjekkes én gang, så huskes det.
+        std::fs::write(&p, b"hei").unwrap();
+        let right = fake_entry(3, &real);
+        assert_eq!(
+            ensure_verified(&p, Location::App, &right, &cache, &cancel),
+            Ok(true)
+        );
+        assert_eq!(
+            ensure_verified(&p, Location::App, &right, &cache, &cancel),
+            Ok(false)
+        );
     }
 
     #[test]
