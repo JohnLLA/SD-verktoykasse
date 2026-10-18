@@ -59,16 +59,16 @@ Ikke støttet i v1: webm/Opus og andre format symphonia ikke leser. Appen sier t
 
 - Framdrift i prosent og anslått gjenværende tid.
 - Teksten vises fortløpende etter hvert som segmentene blir ferdige.
-- Avbryt-knapp som stopper innen få sekunder.
-- Maskinen skal ikke gå i dvale mens en jobb kjører (Mac: `NSProcessInfo` beginActivity; Windows: `SetThreadExecutionState`).
+- Avbryt-knapp som stopper innen få sekunder. Grensesnittet får svar med en gang; whisper regner ferdig vinduet sitt i bakgrunnen, og en ny jobb venter til det er gjort.
+- Maskinen skal ikke gå i dvale mens en jobb kjører (Mac: IOKit-påstand `PreventUserIdleSystemSleep`, samme mekanisme som `NSProcessInfo` beginActivity; Windows: `SetThreadExecutionState`).
 
 ### Resultatet
 
 - Tekst delt i segmenter med tidskode. Klikk på et segment spiller av lyden fra det punktet.
 - Teksten kan rettes direkte i appen.
 - Lagre som: **.txt** (med eller uten tidskoder), **.srt**, **.vtt**, **.docx**. Kopier alt til utklippstavlen.
-- Standard lagringssted: samme mappe som lydfilen, filnavn `<lydfil>.<målform>.<stil>.<ending>`, f.eks. `intervju.nynorsk.tolket.docx`.
-- Øverst i eksportert tekst: filnavn, dato, målform, stil, modell og en linje om at teksten er maskintranskribert og må kontrolleres mot lyden.
+- Standard lagringssted: samme mappe som lydfilen, filnavn `<lydfil>.<målform>.<stil>.<ending>`, f.eks. `intervju.nynorsk.tolket.docx`. Målform skrives `bokmal` (uten å) eller `nynorsk`.
+- Øverst i eksportert tekst: filnavn, dato, målform, stil, modell og en linje om at teksten er maskintranskribert og må kontrolleres mot lyden. I .vtt står dette som `NOTE`. .srt har ingen topptekst, siden den ville blitt vist som undertekst.
 
 ### Modeller
 
@@ -107,7 +107,7 @@ Logger skrives lokalt og inneholder aldri transkribert tekst eller filnavn utove
 | Lyddekoding | `symphonia` + resampling til 16 kHz mono med `rubato`. Ingen ffmpeg i v1 |
 | Frontend | Vanilla TypeScript + Vite, ingen tungt rammeverk |
 | docx | `docx-rs` |
-| Nedlasting og sjekksum | HTTP-klient (`reqwest` eller `ureq`) og `sha2`. Godkjent etter spiken, sammen med `docx-rs` og ev. symphonia 0.6 i stedet for 0.5 |
+| Nedlasting og sjekksum | `ureq` (features `rustls`, `platform-verifier`, `win-system-proxy`) og `sha2`. Godkjent etter spiken, sammen med `docx-rs`, `serde`/`serde_json` og featuren `raw-api` i `whisper-rs`. symphonia 0.5 |
 | Lagring av innstillinger | Tauri `store`-plugin, lokalt |
 | Oppdatering | Tauri `updater`-plugin mot GitHub Releases, signerte oppdateringer |
 

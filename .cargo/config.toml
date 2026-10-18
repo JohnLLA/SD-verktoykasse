@@ -1,0 +1,16 @@
+# Byggeflagg for whisper.cpp/ggml (via whisper-rs-sys, som sender alle GGML_*- og
+# CMAKE_*-variabler videre til cmake). Gjelder alle bygg, også lokale, se docs/spike.md.
+[env]
+# Ikke bygg for CPU-en på byggemaskinen (CI kan ha AVX-512, M5 har SME): krasj hos brukeren.
+GGML_NATIVE = "OFF"
+# x86-64 (Windows): mål er AVX2/FMA/F16C/BMI2, aldri AVX-512. Ignoreres på arm64.
+GGML_AVX = "ON"
+GGML_AVX2 = "ON"
+GGML_FMA = "ON"
+GGML_F16C = "ON"
+GGML_BMI2 = "ON"
+GGML_AVX512 = "OFF"
+# MSVC: tving /O2 for ggml (cmake-rs fjerner det). Filen gjør ingenting med andre kompilatorer.
+CMAKE_PROJECT_INCLUDE = { value = "src-tauri/cmake/msvc-optimize.cmake", relative = true }
+# macOS 13 er laveste støttede versjon (spesifikasjonen).
+MACOSX_DEPLOYMENT_TARGET = "13.0"
