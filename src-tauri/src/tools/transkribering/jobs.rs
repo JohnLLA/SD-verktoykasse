@@ -2,7 +2,7 @@
 //!
 //! whisper.cpp sjekker avbryt-flagget mellom hvert 30-sekundersvindu, ikke
 //! midt i koderen. På en treg PC kan ett vindu ta over 10 sekunder (Windows-CI
-//! med 2 vCPU: 13,9 s med small og beam 5). Derfor gjør `cancel` to ting for
+//! med 2 vCPU: 14–25 s med small og beam 5). Derfor gjør `cancel` to ting for
 //! transkribering:
 //!
 //! 1. Flagget settes, så whisper stopper ved neste sjekk.

@@ -21,7 +21,7 @@ Testene skriver bare tall (tider, antall segmenter), aldri transkribert tekst.
 ## Windows, ekte redaksjons-PC
 
 - [ ] `cargo test` er grønn.
-- [ ] `real_`-testene er grønne. Noter tiden for `lydrett no` og `tolket nn` og hva `avbryt` skriver (sekunder fra flagg til retur). Det er tiden maskinen fortsatt regner etter avbryt (whisper.cpp sjekker mellom 30-sekundersvinduene). Grensesnittet får beskjed med en gang uansett. Windows-CI med 2 vCPU: 13,9 s; på en vanlig PC med medium bør det være noen få sekunder.
+- [ ] `real_`-testene er grønne. Noter tiden for `lydrett no` og `tolket nn` og hva `avbryt` skriver (sekunder fra flagg til retur). Det er tiden maskinen fortsatt regner etter avbryt (whisper.cpp sjekker mellom 30-sekundersvinduene). Grensesnittet får beskjed med en gang uansett. Windows-CI med 2 vCPU: 14–25 s med small; på en vanlig PC bør det være noen få sekunder, men det kan bli mer med large.
 - [ ] Avbryt mens en lang fil (minst 1 time) dekodes og transkriberes: stopper innen få sekunder (først mulig å prøve fra skjermen i steg 2).
 - [ ] Fart med «Anbefalt» (medium q5) og beam 5 på et intervju på 30 minutter. Mål: under 30 minutter (spesifikasjonen). Prøv også greedy (innstillingen `decoding: "greedy"`).
 - [ ] Antall tråder: `check_system` viser `physical_cores` og `whisper_threads`. Stemmer `physical_cores` med Oppgavebehandling → Ytelse → CPU → «Kjerner»?

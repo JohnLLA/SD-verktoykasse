@@ -5,7 +5,7 @@
 //! sender segmenter og framdrift fortløpende via `emit`, og stopper når
 //! `cancel` settes. whisper.cpp sjekker flagget før og etter hvert
 //! 30-sekundersvindu og i dekoderen, men ikke midt i koderen; på en treg PC
-//! kan det ta ett vindu (Windows-CI, 2 vCPU: 13,9 s). Grensesnittet venter
+//! kan det ta ett vindu (Windows-CI, 2 vCPU: 14–25 s). Grensesnittet venter
 //! ikke på det: `cancel`-kommandoen svarer med en gang (jobs.rs).
 //!
 //! Funn fra spiken som er tatt hensyn til her:
@@ -697,7 +697,8 @@ mod tests {
         );
         // whisper.cpp sjekker flagget mellom 30-sekundersvinduene, ikke midt i
         // koderen. Grensesnittet får `done` med en gang (jobs.rs); her måles
-        // hvor lenge maskinen fortsatt regner. Windows-CI (2 vCPU): 13,9 s.
-        assert!(latency < 30.0, "avbryt tok {latency:.1} s");
+        // hvor lenge maskinen fortsatt regner: høyst ett koder-pass. Windows-CI
+        // (2 vCPU): 13,9–25,2 s; macOS-CI (3 kjerner, CPU): 2,9–4,4 s.
+        assert!(latency < 60.0, "avbryt tok {latency:.1} s");
     }
 }
