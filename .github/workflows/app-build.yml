@@ -1,0 +1,115 @@
+# Bygger og tester appen (src-tauri) på macOS arm64 og Windows x64 (regel 9).
+# - `cargo test`: alle enhetstester (dekoding, eksport, filnavn, topptekst,
+#   sjekksum, gjenopptak, tidskoder på tvers av biter, osv.).
+# - Windows: feiler hvis ggml er bygget uten /O2 (docs/spike.md).
+# - Integrasjonstester med ekte modell (small verbatim og semantic, lastet ned
+#   med appens egen nedlastingskode fra huggingface.co) og NbAiLabs
+#   eksempellyd. Loggen får bare tall, aldri transkribert tekst.
+# Ingen versjonstagger, ingen releaser, ingen hemmeligheter.
+name: app-build
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src-tauri/**"
+      - "models.json"
+      - ".cargo/**"
+      - ".github/workflows/app-build.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src-tauri/**"
+      - "models.json"
+      - ".cargo/**"
+      - ".github/workflows/app-build.yml"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: macos-14
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: src-tauri
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: libclang (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: '"LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV'
+
+      - name: Cache cargo og bygg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: app-v1-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: app-v1-${{ runner.os }}-
+
+      - name: Byggeflagg (fra .cargo/config.toml)
+        run: |
+          cat ../.cargo/config.toml | grep -E "^(GGML|CMAKE|MACOSX)"
+          cmake --version | head -n 1
+          rustc --version
+
+      - name: cargo test
+        run: cargo test --locked
+
+      - name: Kontroller at ggml er bygget med optimalisering (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          fail=0
+          for p in ggml-cpu ggml-base whisper; do
+            f=$(find target/debug/build -name "$p.vcxproj" -path "*whisper-rs-sys*" | head -n 1)
+            if [ -z "$f" ]; then echo "fant ikke $p.vcxproj"; fail=1; continue; fi
+            opt=$(awk '/<ItemDefinitionGroup Condition=.*Release\|x64/{r=1} /<\/ItemDefinitionGroup>/{r=0} r && /<Optimization>/{print}' "$f" | tr -d ' ')
+            echo "$p: $opt"
+            case "$opt" in *MaxSpeed*) ;; *) echo "::error::$p er bygget uten /O2"; fail=1;; esac
+          done
+          exit $fail
+
+      - name: Cache modeller og testlyd
+        uses: actions/cache@v4
+        with:
+          path: ci-data
+          key: app-data-v1-small-verbatim-8982b4a4-small-semantic-575a6413
+
+      - name: Hent testlyd (NbAiLab-eksempler)
+        working-directory: .
+        run: |
+          mkdir -p ci-data/models ci-data/audio
+          [ -f ci-data/audio/king.mp3 ] || curl -sSL --fail -o ci-data/audio/king.mp3 https://github.com/NbAiLab/nb-whisper/raw/main/audio/king.mp3
+          [ -f ci-data/audio/knuthamsun.mp3 ] || curl -sSL --fail -o ci-data/audio/knuthamsun.mp3 https://github.com/NbAiLab/nb-whisper/raw/main/audio/knuthamsun.mp3
+          echo "LLA_TEST_MODEL_DIR=$GITHUB_WORKSPACE/ci-data/models" >> "$GITHUB_ENV"
+          echo "LLA_TEST_AUDIO_DIR=$GITHUB_WORKSPACE/ci-data/audio" >> "$GITHUB_ENV"
+
+      - name: Modellnedlasting fra huggingface.co (appens egen kode, SHA-256)
+        timeout-minutes: 20
+        run: cargo test --locked real_download_from_hugging_face -- --ignored --nocapture
+
+      - name: Gjenopptak med Range gjennom CDN-omdirigering (2 MB)
+        timeout-minutes: 10
+        run: cargo test --locked real_range_resume_through_cdn_redirect -- --ignored --nocapture
+
+      - name: Transkribering, biter, nynorsk og avbryt (ekte modell)
+        timeout-minutes: 45
+        env:
+          # CI-maskinene har ikke Metal; kjør på CPU.
+          LLA_TEST_NO_GPU: "1"
+        run: cargo test --locked engine::tests::real_ -- --ignored --nocapture --test-threads=1

@@ -1,0 +1,49 @@
+[package]
+name = "lla-verktoykasse"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "LLAs verktøykasse"
+license = "UNLICENSED"
+rust-version = "1.85"
+
+[lib]
+name = "lla_verktoykasse_lib"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "lla-verktoykasse"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-store = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+symphonia = { version = "0.5", default-features = false, features = ["mp3", "aac", "isomp4", "flac", "vorbis", "ogg", "wav", "pcm"] }
+rubato = "0.16"
+ureq = { version = "3", default-features = false, features = ["rustls", "platform-verifier"] }
+sha2 = "0.10"
+docx-rs = "0.4"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+whisper-rs = { version = "0.16", features = ["metal", "raw-api"] }
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+whisper-rs = { version = "0.16", features = ["raw-api"] }
+
+[profile.release]
+debug = false
+
+# Avhengighetene (rubato, symphonia, whisper-rs) optimaliseres også i debug- og
+# testbygg, så dekoding og tester ikke blir urimelig trege. Appens egen kode
+# bygges som vanlig.
+[profile.dev.package."*"]
+opt-level = 2
+
+# Litt optimalisering av egen kode også: dekodingsløkken er ~30 ganger tregere uten.
+[profile.dev]
+opt-level = 1

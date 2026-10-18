@@ -17,6 +17,12 @@
     "anbefalt": "medium",
     "best": "large"
   },
+  "_variant_options_comment": "Innstillinger per modellvariant. Verbatim gir nesten ingen tidsstempeltoken, så segmentene blir hele 30-sekundersvinduer uten tidsstempler per ord (docs/spike.md). 'tolket' kan byttes til hovedmodellen ved å sette style_to_variant.tolket til \"main\" (avgjøres i steg 3).",
+  "variant_options": {
+    "verbatim": { "token_timestamps": true, "max_len": 60, "split_on_word": true },
+    "semantic": {},
+    "main": {}
+  },
   "models": [
     {
       "id": "nb-whisper-small-verbatim-q5_0",
