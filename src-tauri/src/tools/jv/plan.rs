@@ -53,7 +53,7 @@ fn load(path: &str) -> JvResult<Value> {
     if !p.is_absolute() || !name.ends_with("-treff.json") {
         return Err(invalid("plan_path"));
     }
-    let md = fs::metadata(p).map_err(|_| invalid("input_missing"))?;
+    let md = fs::symlink_metadata(p).map_err(|_| invalid("input_missing"))?;
     if !md.is_file() || md.len() > MAX_PLAN_BYTES {
         return Err(invalid("plan_path"));
     }
@@ -111,8 +111,11 @@ pub fn save_plan(path: &str, redact: &BTreeMap<String, bool>) -> JvResult<()> {
     let mut out = serde_json::to_vec_pretty(&v).map_err(|_| JvError::Internal)?;
     out.push(b'\n');
     let tmp = Path::new(path).with_extension("json.tmp");
-    fs::write(&tmp, out)?;
-    fs::rename(&tmp, path)?;
+    let written = fs::write(&tmp, out).and_then(|_| fs::rename(&tmp, path));
+    if let Err(e) = written {
+        let _ = fs::remove_file(&tmp);
+        return Err(e.into());
+    }
     Ok(())
 }
 
@@ -186,6 +189,15 @@ mod tests {
         fs::write(&other, plan().to_string()).unwrap();
         assert_eq!(read_plan(&other).unwrap_err(), invalid("plan_path"));
         assert_eq!(read_plan("relativ-treff.json").unwrap_err(), invalid("plan_path"));
+        #[cfg(unix)]
+        {
+            let real = tmp("real");
+            fs::write(&real, plan().to_string()).unwrap();
+            let link = real.replace("sak-treff.json", "lenke-treff.json");
+            let _ = fs::remove_file(&link);
+            std::os::unix::fs::symlink(&real, &link).unwrap();
+            assert_eq!(read_plan(&link).unwrap_err(), invalid("plan_path"));
+        }
         let notplan = tmp("notplan");
         fs::write(&notplan, "{\"verktoy\":\"annet\",\"treff\":[]}").unwrap();
         assert_eq!(read_plan(&notplan).unwrap_err(), invalid("plan_json"));

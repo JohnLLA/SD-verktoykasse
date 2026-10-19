@@ -21,11 +21,6 @@ export function itemType(i: PlanItem): string {
   return X.types[i.type] ?? i.type;
 }
 
-/** Advarselen fra verktøyet om forkastede treff forklares av gruppen under, og sier det motsatte av avkrysningen. */
-export function hideRejectedWarning(w: string): boolean {
-  return /IKKE merket for sladding/.test(w);
-}
-
 export interface RedactView {
   el: HTMLElement;
   update(): void;
@@ -91,7 +86,7 @@ export function createRedactReview(c: JvController, id: JvToolId): RedactView {
     boxes.clear();
     const regular = r.items.filter((i) => !i.rejected);
     const rejected = r.items.filter((i) => i.rejected);
-    const warnings = warningsBlock(visibleWarnings(r.findReport, hideRejectedWarning));
+    const warnings = warningsBlock(visibleWarnings(r.findReport));
     const summary = findSummary(r.items);
     const parts: (HTMLElement | null)[] = [
       h("p", { class: "review-summary", text: summary }),

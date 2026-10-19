@@ -639,9 +639,8 @@ export class JvController {
     try {
       if (!planPath) throw { code: "report_invalid" };
       const view = await this.backend.readPlan(planPath);
-      // Forkastede kandidater er avkrysset: det er tryggere at brukeren
-      // fjerner en avkrysning enn at et ekte nummer blir stående.
-      const items = view.items.map((i) => (i.rejected ? { ...i, redact: true } : { ...i }));
+      // Avkrysningen følger `sladd` i planen: forkastede kandidater har ingen hake.
+      const items = view.items.map((i) => ({ ...i }));
       s.redact = { step: "review", planPath, items, findReport: report, loading: false, error: null };
       run.status = "done";
       run.progress = 1;

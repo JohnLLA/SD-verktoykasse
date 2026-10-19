@@ -47,15 +47,13 @@ Prøvevisningen startes med `npm run dev` og åpnes i nettleseren, for eksempel
 ## Sladding (redact), to steg
 
 - [ ] «Finn» viser treffene i tabellen med type, side, utdrag og avkrysning.
-- [ ] Forkastede kandidater står i egen gruppe, merket «Forkastet» og avkrysset. **Beslutning:** de er
-      avkrysset som standard (tryggest, slik briefen sier), selv om planfilen fra verktøyet har
-      `sladd: false`. John Inge bekrefter at det er riktig valg.
+- [ ] Forkastede kandidater står i egen gruppe, merket «Forkastet», uten hake som standard (som
+      `sladd: false` i planen). Teksten sier at de kan være ekte numre, og du kan krysse dem av.
 - [ ] Fjern avkrysninger og trykk «Sladd». Åpne planfilen (`…-treff.json`) og sjekk at bare `sladd`
       er endret. Sladdet PDF mangler de sladdede verdiene (søk i Forhåndsvisning).
 - [ ] Planfilen vises ikke som utfil i resultatet. «Tilbake til treffene» gir de samme avkrysningene.
 - [ ] Tom tekstfil og en egen ordliste fra «Velg fil …» gir treff for ordene.
-- [ ] Verktøyets advarsel om at forkastede treff «IKKE er merket» skjules i gjennomgangen, siden den
-      sier det motsatte av avkrysningen. Sjekk at det er rimelig.
+- [ ] Advarselen om at forkastede treff ikke er merket for sladding vises, og stemmer med skjermen.
 
 ## Innstillinger og Om
 

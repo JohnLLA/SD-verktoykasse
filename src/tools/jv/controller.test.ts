@@ -12,7 +12,7 @@ import type { InstalledView, PlanItem } from "./api";
 import { JvController } from "./controller";
 import { catalogOf, entry, FakeJvBackend, fakePlatform, toolView } from "./fakes";
 import { screenMode } from "./view-screen";
-import { hideRejectedWarning, itemType, itemWhere } from "./view-redact";
+import { itemType, itemWhere } from "./view-redact";
 import { visibleWarnings } from "./view-result";
 import { jvErrorText } from "./errors";
 import { t } from "../../i18n/nb";
@@ -420,16 +420,16 @@ describe("sladding i to steg", () => {
     expect(s.redact.items.map((i) => i.id)).toEqual(["t1", "t2", "t3"]);
   });
 
-  it("forkastede kandidater står avkrysset, merket og i egen gruppe", async () => {
+  it("forkastede kandidater står uten hake som standard, merket og i egen gruppe", async () => {
     const { c } = await toReview();
     const items = c.session("redact" as never).redact.items;
     const rejected = items.filter((i) => i.rejected);
     expect(rejected.map((i) => i.id)).toEqual(["t3"]);
-    expect(rejected.every((i) => i.redact)).toBe(true);
+    expect(rejected.every((i) => !i.redact)).toBe(true);
     expect(t.jv.redact.rejectedHint).toContain("kan være ekte numre");
-    // Advarselen som sier det motsatte av avkrysningen, skjules; de andre vises.
+    // Alle advarslene vises, også at forkastede treff ikke er merket.
     const report = c.session("redact" as never).redact.findReport;
-    expect(visibleWarnings(report, hideRejectedWarning)).toEqual(["1 treff ligger ikke som synlig tekst på siden."]);
+    expect(visibleWarnings(report)).toEqual(report!.warnings);
   });
 
   it("brukeren kan bare krysse av og på: «Sladd» lagrer bare id og av/på, og kjører sladd med planen", async () => {
@@ -442,6 +442,14 @@ describe("sladding i to steg", () => {
     expect(JSON.stringify(backend.savedPlans)).not.toMatch(/fødselsnummer|utdrag|excerpt|rektangler|side/);
     expect(backend.callsOf("run")[1]).toEqual(["redact", { command: "sladd", inputs: ["/s/sak.pdf"], out_dir: "/s", options: { plan_file: "/s/sak-treff.json" } }]);
     expect(c.session("redact" as never).run.status).toBe("running");
+  });
+
+  it("lagringen endrer bare sladd: forkastede er false til brukeren krysser dem av", async () => {
+    const { c, backend } = await toReview();
+    expect(c.planEdits("redact" as never)).toEqual({ t1: true, t2: true, t3: false });
+    c.setRedact("redact" as never, "t3", true);
+    await c.redact("redact" as never);
+    expect(backend.savedPlans).toEqual([{ path: "/s/sak-treff.json", redact: { t1: true, t2: true, t3: true } }]);
   });
 
   it("endrer ingenting annet enn avkrysningen i treffene", async () => {

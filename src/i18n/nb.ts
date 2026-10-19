@@ -792,7 +792,7 @@ const nb = {
       } as Record<string, string>,
       rejectedTitle: "Mulige numre som ble forkastet",
       rejectedHint:
-        "Disse ser ut som numre, men sifrene står langt fra hverandre. Det er trolig tall i en tabell, men noen kan være ekte numre. De er derfor krysset av. Fjern avkrysningen på dem som skal stå.",
+        "Disse ser ut som numre, men sifrene står langt fra hverandre. Det er trolig tall i en tabell, men noen kan være ekte numre. De er ikke krysset av. Kryss av på dem som skal sladdes.",
       rejectedBadge: "Forkastet",
       selected: (n: number, total: number) => `${n} av ${total} valgt for sladding`,
       selectAll: "Kryss av alle",
