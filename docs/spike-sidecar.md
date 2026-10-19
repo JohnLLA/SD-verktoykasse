@@ -199,3 +199,14 @@ eller ufri lisens. Verdt å merke seg:
    Python-signeringen fra spiken, som da må kunne lese en kryptert nøkkel.
 7. **App-bunt i stedet for ren onedir-mappe** for Mac-pakkene (begrunnet over). Godkjenne?
 8. **`scripts/lag_testdata.py`:** skal den flyttes inn sammen med `testdata/` i 6.2?
+
+### Avgjort av John Inge 19.10.2026
+
+1. Bygg på `macos-14` i CI. Minste macOS for journalistverktøyene blir 14, og spesifikasjonen rettes i 6.2.
+2. Ghostscript tas ut av `ocr` i 6.2, og endringen går gjennom kontraktvokter.
+3. Systemets tar og vår egen parser beholdes. Ingen nye crates.
+4. 6.2 får gjøre en liten endring i `download.rs` (`HostPolicy` for release-repoet).
+5. Pakkene notariseres i CI.
+6. CI signerer katalogen med `minisign`. John Inge lager nøkkelen og legger den i `TOOLS_MINISIGN_KEY`.
+7. App-bunt (`jv-<id>.app`) godkjennes.
+8. `scripts/lag_testdata.py` flyttes inn sammen med testdataene i 6.2.
