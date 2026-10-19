@@ -1,5 +1,4 @@
 .env
-site/.env
 testdata/lyd/
 target/
 node_modules/

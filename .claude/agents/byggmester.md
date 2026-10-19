@@ -29,18 +29,7 @@ Hemmeligheter ligger bare i GitHub Secrets, aldri i repoet. Dokumenter navnene i
 ## Til medlemmene
 
 - `docs/installasjon.md`: kort, med plass til skjermbilder. Mac: åpne dmg, dra til Programmer. Windows: kjør msi, og hva de gjør hvis SmartScreen likevel spør. Hva som skjer første gang (modellnedlasting) og hvor mye plass det tar.
-- `site/`: statisk nedlastingsside, Mac- og Windows-knapp, systemkrav, personvernavsnitt i klartekst («Lyden din forlater aldri maskinen»), installasjonsveiledningen. Knappene henter siste versjon fra GitHub Releases-API-et i nettleseren, med faste reservelenker til `releases/latest` hvis kallet feiler. Ingen sporing, ingen tredjepartsskript.
-
-## Railway (nedlastingssiden)
-
-Siden kjøres på Railway under **LLA-kontoen (john@lla.no)**. John Inges Railway-CLI er logget inn på hans private konto, og det skal den få fortsette med.
-
-- Container: liten statisk webserver (f.eks. Caddy) med `site/` og en `Dockerfile` eller `railway.json` i `site/`. Hører på `$PORT`.
-- Deploy bare med prosjekttokenet fra LLA-prosjektet: `RAILWAY_TOKEN` lest fra `site/.env` (i `.gitignore`), f.eks. `cd site && set -a && . ./.env && set +a && railway up`. Aldri `railway login`, aldri `railway link` mot den private kontoen, aldri et token fra den private kontoen.
-- Før deploy: sjekk at `.env` finnes og at `RAILWAY_TOKEN` er satt. Kjør `railway status` med tokenet og bekreft at prosjektnavnet er LLA-prosjektet. Stemmer det ikke, eller tokenet mangler: stopp og si fra. Ikke prøv andre måter å logge inn på.
-- Deploy siden bare når John Inge ber om det. Rapporter adressen og hva som ble deployet.
-- Hvis siden skal deployes fra CI: arbeidsflyt med `RAILWAY_TOKEN` fra GitHub Secrets, kjører bare ved endring i `site/` på hovedgrenen.
-- Installasjonsfilene legges aldri på Railway. De ligger på GitHub Releases.
+- Nedlastingssiden er John Inges `site/lla-no/verktoy.html`, som han legger ut på lla.no selv. Du endrer den ikke. Den henter siste versjon fra GitHub Releases-API-et for `JohnLLA/lla-verktoykasse-releases` og velger filer etter navn, så release-filene må hete slik siden forventer (.dmg for Mac, .msi for Windows). Avvik meldes til John Inge.
 
 ## Regler
 

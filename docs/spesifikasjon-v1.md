@@ -137,23 +137,15 @@ Lydrett har et eget, slakkere mål fordi verbatim-modellene er omtrent fire gang
 - GitHub Actions bygger `.dmg` (Mac) og `.msi` (Windows) når en versjonstagg pushes.
 - **Mac:** signert med Developer ID og notarisert. Uten det stopper Gatekeeper appen.
 - **Windows:** kodesignert. Uten signatur viser SmartScreen en skremmende advarsel som vil stoppe mange medlemmer. Sertifikat avklares (se åpne spørsmål).
-### Nedlastingssiden på Railway
+### Nedlastingssiden
 
-- Verktøykassen har en offentlig nedlastingsside med Mac- og Windows-knapp, systemkrav, personvernavsnitt og installasjonsveiledning med skjermbilder.
+- Verktøykassen har en offentlig nedlastingsside på **lla.no** med Mac- og Windows-knapp, systemkrav, personvernavsnitt og installasjonsveiledning. Siden er `site/lla-no/verktoy.html`; John Inge eier den og legger den ut selv.
 - LLA-logoen står øverst på siden (`site/lla-logo.png`, samme fil som i LLAs andre verktøy).
-- Siden kjøres på **Railway under LLA-kontoen (john@lla.no)**, i et eget prosjekt, aldri på John Inges private konto.
-- Siden er statisk (HTML/CSS) servert av en liten webserver i en container. Den leser siste versjon fra GitHub Releases, så knappene alltid peker på nyeste bygg uten ny deploy.
-- **Selve installasjonsfilene ligger ikke på Railway.** De ligger på GitHub Releases, som tåler store filer og mange nedlastinger uten trafikkostnad. Det krever at releasene er offentlige: enten et offentlig repo, eller et eget offentlig repo bare for releaser (`lla-verktoykasse-releases`) mens koden er privat. Den samme adressen brukes av oppdateringsfunksjonen i appen.
-- Eget domene (f.eks. `verktoy.lla.no`) kobles til Railway-tjenesten når LLA har bestemt navnet.
-
-### Tilgang til Railway
-
-- Deploy skjer med et **prosjekttoken** fra LLA-prosjektet på Railway (`RAILWAY_TOKEN`), lagt i en lokal `.env` som er i `.gitignore`, og i GitHub Secrets hvis siden skal deployes fra CI. Da kan Railway-CLI-en på Macen fortsatt være logget inn på den private kontoen uten at noe havner feil sted.
-- Før hver deploy sjekkes at målet er LLA-prosjektet. Deployer noe mot feil konto eller feil prosjekt, stoppes det.
+- Siden leser siste versjon fra GitHub Releases i nettleseren, så knappene alltid peker på nyeste bygg uten at siden må endres.
+- **Installasjonsfilene ligger på GitHub Releases** i det offentlige repoet `JohnLLA/lla-verktoykasse-releases`, mens koden er privat. Den samme adressen brukes av oppdateringsfunksjonen i appen.
 
 ### Hvem gjør hva
 
-- `byggmester` kan deploye nedlastingssiden til LLA-prosjektet på Railway når John Inge ber om det.
 - Agentene pusher ikke versjonstagger, lager ikke releaser og sender ikke noe til medlemmene. Det gjør John Inge.
 
 ## Testing
