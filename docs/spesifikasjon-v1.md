@@ -29,13 +29,15 @@ En journalist i en liten lokalavis, ofte på en vanlig jobb-PC med Windows, elle
 
 ### Hvordan valgene slår ut
 
-NB-Whisper finnes i to varianter som passer nøyaktig til de to stilene:
+Hver stil har sin NB-Whisper-modell, begge fra `NbAiLab`:
 
 - **Lydrett → verbatim-modellene** (`nb-whisper-<størrelse>-verbatim`). Mer bokstavelig, retter ikke grammatikk. Gir små bokstaver og lite tegnsetting. Det er slik modellen er trent, ikke en feil.
-- **Tolket → semantic-modellene** (`nb-whisper-<størrelse>-semantic`). Fanger innholdet heller enn hvert ord, egnet til referat og teksting.
-  - *Åpent etter spiken:* semantic finnes bare som uferdig utgave i `NbAiLabBeta` (desember 2023) og hoppet over setninger i testen. I steg 3 måler kvalitetsmaleren semantic mot hovedmodellen (`nb-whisper-<størrelse>` i `NbAiLab`) for tolket. John Inge velger modell etter målingen.
+- **Tolket → hovedmodellen** (`nb-whisper-<størrelse>`). Retter muntlig språk til skriftlig, egnet til referat og teksting. Kjøres med de samme tidsstempel-innstillingene som verbatim (`variant_options` i `models.json`), ellers blir segmentene 30 sekunder lange.
+  - *Avgjort etter steg 3:* hovedmodellen ga færre feil og strøk færre ord enn semantic-modellene, som bare finnes som uferdig utgave i `NbAiLabBeta` (desember 2023). Semantic brukes ikke (se `docs/kvalitet.md`).
 
 Målform styres med språkparameteren til Whisper: `no` for bokmål og `nn` for nynorsk. Spiken (steg 0) bekrefter at dette virker i whisper.cpp med NB-Whisper-modellene, og at begge stilene kan gi nynorsk.
+
+Lydrett nynorsk gir det som blir sagt: snakker personen bokmål, blir noe stående på bokmål (steg 3). Når både lydrett og nynorsk er valgt, viser appen en kort forklaring om dette under Stil. Teksten etterbehandles ikke.
 
 Kvalitet styrer modellstørrelse:
 
@@ -46,6 +48,8 @@ Kvalitet styrer modellstørrelse:
 | Best | large | ~1,1 GB | Apple Silicon eller kraftig PC |
 
 Størrelsene er anslag og må bekreftes i spiken. Appen viser faktisk størrelse før nedlasting.
+
+Søkemåten er beam 5 som standard. «Raskere» (greedy) kan velges i innstillingene.
 
 Lydrett med små bokstaver: vis teksten slik modellen gir den i v1. Ikke legg på automatisk stor forbokstav eller tegnsetting, det gjør teksten mindre lydrett.
 
@@ -121,12 +125,12 @@ Logger skrives lokalt og inneholder aldri transkribert tekst eller filnavn utove
 
 Målt med «Anbefalt» på et intervju på 30 minutter:
 
-| Maskin | Mål |
-|---|---|
-| MacBook med Apple Silicon (M1 eller nyere) | under 10 minutter |
-| Vanlig Windows-laptop, 4–8 kjerner, uten GPU | under 30 minutter |
+| Maskin | Tolket | Lydrett |
+|---|---|---|
+| MacBook med Apple Silicon (M1 eller nyere) | under 10 minutter | under 30 minutter |
+| Vanlig Windows-laptop, 4–8 kjerner, uten GPU | under 30 minutter | ikke satt |
 
-Målene justeres etter første måling. Viser det seg at Windows uten GPU blir for tregt med medium, blir «Rask» standard på Windows.
+Lydrett har et eget, slakkere mål fordi verbatim-modellene er omtrent fire ganger tregere enn hovedmodellen (steg 3). Tallene for M1 er foreløpige: de endelige settes etter måling på en ekte M1. Målene justeres etter første måling. Viser det seg at Windows uten GPU blir for tregt med medium, blir «Rask» standard på Windows.
 
 ## Distribusjon
 
@@ -156,6 +160,7 @@ Målene justeres etter første måling. Viser det seg at Windows uten GPU blir f
 
 - Rust-logikk (dekoding, resampling, segmentering, eksport, `models.json`-sjekk) testes med `cargo test`.
 - Kvalitet måles med et fast testsett (se `kvalitetsmaler`): ordfeilrate (WER) per målform og stil, mot håndskrevne fasiter.
+- I steg 3 fantes ingen menneskeskrevet fasit for tolket. **Før release** lages en ekte tolket-fasit fra NPSC-referatene, og tolket måles på nytt mot den (neste kvalitetsrunde).
 - Hver PR skal bygge på både Mac og Windows i CI.
 - Det som krever ekte maskin (installasjon, signering, Gatekeeper, SmartScreen, dvale, store filer), leveres som manuell sjekkliste merket «ikke kjørt på enhet». John Inge kjører den, og Windows-delen på en vanlig redaksjons-PC.
 

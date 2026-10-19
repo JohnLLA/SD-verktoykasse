@@ -10,7 +10,7 @@ const SAMPLES: CoreError[] = [
   { code: "empty_audio" },
   { code: "decode_failed" },
   { code: "unknown_model" },
-  { code: "model_missing", model_id: "nb-whisper-medium-semantic-q5_0" },
+  { code: "model_missing", model_id: "nb-whisper-medium-q5_0" },
   { code: "model_load_failed" },
   { code: "model_in_shared_folder" },
   { code: "invalid_catalog", reason: "x" },

@@ -3,9 +3,10 @@
 //! `models.json` bygges inn i appen ved kompilering og sjekkes ved oppstart:
 //! bare https, bare vertene i `download_hosts` (som igjen må være blant
 //! [`ALLOWED_HOSTS`]), SHA-256 på 64 heksadesimaltegn og en modell for hver
-//! kombinasjon av stil og kvalitet. Modellvalget er datastyrt: hvilken variant
-//! «tolket» bruker, står i `style_to_variant` (semantic i dag; kan byttes til
-//! hovedmodellen `main` uten kodeendring, se docs/spike.md).
+//! kombinasjon av stil og kvalitet. Modellvalget står i `style_to_variant`:
+//! lydrett = verbatim, tolket = hovedmodellen `main` (`nb-whisper-<størrelse>`,
+//! John Inges beslutning etter steg 3, docs/kvalitet.md). Semantic-oppføringene
+//! står igjen i katalogen, men en katalog som peker «tolket» dit, avvises.
 //!
 //! Plassering: nedlastede modeller ligger i appens datamappe som `<id>.bin`.
 //! Brukeren kan i tillegg peke på en egen (gjerne delt) modellmappe. Der leter
@@ -33,8 +34,8 @@ pub const ALLOWED_HOSTS: &[&str] = &["huggingface.co", "*.hf.co"];
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
 pub struct VariantOptions {
-    /// Tidsstempler per token. Trengs for verbatim, som ellers gir hele
-    /// 30-sekundersvinduer som segmenter (docs/spike.md).
+    /// Tidsstempler per token. Trengs for verbatim og hovedmodellen, som ellers
+    /// gir hele 30-sekundersvinduer som segmenter (docs/spike.md, docs/kvalitet.md).
     #[serde(default)]
     pub token_timestamps: bool,
     /// Største segmentlengde i tegn (0 = whispers standard).
@@ -193,9 +194,12 @@ impl Catalog {
                 self.select(stil, kv)?;
             }
         }
-        // Lydrett skal alltid være verbatim (spesifikasjonen, regel 4).
+        // Lydrett = verbatim, tolket = hovedmodellen (spesifikasjonen, regel 4).
         if self.style_to_variant.get("lydrett").map(String::as_str) != Some("verbatim") {
             return Err(invalid("lydrett must map to verbatim"));
+        }
+        if self.style_to_variant.get("tolket").map(String::as_str) != Some("main") {
+            return Err(invalid("tolket must map to main"));
         }
         Ok(())
     }
@@ -517,30 +521,41 @@ mod tests {
         let m = c.select(Stil::Lydrett, Kvalitet::Anbefalt).unwrap();
         assert_eq!(m.id, "nb-whisper-medium-verbatim-q5_0");
         assert_eq!(m.repo, "NbAiLab/nb-whisper-medium-verbatim");
+        // Tolket = hovedmodellen i NbAiLab (steg 3), ikke semantic.
         let m = c.select(Stil::Tolket, Kvalitet::Rask).unwrap();
-        assert_eq!(m.id, "nb-whisper-small-semantic-q5_0");
+        assert_eq!(m.id, "nb-whisper-small-q5_0");
+        assert_eq!(m.repo, "NbAiLab/nb-whisper-small");
+        let m = c.select(Stil::Tolket, Kvalitet::Anbefalt).unwrap();
+        assert_eq!(m.id, "nb-whisper-medium-q5_0");
         let m = c.select(Stil::Tolket, Kvalitet::Best).unwrap();
-        assert_eq!(m.size, "large");
-        assert!(
-            c.options_for(c.select(Stil::Lydrett, Kvalitet::Rask).unwrap())
-                .token_timestamps
-        );
-        assert!(
-            !c.options_for(c.select(Stil::Tolket, Kvalitet::Rask).unwrap())
-                .token_timestamps
-        );
+        assert_eq!(m.id, "nb-whisper-large-q5_0");
+        for choice in c.choices() {
+            let m = c.get(&choice.model_id).unwrap();
+            assert_ne!(m.variant, "semantic", "{}", m.id);
+            assert_eq!(m.style.as_deref(), Some(choice.stil.key()), "{}", m.id);
+        }
     }
 
     #[test]
-    fn tolket_can_switch_to_main_model_by_data_only() {
-        let json = MODELS_JSON.replace(r#""tolket": "semantic""#, r#""tolket": "main""#);
-        assert_ne!(json, MODELS_JSON);
-        let c = Catalog::parse(&json).unwrap();
-        assert_eq!(
-            c.select(Stil::Tolket, Kvalitet::Anbefalt).unwrap().id,
-            "nb-whisper-medium-q5_0"
-        );
-        // Lydrett er låst til verbatim.
+    fn both_styles_get_word_timestamps() {
+        // Uten dem blir segmentene 30 sekunder lange (docs/kvalitet.md).
+        let c = Catalog::builtin().unwrap();
+        for stil in [Stil::Lydrett, Stil::Tolket] {
+            for kv in Kvalitet::ALL {
+                let o = c.options_for(c.select(stil, kv).unwrap());
+                assert!(o.token_timestamps, "{stil:?}/{kv:?}");
+                assert_eq!(o.max_len, 60, "{stil:?}/{kv:?}");
+                assert!(o.split_on_word, "{stil:?}/{kv:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn style_mapping_is_locked() {
+        // Tolket kan ikke pekes tilbake til semantic, og lydrett er låst til verbatim.
+        let semantic = MODELS_JSON.replace(r#""tolket": "main""#, r#""tolket": "semantic""#);
+        assert_ne!(semantic, MODELS_JSON);
+        assert!(Catalog::parse(&semantic).is_err());
         let bad = MODELS_JSON.replace(r#""lydrett": "verbatim""#, r#""lydrett": "main""#);
         assert!(Catalog::parse(&bad).is_err());
     }

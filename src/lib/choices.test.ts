@@ -7,12 +7,14 @@ import {
   modelFor,
   normalizeChoices,
   normalizeDecoding,
+  showLydrettNynorskNote,
 } from "./choices";
+import { t } from "../i18n/nb";
 
 function model(id: string, repo: string): ModelStatus {
   return {
     id,
-    variant: "semantic",
+    variant: "main",
     size: "medium",
     quant: "q5_0",
     repo,
@@ -24,7 +26,7 @@ function model(id: string, repo: string): ModelStatus {
 }
 
 const list: ModelList = {
-  models: [model("a", "NbAiLabBeta/nb-whisper-medium-semantic"), model("b", "NbAiLab/nb-whisper-small-verbatim")],
+  models: [model("a", "NbAiLab/nb-whisper-medium"), model("b", "NbAiLab/nb-whisper-small-verbatim")],
   choices: [
     { stil: "tolket", kvalitet: "anbefalt", model_id: "a" },
     { stil: "lydrett", kvalitet: "rask", model_id: "b" },
@@ -68,8 +70,22 @@ describe("modellvalg", () => {
     expect(modelFor(list, "lydrett", "best")).toBeUndefined();
   });
   it("viser modellnavnet uten organisasjon", () => {
-    expect(modelDisplayName({ repo: "NbAiLabBeta/nb-whisper-medium-semantic" })).toBe(
-      "nb-whisper-medium-semantic",
+    expect(modelDisplayName({ repo: "NbAiLab/nb-whisper-medium" })).toBe("nb-whisper-medium");
+    expect(modelDisplayName({ repo: "NbAiLab/nb-whisper-small-verbatim" })).toBe("nb-whisper-small-verbatim");
+  });
+});
+
+describe("forklaring for lydrett + nynorsk", () => {
+  it("vises bare når både lydrett og nynorsk er valgt", () => {
+    expect(showLydrettNynorskNote({ malform: "nynorsk", stil: "lydrett" })).toBe(true);
+    expect(showLydrettNynorskNote({ malform: "nynorsk", stil: "tolket" })).toBe(false);
+    expect(showLydrettNynorskNote({ malform: "bokmål", stil: "lydrett" })).toBe(false);
+    expect(showLydrettNynorskNote({ malform: "bokmål", stil: "tolket" })).toBe(false);
+    expect(showLydrettNynorskNote(DEFAULT_CHOICES)).toBe(false);
+  });
+  it("har teksten i språkfilen", () => {
+    expect(t.transkribering.choices.stil.explainLydrettNynorsk).toBe(
+      "Lydrett gir det som blir sagt. Snakker personen bokmål, blir noe stående på bokmål.",
     );
   });
 });

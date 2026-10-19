@@ -585,8 +585,13 @@ ol {
 }
 
 .help-lydrett,
-.help-tolket {
+.help-tolket,
+.help-nynorsk {
   display: block;
+}
+
+.help-nynorsk {
+  margin-top: 8px;
 }
 
 .help-lydrett-on .help-lydrett,

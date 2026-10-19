@@ -27,7 +27,7 @@ Pakk ut mappen der repoet skal ligge. `CLAUDE.md` og `docs/spesifikasjon-v1.md` 
 
 ## Lydrett og tolket
 
-NB-Whisper finnes allerede i to varianter som passer nøyaktig: **verbatim** (bokstavelig, retter ikke grammatikk, små bokstaver) og **semantic** (fanger innholdet, egnet til referat og teksting). Lydrett bruker verbatim, tolket bruker semantic. Nynorsk eller bokmål velges med språkparameteren.
+NB-Whisper har en modell for hver stil: **verbatim** (bokstavelig, retter ikke grammatikk, små bokstaver) for lydrett, og **hovedmodellen** `nb-whisper-<størrelse>` (retter til skriftlig, egnet til referat og teksting) for tolket. Valget ble tatt etter kvalitetsmålingen i steg 3. Nynorsk eller bokmål velges med språkparameteren.
 
 ## Railway-tilgang
 

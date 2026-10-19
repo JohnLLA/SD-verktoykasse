@@ -348,7 +348,7 @@ mod tests {
             date: "18. oktober 2026".into(),
             malform: Malform::Nynorsk,
             stil: Stil::Tolket,
-            model: "NbAiLabBeta/nb-whisper-medium-semantic (q5_0)".into(),
+            model: "NbAiLab/nb-whisper-medium (q5_0)".into(),
             labels: labels(),
         }
     }
@@ -393,7 +393,7 @@ mod tests {
                 "Dato: 18. oktober 2026",
                 "Målform: Nynorsk",
                 "Stil: Tolket",
-                "Modell: NbAiLabBeta/nb-whisper-medium-semantic (q5_0)",
+                "Modell: NbAiLab/nb-whisper-medium (q5_0)",
                 "Teksten er maskintranskribert og må kontrolleres mot lyden.",
             ]
         );

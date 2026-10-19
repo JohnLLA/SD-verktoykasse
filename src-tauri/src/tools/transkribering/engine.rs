@@ -169,7 +169,10 @@ unsafe extern "C" fn segment_cb(
             }
             // SAFETY: whisper gir en nullterminert streng som lever ut callbacken.
             let text = unsafe { CStr::from_ptr(ptr) }.to_string_lossy();
-            if let Some(seg) = place_segment(t0, t1, &text, cb.chunk_start_ms, cb.chunk_end_ms) {
+            let prev = cb.segments.last();
+            if let Some(seg) =
+                place_segment(t0, t1, &text, cb.chunk_start_ms, cb.chunk_end_ms, prev)
+            {
                 cb.segments.push(seg.clone());
                 (cb.emit)(EngineEvent::Segment(seg));
             }
@@ -555,7 +558,7 @@ mod tests {
         let mut prev = 0;
         for s in segs {
             assert!(s.start_ms >= prev, "rekkefølge");
-            assert!(s.end_ms >= s.start_ms);
+            assert!(s.end_ms > s.start_ms, "null lengde");
             assert!(
                 s.end_ms <= duration_ms,
                 "slutt {} etter lyden {}",
@@ -641,8 +644,11 @@ mod tests {
     #[test]
     #[ignore = "krever modell og lyd (LLA_TEST_MODEL_DIR, LLA_TEST_AUDIO_DIR)"]
     fn real_tolket_nynorsk() {
-        let (m, a) = real_or_skip("nb-whisper-small-semantic-q5_0", "king.mp3");
-        let mut req = JobRequest::new(a, m, Malform::Nynorsk, VariantOptions::default());
+        // Tolket = hovedmodellen med ordtidsstempler, slik appen kjører den.
+        let (m, a) = real_or_skip("nb-whisper-small-q5_0", "king.mp3");
+        let catalog = super::super::models::Catalog::builtin().unwrap();
+        let entry = catalog.get("nb-whisper-small-q5_0").unwrap();
+        let mut req = JobRequest::new(a, m, Malform::Nynorsk, catalog.options_for(entry));
         req.decoding = Decoding::Greedy;
         req.use_gpu = use_gpu();
         req.limit_samples = Some(40 * 16_000);
@@ -654,6 +660,8 @@ mod tests {
             t.elapsed().as_secs_f64()
         );
         check_segments(&r.segments, r.duration_ms);
+        // Med ordtidsstempler: ingen hele 30-sekundersvinduer (docs/kvalitet.md).
+        assert!(r.segments.iter().all(|s| s.end_ms - s.start_ms <= 25_000));
         let text: String = r
             .segments
             .iter()
@@ -673,7 +681,7 @@ mod tests {
         // Avbryter mens whisper regner (ved første framdrift fra whisper i den
         // første biten på 10 min), og måler tiden til run_job returnerer.
         // Bitene gjør at det ikke venter på mel-spektrogrammet for hele filen.
-        let (m, a) = real_or_skip("nb-whisper-small-semantic-q5_0", "knuthamsun.mp3");
+        let (m, a) = real_or_skip("nb-whisper-small-q5_0", "knuthamsun.mp3");
         let mut req = JobRequest::new(a, m, Malform::Bokmal, VariantOptions::default());
         req.use_gpu = use_gpu();
         let cancel = AtomicBool::new(false);

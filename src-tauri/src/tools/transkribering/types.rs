@@ -35,8 +35,8 @@ impl Malform {
     }
 }
 
-/// Stil. Lydrett = verbatim-modell. Tolket = modellen `models.json` peker på
-/// (`style_to_variant.tolket`, i dag semantic, se docs/spike.md).
+/// Stil. Lydrett = verbatim-modell. Tolket = hovedmodellen `nb-whisper-<størrelse>`
+/// (`style_to_variant.tolket = "main"` i `models.json`, docs/kvalitet.md).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Stil {
@@ -74,8 +74,8 @@ impl Kvalitet {
     pub const ALL: [Kvalitet; 3] = [Kvalitet::Rask, Kvalitet::Anbefalt, Kvalitet::Best];
 }
 
-/// Søkestrategi i whisper. Ikke avgjort (docs/spike.md, beslutning 4):
-/// beam 5 er foreløpig standard, greedy er omtrent 1,6 ganger raskere.
+/// Søkestrategi i whisper. Beam 5 er standard (avgjort etter steg 3,
+/// docs/kvalitet.md); greedy («Raskere») kan velges i innstillingene.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum Decoding {

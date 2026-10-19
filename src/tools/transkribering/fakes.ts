@@ -24,7 +24,7 @@ export function model(
     variant,
     size,
     quant: "q5_0",
-    repo: `NbAiLab/nb-whisper-${size}-${variant}`,
+    repo: variant === "main" ? `NbAiLab/nb-whisper-${size}` : `NbAiLab/nb-whisper-${size}-${variant}`,
     bytes: size === "small" ? 175_209_680 : size === "medium" ? 539_212_484 : 1_081_140_203,
     installed: false,
     location: null,
@@ -38,15 +38,15 @@ export function modelList(installedIds: string[] = [], over: Partial<ModelList> 
     model("small-verbatim", "small", "verbatim"),
     model("medium-verbatim", "medium", "verbatim"),
     model("large-verbatim", "large", "verbatim"),
-    model("small-semantic", "small", "semantic"),
-    model("medium-semantic", "medium", "semantic"),
-    model("large-semantic", "large", "semantic"),
+    model("small-main", "small", "main"),
+    model("medium-main", "medium", "main"),
+    model("large-main", "large", "main"),
   ].map((m) => (installedIds.includes(m.id) ? { ...m, installed: true, location: "app" as const } : m));
   const choices = (["rask", "anbefalt", "best"] as const).flatMap((kvalitet, i) =>
     (["lydrett", "tolket"] as const).map((stil) => ({
       stil,
       kvalitet,
-      model_id: `${(["small", "medium", "large"] as const)[i]}-${stil === "lydrett" ? "verbatim" : "semantic"}`,
+      model_id: `${(["small", "medium", "large"] as const)[i]}-${stil === "lydrett" ? "verbatim" : "main"}`,
     })),
   );
   return {
@@ -70,7 +70,7 @@ export const OK_SYSTEM: SystemInfo = {
 };
 
 export class FakeBackend implements Backend {
-  models: ModelList = modelList(["medium-semantic", "small-verbatim"]);
+  models: ModelList = modelList(["medium-main", "small-verbatim"]);
   system: SystemInfo = OK_SYSTEM;
   handlers: BackendEvents | null = null;
   nextJob = 1;

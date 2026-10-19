@@ -15,6 +15,11 @@ pub const DEFAULT_CHUNK_SECS: u32 = 600;
 pub const DEFAULT_SEARCH_SECS: u32 = 30;
 /// Minste lengde et segment får hvis whisper gir start = slutt.
 pub const MIN_SEGMENT_MS: u64 = 200;
+/// Anslått taletid per tegn for segmenter whisper legger ved eller etter
+/// slutten av biten (omtrent 15 tegn i sekundet).
+pub const FILL_MS_PER_CHAR: u64 = 60;
+/// Lengste varighet et slikt segment får.
+pub const MAX_FILL_MS: u64 = 10_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ChunkPlan {
@@ -85,12 +90,21 @@ fn quietest_point(x: &[f32], lo: usize) -> usize {
 /// (verbatim kan gi slutt etter at lyden er slutt), og et segment med null
 /// lengde får [`MIN_SEGMENT_MS`] innenfor biten. Teksten får bare fjernet
 /// mellomrom i endene; tomme segmenter blir `None`. Lydrett tekst endres ikke.
+///
+/// De siste segmentene i en bit får ofte tider ved eller etter slutten av lyden
+/// (docs/kvalitet.md, «Funn i appen» punkt 2). Klemt til biten ville de fått
+/// null lengde. Et slikt segment slutter i stedet ved slutten av biten og
+/// starter der `prev` (forrige segment i filen) sluttet, men ikke mer enn et
+/// anslag ut fra tekstlengden før slutten ([`FILL_MS_PER_CHAR`], høyst
+/// [`MAX_FILL_MS`]). Er det ikke plass etter `prev`, legges det over slutten
+/// av `prev`, men aldri før starten av `prev`, så rekkefølgen holder.
 pub fn place_segment(
     t0_cs: i64,
     t1_cs: i64,
     text: &str,
     chunk_start_ms: u64,
     chunk_end_ms: u64,
+    prev: Option<&Segment>,
 ) -> Option<Segment> {
     let text = text.trim();
     if text.is_empty() {
@@ -99,10 +113,28 @@ pub fn place_segment(
     let rel0 = (t0_cs.max(0) as u64).saturating_mul(10);
     let rel1 = (t1_cs.max(0) as u64).saturating_mul(10);
     let end_limit = chunk_end_ms.max(chunk_start_ms);
-    let start = chunk_start_ms.saturating_add(rel0).min(end_limit);
+    let mut start = chunk_start_ms.saturating_add(rel0).min(end_limit);
     let mut end = chunk_start_ms.saturating_add(rel1).clamp(start, end_limit);
     if end == start {
         end = (start + MIN_SEGMENT_MS).min(end_limit);
+    }
+    if end == end_limit && end - start < MIN_SEGMENT_MS {
+        let chars = text.chars().count() as u64;
+        let want = chars
+            .saturating_mul(FILL_MS_PER_CHAR)
+            .clamp(MIN_SEGMENT_MS, MAX_FILL_MS);
+        let (prev_start, prev_end) =
+            prev.map_or((chunk_start_ms, chunk_start_ms), |p| (p.start_ms, p.end_ms));
+        let floor = prev_start.clamp(chunk_start_ms, end_limit);
+        let after_prev = prev_end.clamp(chunk_start_ms, end_limit);
+        let by_text = end_limit.saturating_sub(want);
+        start = if end_limit - after_prev >= MIN_SEGMENT_MS {
+            after_prev.max(by_text)
+        } else {
+            floor.max(by_text)
+        }
+        .min(start);
+        end = end_limit;
     }
     Some(Segment {
         start_ms: start,
@@ -224,27 +256,112 @@ mod tests {
         // Bit 2 starter ved 9:58,500 og slutter ved 19:57,000.
         let start = 598_500;
         let end = 1_197_000;
-        let s = place_segment(150, 420, "  hei og hå  ", start, end).unwrap();
+        let s = place_segment(150, 420, "  hei og hå  ", start, end, None).unwrap();
         assert_eq!((s.start_ms, s.end_ms), (600_000, 602_700));
         assert_eq!(s.text, "hei og hå");
         // Verbatim kan gi slutt etter lyden: klemmes til bitens slutt.
-        let s = place_segment(59_000, 62_000, "x", start, end).unwrap();
+        let s = place_segment(59_000, 62_000, "x", start, end, None).unwrap();
         assert_eq!((s.start_ms, s.end_ms), (1_188_500, 1_197_000));
-        // Start etter slutten av biten.
-        let s = place_segment(70_000, 71_000, "x", start, end).unwrap();
-        assert_eq!((s.start_ms, s.end_ms), (end, end));
+        // Start etter slutten av biten: aldri null lengde (se egen test).
+        let s = place_segment(70_000, 71_000, "x", start, end, None).unwrap();
+        assert_eq!((s.start_ms, s.end_ms), (end - MIN_SEGMENT_MS, end));
         // Null lengde får minstelengde.
-        let s = place_segment(100, 100, "x", 0, 10_000).unwrap();
+        let s = place_segment(100, 100, "x", 0, 10_000, None).unwrap();
         assert_eq!((s.start_ms, s.end_ms), (1000, 1000 + MIN_SEGMENT_MS));
         // Negative tider og tom tekst.
-        let s = place_segment(-5, -1, "x", 1000, 5000).unwrap();
+        let s = place_segment(-5, -1, "x", 1000, 5000, None).unwrap();
         assert_eq!(s.start_ms, 1000);
-        assert!(place_segment(0, 10, "   ", 0, 1000).is_none());
+        assert!(place_segment(0, 10, "   ", 0, 1000, None).is_none());
+    }
+
+    #[test]
+    fn last_segments_at_end_of_audio_get_a_duration() {
+        // nb-2 i steg 3: lyden er 135,9 s, og whisper legger de to siste
+        // segmentene på eller etter slutten. Før: begge 135 900–135 900.
+        let end = 135_900;
+        let good = place_segment(12_800, 13_300, "og det var det", 0, end, None).unwrap();
+        assert_eq!((good.start_ms, good.end_ms), (128_000, 133_000));
+        // Kort tekst: anslaget (18 tegn × 60 ms) er kortere enn hullet på 2,9 s.
+        let a = "takk for at du kom";
+        let s = place_segment(13_590, 13_590, a, 0, end, Some(&good)).unwrap();
+        assert_eq!((s.start_ms, s.end_ms), (end - 18 * FILL_MS_PER_CHAR, end));
+        // Lang tekst: fyller hullet etter forrige segment, ikke lenger.
+        let a = "takk for at du kom hit i dag og fortalte oss om dette her ja";
+        let s1 = place_segment(13_590, 13_590, a, 0, end, Some(&good)).unwrap();
+        assert_eq!((s1.start_ms, s1.end_ms), (133_000, end));
+        let s2 = place_segment(13_700, 13_800, "ja", 0, end, Some(&s1)).unwrap();
+        // Ingen plass etter s1: legges over slutten av s1, med anslått lengde.
+        assert_eq!((s2.start_ms, s2.end_ms), (end - MIN_SEGMENT_MS, end));
+        for (p, s) in [(&good, &s1), (&s1, &s2)] {
+            assert!(s.end_ms > s.start_ms, "null lengde");
+            assert!(s.start_ms >= p.start_ms, "rekkefølge");
+            assert!(s.end_ms <= end, "etter lyden");
+        }
+        // Lang tekst og langt hull: anslaget ut fra teksten, høyst MAX_FILL_MS.
+        let early = Segment {
+            start_ms: 0,
+            end_ms: 1_000,
+            text: "x".into(),
+        };
+        let long = "a".repeat(500);
+        let s = place_segment(20_000, 20_000, &long, 0, 60_000, Some(&early)).unwrap();
+        assert_eq!((s.start_ms, s.end_ms), (60_000 - MAX_FILL_MS, 60_000));
+        let s =
+            place_segment(20_000, 20_000, "fem ord her nå da", 0, 60_000, Some(&early)).unwrap();
+        assert_eq!(
+            (s.start_ms, s.end_ms),
+            (60_000 - 17 * FILL_MS_PER_CHAR, 60_000)
+        );
+        // Mellom biter: klemmes til denne bitens slutt, ikke filens.
+        let s = place_segment(61_000, 61_000, "hei", 598_500, 1_197_000, None).unwrap();
+        assert_eq!(
+            (s.start_ms, s.end_ms),
+            (1_197_000 - MIN_SEGMENT_MS, 1_197_000)
+        );
+        // Forrige segment fra en tidligere bit trekker ikke starten ut av biten.
+        let s = place_segment(61_000, 61_000, &long, 598_500, 600_000, Some(&early)).unwrap();
+        assert_eq!((s.start_ms, s.end_ms), (598_500, 600_000));
+        // Et kort, ekte segment midt i biten endres ikke.
+        let s = place_segment(100, 115, "eh", 0, 10_000, Some(&early)).unwrap();
+        assert_eq!((s.start_ms, s.end_ms), (1_000, 1_150));
+    }
+
+    #[test]
+    fn exported_tail_has_no_zero_duration() {
+        // Ende til ende med srt/vtt: ingen tidskode med lik start og slutt.
+        use super::super::export::to_srt;
+        let end = 135_900;
+        let mut segs: Vec<Segment> = Vec::new();
+        for (t0, t1, text) in [
+            (0, 500, "første"),
+            (13_590, 13_590, "andre"),
+            (13_590, 13_590, "tredje"),
+        ] {
+            let s = place_segment(t0, t1, text, 0, end, segs.last()).unwrap();
+            segs.push(s);
+        }
+        assert!(segs.iter().all(|s| s.end_ms > s.start_ms));
+        let srt = to_srt(&segs);
+        let cues: Vec<&str> = srt.lines().filter(|l| l.contains(" --> ")).collect();
+        assert_eq!(cues.len(), 3);
+        for cue in cues {
+            let (a, b) = cue.split_once(" --> ").unwrap();
+            assert_ne!(a, b, "null varighet i srt: {cue}");
+        }
+        assert!(srt.contains("00:02:15,900"));
     }
 
     #[test]
     fn lydrett_text_is_not_changed() {
-        let s = place_segment(0, 100, " nordmenn er nordlendinger trøndere ", 0, 10_000).unwrap();
+        let s = place_segment(
+            0,
+            100,
+            " nordmenn er nordlendinger trøndere ",
+            0,
+            10_000,
+            None,
+        )
+        .unwrap();
         assert_eq!(s.text, "nordmenn er nordlendinger trøndere");
     }
 
@@ -265,7 +382,7 @@ mod tests {
             assert!(cut > 0);
             let cs = samples_to_ms(offset as u64);
             let ce = samples_to_ms((offset + cut) as u64);
-            let seg = place_segment(0, 3000, "x", cs, ce).unwrap();
+            let seg = place_segment(0, 3000, "x", cs, ce, None).unwrap();
             assert!(seg.start_ms >= last_end);
             last_end = seg.end_ms;
             offset += cut;
