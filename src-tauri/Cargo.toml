@@ -15,6 +15,16 @@ crate-type = ["rlib"]
 name = "lla-verktoykasse"
 path = "src/main.rs"
 
+# Måleverktøyet for steg 3 (examples/maal.rs). Bygges bare med --features maling,
+# så vanlig bygg, cargo test og CI ikke påvirkes.
+[features]
+maling = []
+
+[[example]]
+name = "maal"
+path = "examples/maal.rs"
+required-features = ["maling"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
