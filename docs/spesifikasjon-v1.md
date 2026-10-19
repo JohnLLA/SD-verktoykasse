@@ -49,7 +49,7 @@ Kvalitet styrer modellstørrelse:
 
 Størrelsene er anslag og må bekreftes i spiken. Appen viser faktisk størrelse før nedlasting.
 
-Søkemåten er beam 5 som standard. «Raskere» (greedy) kan velges i innstillingene.
+Søkemåten er beam 5 som standard. «Raskere» (greedy) kan velges i innstillingene, men gjelder bare tolket. Lydrett bruker alltid beam 5, fordi greedy der gir nesten dobbelt så mange feil uten å være raskere (steg 3).
 
 Lydrett med små bokstaver: vis teksten slik modellen gir den i v1. Ikke legg på automatisk stor forbokstav eller tegnsetting, det gjør teksten mindre lydrett.
 

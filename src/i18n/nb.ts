@@ -398,7 +398,7 @@ const nb = {
       beam5: "Grundig",
       beam5Hint: "Litt bedre tekst, litt tregere.",
       greedy: "Raskere",
-      greedyHint: "Omtrent halvannen gang så fort, med litt flere feil.",
+      greedyHint: "Raskere for tolket, men litt mindre nøyaktig. Lydrett bruker alltid grundig.",
       legend: "Nøyaktighet og fart",
     },
     updates: {

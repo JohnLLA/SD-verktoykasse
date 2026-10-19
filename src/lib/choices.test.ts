@@ -61,6 +61,11 @@ describe("standardvalg (spesifikasjonen)", () => {
     expect(normalizeDecoding("greedy")).toBe("greedy");
     expect(normalizeDecoding("beam9")).toBe("beam5");
   });
+  it("hjelpeteksten for Raskere sier at den bare gjelder tolket", () => {
+    expect(t.settings.decoding.greedyHint).toBe(
+      "Raskere for tolket, men litt mindre nøyaktig. Lydrett bruker alltid grundig.",
+    );
+  });
 });
 
 describe("modellvalg", () => {

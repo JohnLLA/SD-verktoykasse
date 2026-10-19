@@ -327,7 +327,7 @@ pub struct TranscribeRequest {
     pub malform: Malform,
     pub stil: Stil,
     pub kvalitet: Kvalitet,
-    /// Standard: beam 5.
+    /// Standard: beam 5. Gjelder bare tolket; lydrett bruker alltid beam 5.
     #[serde(default)]
     pub decoding: Decoding,
 }
@@ -383,7 +383,7 @@ pub async fn transcribe<R: Runtime>(
     let handle = state.jobs.start_transcription(&entry.id)?;
     let job_id = handle.id;
     let mut job = JobRequest::new(audio, model_path.clone(), request.malform, options);
-    job.decoding = request.decoding;
+    job.decoding = request.decoding.for_stil(request.stil);
     let app2 = app.clone();
     let handle2 = handle.clone();
     let spawned = std::thread::Builder::new()
