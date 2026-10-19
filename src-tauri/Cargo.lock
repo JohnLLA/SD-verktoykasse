@@ -2275,6 +2275,7 @@ name = "lla-verktoykasse"
 version = "0.1.0"
 dependencies = [
  "docx-rs",
+ "minisign-verify",
  "rubato",
  "serde",
  "serde_json",

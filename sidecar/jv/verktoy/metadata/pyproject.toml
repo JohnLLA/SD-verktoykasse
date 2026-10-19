@@ -1,0 +1,19 @@
+[project]
+name = "jv-metadata"
+version = "0.1.0"
+description = "Vis og fjern skjult metadata i bilder, PDF og Office-filer"
+requires-python = ">=3.12,<3.13"
+dependencies = ["jv-common", "pikepdf>=9.0"]
+
+[project.entry-points."jv.tools"]
+metadata = "jv_metadata.cli:main"
+
+[tool.uv.sources]
+jv-common = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pillow>=10.1"]

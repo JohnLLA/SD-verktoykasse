@@ -5,6 +5,9 @@
 
 pub mod transkribering;
 
+// Journalistverktøyene. Spike (steg 6.1): ikke registrert ennå, ingen kommandoer.
+pub mod jv;
+
 use tauri::{Builder, Runtime};
 
 /// ID-ene til verktøyene, i rekkefølgen de vises.

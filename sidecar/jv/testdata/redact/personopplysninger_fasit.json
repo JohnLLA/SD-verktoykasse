@@ -1,0 +1,119 @@
+{
+ "items": [
+  {
+   "type": "fodselsnummer",
+   "tekst": "010190 12480",
+   "normalisert": "01019012480",
+   "sider": [
+    1
+   ],
+   "skal_sladdes": true,
+   "beregning": {
+    "individnummer": "124",
+    "sum1": 102,
+    "k1": 8,
+    "sum2": 110,
+    "k2": 0
+   }
+  },
+  {
+   "type": "fodselsnummer",
+   "tekst": "15068527101",
+   "normalisert": "15068527101",
+   "sider": [
+    2
+   ],
+   "skal_sladdes": true,
+   "beregning": {
+    "individnummer": "271",
+    "sum1": 198,
+    "k1": 0,
+    "sum2": 164,
+    "k2": 1
+   }
+  },
+  {
+   "type": "fodselsnummer",
+   "tekst": "29029241803",
+   "normalisert": "29029241803",
+   "sider": [
+    2
+   ],
+   "skal_sladdes": true,
+   "beregning": {
+    "individnummer": "418",
+    "sum1": 198,
+    "k1": 0,
+    "sum2": 173,
+    "k2": 3
+   }
+  },
+  {
+   "type": "d_nummer",
+   "tekst": "41038815278",
+   "normalisert": "41038815278",
+   "sider": [
+    2
+   ],
+   "skal_sladdes": true,
+   "beregning": {
+    "individnummer": "152",
+    "sum1": 191,
+    "k1": 7,
+    "sum2": 179,
+    "k2": 8
+   }
+  },
+  {
+   "type": "ugyldig_11_siffer",
+   "tekst": "15068527102",
+   "normalisert": "15068527102",
+   "sider": [
+    2
+   ],
+   "skal_sladdes": false,
+   "beregning": null
+  },
+  {
+   "type": "telefon",
+   "tekst": "58 01 23 45",
+   "normalisert": "58012345",
+   "sider": [
+    1
+   ],
+   "skal_sladdes": true,
+   "beregning": null
+  },
+  {
+   "type": "telefon",
+   "tekst": "+47 58 98 76 54",
+   "normalisert": "+4758987654",
+   "sider": [
+    2
+   ],
+   "skal_sladdes": true,
+   "beregning": null
+  },
+  {
+   "type": "epost",
+   "tekst": "kari.fiktivsen@example.no",
+   "normalisert": "kari.fiktivsen@example.no",
+   "sider": [
+    1
+   ],
+   "skal_sladdes": true,
+   "beregning": null
+  },
+  {
+   "type": "term",
+   "tekst": "Kari Fiktivsen",
+   "normalisert": "Kari Fiktivsen",
+   "sider": [
+    1,
+    2
+   ],
+   "skal_sladdes": true,
+   "beregning": null
+  }
+ ]
+}

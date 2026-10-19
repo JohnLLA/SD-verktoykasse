@@ -1,0 +1,13 @@
+[project]
+name = "jv-common"
+version = "0.1.0"
+description = "Felles kode for journalistverktøy: rapport, stier, feil, fremdrift og kommandoen jv"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.scripts]
+jv = "jv_common.cli:entry"
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13"]
+build-backend = "uv_build"

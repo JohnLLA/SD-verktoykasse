@@ -1,0 +1,4 @@
+untrusted comment: signature from minisign secret key 806605C3AD1C7DC5
+RUTFfRytwwVmgA7OJ64pmcYVom9pzcIXaUWzkjHwk4o8zppUoU8ePrsmua9SWlgCQMa0RAjlLOa/qWX9W0n8VU9rRlD1q0U6xgU=
+trusted comment: timestamp:0	file:tools.json	TESTNØKKEL
+00/44Rgl48YIbur9Iv7qWLZiJSFhTNt88PHvlHW9og9fSarPoi/IGGQVM3ymkQvg2ZiPwXeDcRRw0eA081yMDw==
