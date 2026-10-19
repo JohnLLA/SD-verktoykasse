@@ -6,10 +6,10 @@
 //        [--notes-file notater.md] [--repo JohnLLA/lla-verktoykasse-releases] [--out latest.json]
 //
 // Filnavnene er en avtale med nedlastingssiden (site/lla-no/verktoy.html, som
-// velger fil på endelsen .dmg og .msi) og med release-arbeidsflyten:
+// velger fil på endelsen .dmg, og .msi eller setup.exe for Windows) og med release-arbeidsflyten:
 //   LLAs-verktoykasse_<versjon>_aarch64.dmg           Mac, til nedlasting
 //   LLAs-verktoykasse_<versjon>_aarch64.app.tar.gz    Mac, til updater (+ .sig)
-//   LLAs-verktoykasse_<versjon>_x64.msi               Windows, til nedlasting og updater (+ .sig)
+//   LLAs-verktoykasse_<versjon>_x64-setup.exe         Windows (NSIS, per bruker uten administrator), til nedlasting og updater (+ .sig)
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -23,17 +23,17 @@ export function assetNames(version) {
     dmg: `${base}_aarch64.dmg`,
     macUpdate: `${base}_aarch64.app.tar.gz`,
     macSig: `${base}_aarch64.app.tar.gz.sig`,
-    msi: `${base}_x64.msi`,
-    msiSig: `${base}_x64.msi.sig`,
+    exe: `${base}_x64-setup.exe`,
+    exeSig: `${base}_x64-setup.exe.sig`,
   };
 }
 
-export function buildLatest({ version, notes, repo = DEFAULT_REPO, macSig, msiSig, date = new Date() }) {
+export function buildLatest({ version, notes, repo = DEFAULT_REPO, macSig, exeSig, date = new Date() }) {
   if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error(`Ugyldig versjon: ${version}`);
   const n = assetNames(version);
   const url = (name) => `https://github.com/${repo}/releases/download/v${version}/${encodeURIComponent(name)}`;
   const mac = { signature: macSig.trim(), url: url(n.macUpdate) };
-  const win = { signature: msiSig.trim(), url: url(n.msi) };
+  const win = { signature: exeSig.trim(), url: url(n.exe) };
   if (!mac.signature || !win.signature) throw new Error("Tom signatur.");
   return {
     version,
@@ -43,7 +43,7 @@ export function buildLatest({ version, notes, repo = DEFAULT_REPO, macSig, msiSi
       "darwin-aarch64": mac,
       "darwin-aarch64-app": mac,
       "windows-x86_64": win,
-      "windows-x86_64-msi": win,
+      "windows-x86_64-nsis": win,
     },
   };
 }
@@ -63,7 +63,7 @@ function main() {
     repo: args.repo,
     notes: args["notes-file"] ? readFileSync(args["notes-file"], "utf8").trim() : "",
     macSig: readFileSync(join(dir, n.macSig), "utf8"),
-    msiSig: readFileSync(join(dir, n.msiSig), "utf8"),
+    exeSig: readFileSync(join(dir, n.exeSig), "utf8"),
   });
   writeFileSync(args.out ?? join(dir, "latest.json"), JSON.stringify(latest, null, 2) + "\n");
   console.log(`latest.json for ${version}`);

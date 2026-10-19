@@ -185,6 +185,9 @@ export function fakePlatform(): FakePlatform {
     async checkForUpdate() {
       return null;
     },
+    async checkForUpdateNow() {
+      return { status: "none" } as const;
+    },
     async installUpdate() {
       return false;
     },

@@ -47,8 +47,12 @@
       "minimumSystemVersion": "13.0"
     },
     "windows": {
-      "wix": {
-        "language": "nb-NO"
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": [
+          "NorwegianBokmal"
+        ],
+        "displayLanguageSelector": false
       }
     }
   },

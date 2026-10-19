@@ -10,7 +10,7 @@ import { icon } from "../ui/icons";
 import { confirmDialog } from "../ui/modal";
 import { createAboutView } from "./about-view";
 import { createSettingsView } from "./settings-view";
-import { runStartupUpdateCheck } from "./update-check";
+import { runManualUpdateCheck, runStartupUpdateCheck, type UpdateCheckDeps } from "./update-check";
 import { createUpdateNotice, type UpdateNotice } from "./update-notice";
 
 type Page = { kind: "tool"; id: string } | { kind: "settings" } | { kind: "about" };
@@ -72,7 +72,21 @@ export async function startApp(
     }
   }
 
-  const settings = createSettingsView(platform, settingsSections, settingsHosts);
+  const updateDeps: UpdateCheckDeps = {
+    platform,
+    notice: updateNotice,
+    confirmInstall: async () => {
+      if (!instances.some((i) => i.tool.busy?.())) return true;
+      return confirmDialog({
+        title: t.update.busyTitle,
+        body: t.update.busyBody,
+        confirmLabel: t.update.busyConfirm,
+        cancelLabel: t.update.busyCancel,
+        danger: true,
+      });
+    },
+  };
+  const settings = createSettingsView(platform, settingsSections, settingsHosts, () => runManualUpdateCheck(updateDeps));
   const about = createAboutView(platform);
   const settingsPage = h("section", { class: "page", id: "page-settings", hidden: true }, settings.el);
   const aboutPage = h("section", { class: "page", id: "page-about", hidden: true }, about.el);
@@ -120,20 +134,7 @@ export async function startApp(
   navigate(first ? { kind: "tool", id: first.id } : { kind: "settings" });
 
   // ---- versjonssjekk (hopper over alt nettarbeid hvis bryteren er av). Feil vises ikke.
-  void runStartupUpdateCheck({
-    platform,
-    notice: updateNotice,
-    confirmInstall: async () => {
-      if (!instances.some((i) => i.tool.busy?.())) return true;
-      return confirmDialog({
-        title: t.update.busyTitle,
-        body: t.update.busyBody,
-        confirmLabel: t.update.busyConfirm,
-        cancelLabel: t.update.busyCancel,
-        danger: true,
-      });
-    },
-  }).catch(() => undefined);
+  void runStartupUpdateCheck(updateDeps).catch(() => undefined);
 
   // ---- vakt ved lukking
   await platform.onCloseRequested(async () => {

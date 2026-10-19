@@ -13,9 +13,9 @@
 # PR-bygg signerer aldri og laster aldri opp, selv om hemmelighetene finnes.
 #
 # Filnavnene er en avtale med nedlastingssiden (site/lla-no/verktoy.html velger
-# fil på endelsen .dmg og .msi) og med oppdateringsfilen latest.json:
+# fil på endelsen .dmg, og .msi eller setup.exe for Windows) og med oppdateringsfilen latest.json:
 #   LLAs-verktoykasse_<versjon>_aarch64.dmg
-#   LLAs-verktoykasse_<versjon>_x64.msi
+#   LLAs-verktoykasse_<versjon>_x64-setup.exe   (NSIS, installeres per bruker uten administrator)
 # (+ .app.tar.gz og .sig-filer til appens oppdatering)
 name: release
 on:
@@ -226,7 +226,7 @@ jobs:
             bundles: app,dmg
           - os: windows-latest
             name: Windows (x64)
-            bundles: msi
+            bundles: nsis
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     defaults:
@@ -446,10 +446,10 @@ jobs:
         if: runner.os == 'Windows' && env.WIN_MODE != 'none'
         shell: pwsh
         run: |
-          $msi = Get-ChildItem src-tauri/target/release/bundle/msi/*.msi | Select-Object -First 1
-          $sig = Get-AuthenticodeSignature $msi.FullName
+          $exe = Get-ChildItem src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          $sig = Get-AuthenticodeSignature $exe.FullName
           Write-Host "Status: $($sig.Status), utsteder: $($sig.SignerCertificate.Issuer)"
-          if ($sig.Status -ne 'Valid') { Write-Error "msi-filen har ikke gyldig signatur ($($sig.Status))"; exit 1 }
+          if ($sig.Status -ne 'Valid') { Write-Error "installasjonsfilen har ikke gyldig signatur ($($sig.Status))"; exit 1 }
 
       # ---------------- samle med faste, enkle filnavn
       - name: Gi filene navn nedlastingssiden og updateren finner
@@ -464,9 +464,9 @@ jobs:
               cp "$(ls $B/macos/*.app.tar.gz.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.app.tar.gz.sig"
             fi
           else
-            cp "$(ls $B/msi/*.msi | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64.msi"
+            cp "$(ls $B/nsis/*-setup.exe | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64-setup.exe"
             if [ "$UPDATER_SIGN" = true ]; then
-              cp "$(ls $B/msi/*.msi.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64.msi.sig"
+              cp "$(ls $B/nsis/*-setup.exe.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64-setup.exe.sig"
             fi
           fi
           ls -l release-filer
@@ -525,7 +525,7 @@ jobs:
             echo "LLAs verktøykasse $VERSION."
             echo
             echo "- **Mac:** last ned filen som slutter på .dmg (Apple Silicon, macOS 13 eller nyere)."
-            echo "- **Windows:** last ned filen som slutter på .msi (64-bit, Windows 10 eller 11)."
+            echo "- **Windows:** last ned filen som slutter på setup.exe (64-bit, Windows 10 eller 11). Den installeres for din bruker og trenger ikke administratorrettigheter."
             echo
             echo "Appen oppdaterer seg selv når en ny versjon kommer, hvis du ikke har slått det av under Innstillinger."
             if [ "$WIN_MODE" = none ]; then
@@ -543,7 +543,8 @@ jobs:
           set -euo pipefail
           ls -l release-filer
           [ "$(ls release-filer/*.dmg | wc -l)" = 1 ]
-          [ "$(ls release-filer/*.msi | wc -l)" = 1 ]
+          [ "$(ls release-filer/*setup.exe | wc -l)" = 1 ]
+          [ "$(ls release-filer/*.msi 2>/dev/null | wc -l)" = 0 ]
           node -e "JSON.parse(require('fs').readFileSync('release-filer/latest.json','utf8'))"
 
       - name: Opprett eller oppdater utkastet i releases-repoet

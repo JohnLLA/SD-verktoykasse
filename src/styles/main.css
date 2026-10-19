@@ -966,6 +966,18 @@ dialog.modal h2 {
   overflow-wrap: anywhere;
 }
 
+.check-now {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.check-now-status {
+  margin: 0;
+}
+
 .switch-row {
   display: flex;
   align-items: center;

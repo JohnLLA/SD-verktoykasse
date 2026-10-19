@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { KEYS, MemorySettings } from "../lib/settings";
-import { runStartupUpdateCheck, type UpdateCheckDeps } from "./update-check";
+import type { UpdateCheckResult } from "../platform/types";
+import { runManualUpdateCheck, runStartupUpdateCheck, type UpdateCheckDeps } from "./update-check";
 
-function setup(opts: { switchOn?: boolean; version?: string | null; installOk?: boolean; confirm?: boolean }) {
+function setup(opts: { now?: UpdateCheckResult; switchOn?: boolean; version?: string | null; installOk?: boolean; confirm?: boolean }) {
   const settings = new MemorySettings();
   if (opts.switchOn !== undefined) settings.data.set(KEYS.versionCheck, opts.switchOn);
   const calls: string[] = [];
@@ -14,6 +15,10 @@ function setup(opts: { switchOn?: boolean; version?: string | null; installOk?: 
       async checkForUpdate() {
         calls.push("check");
         return opts.version ?? null;
+      },
+      async checkForUpdateNow() {
+        calls.push("now");
+        return opts.now ?? { status: "none" };
       },
       async installUpdate() {
         calls.push("install");
@@ -76,5 +81,32 @@ describe("versjonssjekk ved oppstart", () => {
     s.install();
     await tick();
     expect(s.calls).toEqual(["check", "show:0.2.0"]);
+  });
+
+  describe("Se etter ny versjon nå", () => {
+    it("sjekker også når den automatiske sjekken er av, og viser samme varsel", async () => {
+      const s = setup({ switchOn: false, now: { status: "available", version: "0.3.0" } });
+      expect(await runStartupUpdateCheck(s.deps)).toBe(false);
+      expect(s.calls).toEqual([]);
+      expect(await runManualUpdateCheck(s.deps)).toEqual({ status: "available", version: "0.3.0" });
+      expect(s.calls).toEqual(["now", "show:0.3.0"]);
+      s.install();
+      await tick();
+      expect(s.calls).toContain("install");
+    });
+
+    it("gjør ingen nettkall før den trykkes", async () => {
+      const s = setup({ switchOn: false });
+      await runStartupUpdateCheck(s.deps);
+      expect(s.calls).not.toContain("now");
+    });
+
+    it("ingen ny versjon eller feil gir ikke noe varsel", async () => {
+      for (const now of [{ status: "none" }, { status: "failed" }] as UpdateCheckResult[]) {
+        const s = setup({ now });
+        expect((await runManualUpdateCheck(s.deps)).status).toBe(now.status);
+        expect(s.calls).toEqual(["now"]);
+      }
+    });
   });
 });

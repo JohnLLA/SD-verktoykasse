@@ -328,6 +328,11 @@ export async function installMock(): Promise<Platform> {
     async checkForUpdate() {
       return param("oppdatering", "") === "" ? null : "0.2.0";
     },
+    async checkForUpdateNow() {
+      await new Promise((r) => setTimeout(r, 600));
+      const v = param("oppdatering", "");
+      return v === "" ? ({ status: "none" } as const) : v === "nett" ? ({ status: "failed" } as const) : ({ status: "available", version: "0.2.0" } as const);
+    },
     async installUpdate() {
       await new Promise((r) => setTimeout(r, 1500));
       return param("oppdatering", "") !== "feil";

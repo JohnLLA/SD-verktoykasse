@@ -12,7 +12,7 @@ privat repo  JohnLLA/lla-verktoykasse            kode, CI, hemmeligheter
                     v
         arbeidsflyten «release»  (.github/workflows/release.yml)
           1. plan: sjekker tagg, versjon, hemmeligheter, tester
-          2. bygg: .dmg (Mac arm64) og .msi (Windows x64), signert når hemmelighetene finnes
+          2. bygg: .dmg (Mac arm64) og Windows-installasjon (`-setup.exe`, x64), signert når hemmelighetene finnes
           3. publiser: UTKAST i det offentlige repoet
                     |
                     v
@@ -26,17 +26,17 @@ Alle releaser ligger i `JohnLLA/lla-verktoykasse-releases`. Arbeidsflyten lager 
 
 ## Filnavn (avtale med nedlastingssiden)
 
-Nedlastingssiden (`site/lla-no/verktoy.html`) henter `releases/latest` fra API-et og velger fil på endelsen: `.dmg` for Mac (foretrekker navn med `aarch64`), `.msi` for Windows. Release-arbeidsflyten gir derfor disse navnene, alltid bare ASCII og uten mellomrom:
+Nedlastingssiden (`site/lla-no/verktoy.html`) henter `releases/latest` fra API-et og velger fil på endelsen: `.dmg` for Mac (foretrekker navn med `aarch64`), for Windows først `.msi` og ellers `setup.exe`. Vi lager bare `setup.exe` (se «Windows-installasjon» under), så siden finner den. Release-arbeidsflyten gir derfor disse navnene, alltid bare ASCII og uten mellomrom:
 
 | Fil | Bruk |
 |---|---|
 | `LLAs-verktoykasse_<versjon>_aarch64.dmg` | Mac, nedlasting for medlemmer |
-| `LLAs-verktoykasse_<versjon>_x64.msi` | Windows, nedlasting for medlemmer, og oppdateringspakken på Windows |
-| `LLAs-verktoykasse_<versjon>_x64.msi.sig` | signatur for oppdateringen |
+| `LLAs-verktoykasse_<versjon>_x64-setup.exe` | Windows, nedlasting for medlemmer, og oppdateringspakken på Windows |
+| `LLAs-verktoykasse_<versjon>_x64-setup.exe.sig` | signatur for oppdateringen |
 | `LLAs-verktoykasse_<versjon>_aarch64.app.tar.gz` (+ `.sig`) | oppdateringspakken på Mac |
 | `latest.json` | oppdateringsfilen appen leser |
 
-Det er nøyaktig én fil som slutter på `.dmg` og én på `.msi` per release (`.sig` og `.tar.gz` treffer ikke siden). Mønsteret er låst i `tools/lag-latest-json.mjs` og testet (`npm run test:tools`). Endres siden, må filnavnene fortsatt tilfredsstille dette.
+Det er nøyaktig én fil som slutter på `.dmg` og én på `setup.exe` per release, og ingen `.msi` (`.sig` og `.tar.gz` treffer ikke siden). Mønsteret er låst i `tools/lag-latest-json.mjs` og testet (`npm run test:tools`). Endres siden, må filnavnene fortsatt tilfredsstille dette.
 
 Versjonsnummeret finnes ett sted: `version` i `src-tauri/tauri.conf.json`. Taggen må være `v` + det nummeret (arbeidsflyten stopper ellers). `version` i `src-tauri/Cargo.toml` og `package.json` brukes ikke av bygget og trenger ikke endres.
 
@@ -118,7 +118,7 @@ Hva arbeidsflyten gjør: legger sertifikatet i en midlertidig nøkkelring, lar `
 
 ### 4. Windows: kodesignering (avklares; usignert fungerer til da)
 
-Spesifikasjonens åpne spørsmål. Til du har bestemt deg, bygges `.msi` **usignert**, og release-notatene får automatisk en tydelig merknad om at Windows kan vise «Windows beskyttet PCen» og hvordan man går forbi. Dette styres av **variabelen** `WINDOWS_SIGNING`:
+Spesifikasjonens åpne spørsmål. Til du har bestemt deg, bygges `setup.exe` **usignert**, og release-notatene får automatisk en tydelig merknad om at Windows kan vise «Windows beskyttet PCen» og hvordan man går forbi. Dette styres av **variabelen** `WINDOWS_SIGNING`:
 
 | `WINDOWS_SIGNING` (Variables) | Betydning |
 |---|---|
@@ -150,7 +150,7 @@ For `trusted-signing`: Azure-portalen, opprett Trusted Signing-konto og sertifik
 | `AZURE_TS_ACCOUNT` (variable) | navnet på signeringskontoen |
 | `AZURE_TS_PROFILE` (variable) | navnet på sertifikatprofilen |
 
-Arbeidsflyten kontrollerer med `Get-AuthenticodeSignature` at `.msi` har gyldig signatur når signering er valgt.
+Arbeidsflyten kontrollerer med `Get-AuthenticodeSignature` at installasjonsfilen har gyldig signatur når signering er valgt.
 
 ### Oversikt over alt
 
@@ -171,7 +171,7 @@ Variables: `WINDOWS_SIGNING` (valgfri), `WINDOWS_TIMESTAMP_URL`, `AZURE_TS_ENDPO
    ```
    Taggen må være `v` + versjonen i `tauri.conf.json`. Passer de ikke, stopper arbeidsflyten før noe bygges.
 5. **Vent på arbeidsflyten.** Den stopper tydelig hvis noe av dette mangler: `RELEASES_TOKEN`, oppdateringsnøkkelen, ekte `pubkey` i konfigurasjonen, eller Apple-hemmelighetene. Sammendraget på kjøringen lister hva som mangler.
-6. **Kontroller utkastet** i `https://github.com/JohnLLA/lla-verktoykasse-releases/releases`: nøyaktig seks filer finnes (`.dmg`, `.msi`, `.msi.sig`, `.app.tar.gz`, `.app.tar.gz.sig` og `latest.json`), og notatene stemmer. Rediger gjerne notatene (men `notes` i `latest.json` er generisk).
+6. **Kontroller utkastet** i `https://github.com/JohnLLA/lla-verktoykasse-releases/releases`: nøyaktig seks filer finnes (`.dmg`, `-setup.exe`, `-setup.exe.sig`, `.app.tar.gz`, `.app.tar.gz.sig` og `latest.json`), og notatene stemmer. Rediger gjerne notatene (men `notes` i `latest.json` er generisk).
 7. **Publiser** ved å trykke «Publish release». Først da får nedlastingssiden og appens oppdatering den nye versjonen. Er det en forhåndsversjon (`v0.2.0-beta.1`), merkes den som pre-release og vises ikke som «siste».
 8. **Kontroller:** `https://github.com/JohnLLA/lla-verktoykasse-releases/releases/latest/download/latest.json` viser den nye versjonen, og nedlastingssiden gir riktige knapper.
 
@@ -180,7 +180,8 @@ Rettelser: en publisert versjon endres ikke (arbeidsflyten nekter å skrive over
 ## Oppdatering i appen
 
 - Tauri `updater`-pluginen (godkjent i spesifikasjonen). Ved oppstart spør appen om `latest.json` hvis bryteren «Se etter ny versjon når appen starter» er på (standard). Finnes det en nyere versjon, vises et varsel øverst med «Oppdater nå» og «Senere». Appen laster ned, kontrollerer signaturen mot den innebygde offentlige nøkkelen, installerer og starter på nytt. Er en jobb i gang, spør appen først.
-- **Bryteren av:** da kaller ikke appen noe oppdateringskall. Det sjekkes både i grensesnittet og i Rust (`src-tauri/src/updater.rs` nekter å gjøre kallet). Testet i `src/shell/update-check.test.ts`.
+- **Bryteren av:** da kaller ikke appen noe oppdateringskall ved oppstart. Det sjekkes både i grensesnittet og i Rust (`src-tauri/src/updater.rs` nekter å gjøre kallet). Kan Rust ikke lese innstillingen, eller har den en uventet verdi, sjekkes det heller ikke (sikker standard). Er den aldri lagret, gjelder standarden «på». Testet i `src/shell/update-check.test.ts` og `updater.rs`.
+- **«Se etter ny versjon nå»** (Innstillinger, Oppdateringer): sjekker bare når den trykkes, også når den automatiske sjekken er av. Samme varsel som ved oppstart. Kallet går gjennom Rust-kommandoen; webvisningen har fortsatt ingen nettilgang.
 - Feil (ingen nett, ugyldig signatur) gir ingen melding ved oppstartssjekken. Feiler selve installasjonen, står det en melding med «Prøv igjen».
 - Ikke lagt til: `tauri-plugin-process` eller andre plugins. Omstart skjer med `AppHandle::restart()` i Tauri selv.
 
@@ -196,12 +197,21 @@ Webvisningen (grensesnittet) har **ingen** nettilgang: CSP `connect-src` tillate
 
 Redaksjoner med brannmur som slipper gjennom utvalgte verter, må altså tillate disse. Begrensninger som er bygget inn utover vertslisten: adressen til `latest.json` ligger fast i `tauri.conf.json`; Rust-koden nekter å laste ned en pakke hvis adressen i `latest.json` ikke er `https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/...`; og pakken må ha gyldig signatur fra vår nøkkel. Videresendingen til `githubusercontent.com` styres av GitHub og kan ikke låses i CSP (den gjelder bare webvisningen); den er derfor dokumentert her og dekket av signaturkontrollen. Forespørslene inneholder ingen lyd, tekst eller filnavn (reqwest sender standard `User-Agent` og plattformens TLS).
 
+## Windows-installasjon: per bruker, uten administrator
+
+Medlemmene på redaksjons-PC-er har ofte ikke administratorrettigheter. Derfor installeres appen **per bruker** (`%LOCALAPPDATA%`), uten UAC-spørsmål.
+
+- Tauri 2 sin `.msi` (WiX) kan ikke installere per bruker uten en egen, skjør WiX-mal. NSIS har støtte for det innebygd (`bundle.windows.nsis.installMode: "currentUser"`), så Windows leveres som `LLAs-verktoykasse_<versjon>_x64-setup.exe`. NSIS er en del av Tauri sin bundler; ingen ny avhengighet.
+- Oppdatering virker som før: `latest.json` peker på `-setup.exe`, og updateren kjører den i passiv modus (`plugins.updater.windows.installMode`). Siden installasjonen er per bruker, trengs ikke administrator for oppdateringer heller.
+- WebView2 (webvisningen) følger med Windows 11 og de fleste oppdaterte Windows 10. Mangler den, laster installasjonsprogrammet ned en bootstrapper fra Microsoft under installasjonen (den eneste ekstra nettforbindelsen, og bare ved installasjon). Dette må prøves på en ren redaksjons-PC (sjekklisten).
+- Eksisterende installasjoner: det finnes ingen `.msi`-versjon ute, så ingen må flyttes over.
+
 ## Byggeinnstillinger (uendret fra appbygget)
 
 - `.cargo/config.toml`: `GGML_NATIVE=OFF`, AVX2/FMA/F16C/BMI2 på, `GGML_AVX512=OFF`, MSVC `/O2` via `src-tauri/cmake/msvc-optimize.cmake`, `MACOSX_DEPLOYMENT_TARGET=13.0`.
 - Release-arbeidsflyten gjør samme kontroll av `/O2` på Windows som PR-bygget, og feiler hvis ggml er bygget med AVX-512. AVX2-flagget i `ggml-cpu.vcxproj` gir bare en advarsel hvis det ikke gjenkjennes (denne delen er ikke prøvd på Windows ennå).
 - Appen sjekker AVX2 når den kjører og sier fra på eldre PC-er (steg 2).
-- Mac: Metal. `minimumSystemVersion` 13.0. Windows: WiX-installasjon (`.msi`), norsk språk.
+- Mac: Metal. `minimumSystemVersion` 13.0. Windows: NSIS-installasjon (`-setup.exe`), norsk språk, se under.
 
 ## Byggeminutter
 

@@ -22,6 +22,11 @@ export interface DropHandlers {
   onHover(over: boolean): void;
 }
 
+export type UpdateCheckResult =
+  | { status: "available"; version: string }
+  | { status: "none" }
+  | { status: "failed" };
+
 export interface Platform {
   os: Os;
   settings: SettingsStore;
@@ -43,6 +48,11 @@ export interface Platform {
    * Det eneste nettkallet appen gjør uten at brukeren ber om det.
    */
   checkForUpdate(): Promise<string | null>;
+  /**
+   * Brukeren trykket «Se etter ny versjon nå». Gjør nettkallet uansett
+   * hva bryteren for automatisk sjekk står på.
+   */
+  checkForUpdateNow(): Promise<UpdateCheckResult>;
   /** Laster ned og installerer funnet oppdatering, og starter appen på nytt. `false` ved feil. */
   installUpdate(): Promise<boolean>;
   /**

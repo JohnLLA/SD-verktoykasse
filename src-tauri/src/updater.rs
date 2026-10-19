@@ -7,9 +7,10 @@
 //! Ingen lyd, tekst, filnavn eller brukerdata er med.
 //!
 //! Kontrollene er doble:
-//! - Er bryteren «Se etter ny versjon når appen starter» slått av, gjør
-//!   `check_for_update` ingenting og ringer ikke ut, også om grensesnittet
-//!   skulle be om det.
+//! - Er bryteren «Se etter ny versjon når appen starter» slått av (eller kan
+//!   ikke leses), gjør den automatiske sjekken ingenting og ringer ikke ut, også
+//!   om grensesnittet skulle be om det. Bare knappen «Se etter ny versjon nå»
+//!   (`manual`) sjekker uansett, fordi brukeren ber om det selv.
 //! - Nedlastingsadressen i `latest.json` må peke på releases-repoet på GitHub,
 //!   ellers nektes installasjonen. I tillegg verifiseres hver pakke mot den
 //!   offentlige nøkkelen i konfigurasjonen før den installeres.
@@ -55,13 +56,20 @@ pub enum UpdateError {
     Failed,
 }
 
-/// Er bryteren på? Standard er på (som `loadVersionCheck` i frontend).
-fn version_check_enabled<R: Runtime>(app: &AppHandle<R>) -> bool {
-    app.store(SETTINGS_FILE)
-        .ok()
-        .and_then(|s| s.get(VERSION_CHECK_KEY))
-        .and_then(|v| v.as_bool())
-        .unwrap_or(true)
+/// Skal oppstartssjekken gjøres? Sikker standard: kan innstillingen ikke
+/// leses, eller har den en uventet verdi, sjekkes det ikke automatisk.
+/// Er den aldri lagret (første oppstart), gjelder standarden «på».
+pub fn auto_check_allowed(stored: Result<Option<serde_json::Value>, ()>) -> bool {
+    match stored {
+        Ok(None) => true,
+        Ok(Some(v)) => v.as_bool().unwrap_or(false),
+        Err(()) => false,
+    }
+}
+
+fn read_version_check<R: Runtime>(app: &AppHandle<R>) -> Result<Option<serde_json::Value>, ()> {
+    let store = app.store(SETTINGS_FILE).map_err(|_| ())?;
+    Ok(store.get(VERSION_CHECK_KEY))
 }
 
 /// Er dette en nedlastingsadresse vi stoler på?
@@ -75,12 +83,16 @@ pub fn is_allowed_download_url(url: &Url) -> bool {
 }
 
 /// Sjekker om det finnes en nyere versjon. `Ok(None)` = ingen ny.
+///
+/// `manual` er `true` bare når brukeren selv trykker «Se etter ny versjon nå».
+/// Da sjekkes det uansett bryteren. Ellers (oppstart) kreves det at bryteren er på.
 #[tauri::command]
 pub async fn check_for_update<R: Runtime>(
     app: AppHandle<R>,
     pending: State<'_, PendingUpdate>,
+    manual: Option<bool>,
 ) -> Result<Option<UpdateInfo>, UpdateError> {
-    if !version_check_enabled(&app) {
+    if !manual.unwrap_or(false) && !auto_check_allowed(read_version_check(&app)) {
         return Err(UpdateError::Disabled);
     }
     let updater = app.updater().map_err(|_| UpdateError::Failed)?;
@@ -137,6 +149,17 @@ mod tests {
         assert!(!ok("https://github.com.evil.example/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x"));
         assert!(!ok("https://github.com@evil.example/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x"));
         assert!(!ok("https://github.com:8443/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x"));
+    }
+
+    #[test]
+    fn automatic_check_has_safe_default() {
+        use serde_json::json;
+        assert!(auto_check_allowed(Ok(None))); // aldri satt: standard er på
+        assert!(auto_check_allowed(Ok(Some(json!(true)))));
+        assert!(!auto_check_allowed(Ok(Some(json!(false)))));
+        assert!(!auto_check_allowed(Ok(Some(json!("true"))))); // uventet verdi
+        assert!(!auto_check_allowed(Ok(Some(json!(null)))));
+        assert!(!auto_check_allowed(Err(()))); // kan ikke leses
     }
 
     #[test]
