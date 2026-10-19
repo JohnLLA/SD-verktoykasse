@@ -217,6 +217,11 @@ if (process.argv.includes("--check")) {
   const current = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
   if (current !== text) {
     console.error("src/assets/tredjepart.txt er utdatert. Kjør: node tools/lag-tredjepartsmelding.mjs");
+    const a = new Set(current.split("\n"));
+    const b = new Set(text.split("\n"));
+    const only = (x, y) => [...x].filter((l) => !y.has(l)).slice(0, 15).map((l) => "    " + l.slice(0, 120));
+    console.error("  Bare i generert:\n" + only(b, a).join("\n"));
+    console.error("  Bare i filen:\n" + only(a, b).join("\n"));
     process.exit(1);
   }
   console.log(`tredjepart.txt er oppdatert (${components.length} komponenter, ${sorted.length} lisenstekster).`);
