@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import re
 import shutil
 
 from .errors import UserError
@@ -24,9 +26,30 @@ SETUP_GUIDE = {
 }
 
 
+def env_var(name: str) -> str:
+    """Environment variable that may point to the program: ffprobe -> JV_FFPROBE.
+
+    The packaged tools (sidecar/build, jv-package.json) set these to the
+    programs inside the package.
+    """
+    return "JV_" + re.sub(r"[^A-Za-z0-9]", "_", name).upper()
+
+
+def _from_env(name: str) -> str | None:
+    value = os.environ.get(env_var(name))
+    if value and os.path.isabs(value) and os.path.isfile(value) and os.access(value, os.X_OK):
+        return value
+    return None
+
+
+def find_binary(name: str) -> str | None:
+    """Full path to the program: JV_<NAME> first, then PATH. None if missing."""
+    return _from_env(name) or shutil.which(name)
+
+
 def has_binary(name: str) -> bool:
-    """True if the program is found in PATH."""
-    return shutil.which(name) is not None
+    """True if the program is found (JV_<NAME> or PATH)."""
+    return find_binary(name) is not None
 
 
 def install_hint(name: str) -> str:
@@ -37,8 +60,11 @@ def install_hint(name: str) -> str:
 
 
 def require_binary(name: str) -> str:
-    """Return the full path to the program, or raise a Norwegian UserError."""
-    path = shutil.which(name)
+    """Return the full path to the program, or raise a Norwegian UserError.
+
+    JV_<NAME> (set by the packaged tools) is checked before PATH.
+    """
+    path = find_binary(name)
     if path is None:
         raise UserError(
             f"Programmet «{name}» er ikke installert eller ikke i PATH. "

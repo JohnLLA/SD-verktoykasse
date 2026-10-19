@@ -75,8 +75,9 @@ class FileResult:
 
 def check_dependencies() -> None:
     """Raise UserError (Norwegian, with brew command) if something is missing."""
+    # Ghostscript is not needed: ocrmypdf writes plain PDF (output_type="pdf"),
+    # not PDF/A (docs/spike-sidecar.md, decided by John Inge 19.10.2026).
     tesseract = require_binary("tesseract")
-    require_binary("gs")
     proc = subprocess.run(
         [tesseract, "--list-langs"], capture_output=True, text=True, check=False
     )
@@ -332,7 +333,7 @@ _ERROR_TEXT = {
     "PriorOcrFoundError": "PDF-en har allerede et tekstlag.",
     "TaggedPDFError": "PDF-en er en tagget, digital PDF og trenger ikke OCR.",
     "MissingDependencyError": "Et program ocrmypdf trenger, mangler. "
-    "Installer med: brew install tesseract tesseract-lang ghostscript",
+    "Installer med: brew install tesseract tesseract-lang",
     "TesseractConfigError": "Tesseract er feil satt opp (mangler konfigurasjonsfiler). "
     "Installer på nytt med: brew reinstall tesseract tesseract-lang",
 }

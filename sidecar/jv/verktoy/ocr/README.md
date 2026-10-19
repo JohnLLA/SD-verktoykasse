@@ -19,8 +19,9 @@ uv run jv ocr innsyn/ --out ut/
   ordsikkerhet per OCR-side, og en advarsel for hver side med sikkerhet under 60.
 - Fremdrift skrives som JSON-linjer på stderr.
 
-Krever `tesseract` med språkdata `nor` og `eng`, og `ghostscript`:
-`brew install tesseract tesseract-lang ghostscript`.
+Krever `tesseract` med språkdata `nor` og `eng`:
+`brew install tesseract tesseract-lang`. Ghostscript trengs ikke, fordi
+utfila er vanlig PDF, ikke PDF/A.
 
 ## Valg og kjente begrensninger
 

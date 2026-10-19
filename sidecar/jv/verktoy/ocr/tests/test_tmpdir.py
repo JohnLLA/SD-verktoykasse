@@ -12,7 +12,7 @@ from jv_ocr import core
 
 from ocr_testhelpers import DATA, pdf_text
 
-pytestmark = [skip_if_missing("tesseract"), skip_if_missing("gs")]
+pytestmark = [skip_if_missing("tesseract")]
 
 
 def _run(tmp_path: Path) -> Path:

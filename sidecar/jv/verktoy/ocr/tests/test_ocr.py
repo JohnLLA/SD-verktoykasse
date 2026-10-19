@@ -11,7 +11,7 @@ from jv_ocr import core
 
 from ocr_testhelpers import DATA, line_angle, page_image, pdf_text, report_of, run_cli
 
-pytestmark = [skip_if_missing("tesseract"), skip_if_missing("gs")]
+pytestmark = [skip_if_missing("tesseract")]
 
 
 def test_scanned_page_becomes_searchable_cli(tmp_path, capsys):

@@ -66,13 +66,14 @@ def test_missing_out_argument(capsys):
     _assert_user_error(code, err, "Ugyldige argumenter")
 
 
-def test_missing_ghostscript(monkeypatch):
+@skip_if_missing("tesseract")
+def test_ghostscript_is_not_required(monkeypatch):
     import shutil
 
     real = shutil.which
+    monkeypatch.delenv("JV_GS", raising=False)
     monkeypatch.setattr(shutil, "which", lambda n, *a, **k: None if n == "gs" else real(n))
-    with pytest.raises(core.UserError, match="brew install ghostscript"):
-        core.check_dependencies()
+    core.check_dependencies()  # no UserError: ocrmypdf writes plain PDF without Ghostscript
 
 
 def test_missing_tesseract(monkeypatch):
@@ -158,7 +159,6 @@ def test_garbage_pdf(tmp_path, capsys):
 
 
 @skip_if_missing("tesseract")
-@skip_if_missing("gs")
 @pytest.mark.parametrize("size", [20000, 60000])
 def test_truncated_pdf(tmp_path, capsys, size):
     bad = tmp_path / "avkuttet.pdf"
