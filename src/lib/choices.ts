@@ -49,13 +49,22 @@ export function normalizeDecoding(raw: unknown): Decoding {
   return pick(["beam5", "greedy"] as const, raw, DEFAULT_DECODING);
 }
 
+/**
+ * Lydrett nynorsk gir det som blir sagt, så bokmålstale gir noe bokmål
+ * (docs/kvalitet.md). Forklaringen vises når begge er valgt. Teksten
+ * etterbehandles ikke (regel 4).
+ */
+export function showLydrettNynorskNote(c: Pick<Choices, "malform" | "stil">): boolean {
+  return c.stil === "lydrett" && c.malform === "nynorsk";
+}
+
 /** Modellen kjernen bruker for en kombinasjon av stil og kvalitet. */
 export function modelFor(list: ModelList, stil: Stil, kvalitet: Kvalitet): ModelStatus | undefined {
   const choice = list.choices.find((c) => c.stil === stil && c.kvalitet === kvalitet);
   return choice ? list.models.find((m) => m.id === choice.model_id) : undefined;
 }
 
-/** `NbAiLab/nb-whisper-medium-semantic` blir `nb-whisper-medium-semantic`. */
+/** `NbAiLab/nb-whisper-medium-verbatim` blir `nb-whisper-medium-verbatim`. */
 export function modelDisplayName(m: Pick<ModelStatus, "repo">): string {
   const parts = m.repo.split("/");
   return parts[parts.length - 1] ?? m.repo;

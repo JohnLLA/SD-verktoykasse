@@ -154,7 +154,7 @@ class MockBackend implements Backend {
         ? []
         : choice === "alle"
           ? all
-          : ["nb-whisper-medium-semantic-q5_0", "nb-whisper-small-verbatim-q5_0"],
+          : ["nb-whisper-medium-q5_0", "nb-whisper-small-verbatim-q5_0"],
     );
   }
 

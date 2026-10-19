@@ -888,10 +888,7 @@ pub(crate) mod tests {
     // ---- Mot ekte Hugging Face. Kjøres i CI med `--ignored`. ----
 
     /// Modellene integrasjonstestene trenger, lastet ned med appens egen kode.
-    pub const CI_MODELS: &[&str] = &[
-        "nb-whisper-small-verbatim-q5_0",
-        "nb-whisper-small-semantic-q5_0",
-    ];
+    pub const CI_MODELS: &[&str] = &["nb-whisper-small-verbatim-q5_0", "nb-whisper-small-q5_0"];
 
     fn ci_model_dir() -> PathBuf {
         match std::env::var_os("LLA_TEST_MODEL_DIR") {

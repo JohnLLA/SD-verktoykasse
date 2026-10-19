@@ -18,7 +18,7 @@ Les `CLAUDE.md` og `docs/spesifikasjon-v1.md` først. Gå så gjennom diffen mot
 - Telemetri, analyse eller krasjrapportering lagt til? Da er svaret MÅ FIKSES.
 
 **Riktig modell:**
-- Lydrett → verbatim, tolket → semantic. Bokmål → `no`, nynorsk → `nn`.
+- Lydrett → verbatim, tolket → hovedmodellen (`nb-whisper-<størrelse>`, ikke semantic). Bokmål → `no`, nynorsk → `nn`.
 - Ingen etterbehandling av lydrett tekst.
 - Nye eller endrede oppføringer i `models.json` har SHA-256, og koden avviser feil sum.
 

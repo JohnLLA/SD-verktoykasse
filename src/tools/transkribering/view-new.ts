@@ -5,7 +5,14 @@
 
 import { errorText } from "../../lib/errors";
 import { formatBytes, formatEta, formatPercent } from "../../lib/format";
-import { lowMemoryForBest, modelDisplayName, KVALITETER, MALFORMS, STILER } from "../../lib/choices";
+import {
+  lowMemoryForBest,
+  modelDisplayName,
+  showLydrettNynorskNote,
+  KVALITETER,
+  MALFORMS,
+  STILER,
+} from "../../lib/choices";
 import { JobQueue, type QueueItem } from "../../lib/queue";
 import { t } from "../../i18n/nb";
 import { h, replace } from "../../ui/dom";
@@ -67,7 +74,12 @@ export function createNewView(c: TranskriberingController): NewView {
   // ---- valg
   const stilHelpL = h("span", { class: "help-lydrett", text: T.choices.stil.explainLydrett });
   const stilHelpT = h("span", { class: "help-tolket", text: T.choices.stil.explainTolket });
-  const stilHelp = h("p", { class: "help", id: "stil-help" }, stilHelpL, stilHelpT);
+  const stilHelpNn = h("span", {
+    class: "help-nynorsk",
+    text: T.choices.stil.explainLydrettNynorsk,
+    hidden: true,
+  });
+  const stilHelp = h("p", { class: "help", id: "stil-help" }, stilHelpL, stilHelpT, stilHelpNn);
   const kvalitetHelp = h("p", { class: "help", id: "kvalitet-help" });
   const memoryWarning = h("p", { class: "warn", role: "status" });
 
@@ -162,6 +174,7 @@ export function createNewView(c: TranskriberingController): NewView {
     kvalitetSeg.set(c.choices.kvalitet);
     stilHelp.classList.toggle("help-lydrett-on", c.choices.stil === "lydrett");
     stilHelp.classList.toggle("help-tolket-on", c.choices.stil === "tolket");
+    stilHelpNn.hidden = !showLydrettNynorskNote(c.choices);
     kvalitetHelp.textContent = T.choices.kvalitet.hint[c.choices.kvalitet];
     const gb = lowMemoryForBest(c.totalMemoryBytes, c.choices.kvalitet);
     memoryWarning.textContent = gb === null ? "" : T.choices.kvalitet.lowMemory(gb);

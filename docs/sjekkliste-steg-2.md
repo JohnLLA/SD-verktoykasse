@@ -13,7 +13,7 @@ npm run tauri dev        # utvikling, med ekte Rust-kjerne
 
 `cargo test` i `src-tauri` trenger at `dist/` finnes (Tauri bygger inn frontenden). Kjør `npm run build` først, ellers feiler kompileringen med «frontendDist … doesn't exist».
 
-For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-small-verbatim-q5_0.bin` og `nb-whisper-small-semantic-q5_0.bin` i en mappe og velg den under Innstillinger → Egen modellmappe. (Appen sjekker SHA-256 første gang hver fil brukes.)
+For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-small-verbatim-q5_0.bin` og `nb-whisper-small-q5_0.bin` i en mappe og velg den under Innstillinger → Egen modellmappe. (Appen sjekker SHA-256 første gang hver fil brukes.)
 
 ## Prøvevisning uten Tauri (utvikling)
 

@@ -35,8 +35,8 @@ impl Malform {
     }
 }
 
-/// Stil. Lydrett = verbatim-modell. Tolket = modellen `models.json` peker på
-/// (`style_to_variant.tolket`, i dag semantic, se docs/spike.md).
+/// Stil. Lydrett = verbatim-modell. Tolket = hovedmodellen `nb-whisper-<størrelse>`
+/// (`style_to_variant.tolket = "main"` i `models.json`, docs/kvalitet.md).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Stil {
@@ -74,14 +74,27 @@ impl Kvalitet {
     pub const ALL: [Kvalitet; 3] = [Kvalitet::Rask, Kvalitet::Anbefalt, Kvalitet::Best];
 }
 
-/// Søkestrategi i whisper. Ikke avgjort (docs/spike.md, beslutning 4):
-/// beam 5 er foreløpig standard, greedy er omtrent 1,6 ganger raskere.
+/// Søkestrategi i whisper. Beam 5 er standard (avgjort etter steg 3,
+/// docs/kvalitet.md); greedy («Raskere») kan velges i innstillingene, men
+/// gjelder bare tolket. Se [`Decoding::for_stil`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum Decoding {
     #[default]
     Beam5,
     Greedy,
+}
+
+impl Decoding {
+    /// Søkemåten som faktisk brukes. Lydrett bruker alltid beam 5: med greedy
+    /// gir verbatim nesten dobbelt så mange feil og er ikke raskere
+    /// (docs/kvalitet.md). Tolket bruker innstillingen.
+    pub fn for_stil(self, stil: Stil) -> Decoding {
+        match stil {
+            Stil::Lydrett => Decoding::Beam5,
+            Stil::Tolket => self,
+        }
+    }
 }
 
 /// Ett ferdig segment. Tider i millisekunder fra starten av filen.
@@ -92,4 +105,18 @@ pub struct Segment {
     /// Teksten slik modellen ga den, bare med mellomrom fjernet i endene.
     /// Lydrett tekst etterbehandles ikke (regel 4).
     pub text: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lydrett_always_uses_beam5() {
+        assert_eq!(Decoding::Greedy.for_stil(Stil::Lydrett), Decoding::Beam5);
+        assert_eq!(Decoding::Beam5.for_stil(Stil::Lydrett), Decoding::Beam5);
+        assert_eq!(Decoding::Greedy.for_stil(Stil::Tolket), Decoding::Greedy);
+        assert_eq!(Decoding::Beam5.for_stil(Stil::Tolket), Decoding::Beam5);
+        assert_eq!(Decoding::default().for_stil(Stil::Tolket), Decoding::Beam5);
+    }
 }

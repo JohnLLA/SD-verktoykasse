@@ -4,7 +4,7 @@
 # - `cargo test`: alle enhetstester (dekoding, eksport, filnavn, topptekst,
 #   sjekksum, gjenopptak, tidskoder på tvers av biter, osv.).
 # - Windows: feiler hvis ggml er bygget uten /O2 (docs/spike.md).
-# - Integrasjonstester med ekte modell (small verbatim og semantic, lastet ned
+# - Integrasjonstester med ekte modell (small verbatim og hovedmodellen small, lastet ned
 #   med appens egen nedlastingskode fra huggingface.co) og NbAiLabs
 #   eksempellyd. Loggen får bare tall, aldri transkribert tekst.
 # Ingen versjonstagger, ingen releaser, ingen hemmeligheter.
@@ -124,7 +124,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ci-data
-          key: app-data-v1-small-verbatim-8982b4a4-small-semantic-575a6413
+          key: app-data-v1-small-verbatim-8982b4a4-small-main-2a9025af
 
       - name: Hent testlyd (NbAiLab-eksempler)
         working-directory: .

@@ -27,7 +27,7 @@ const done = (job_id: number, over: Partial<DoneEvent> = {}): DoneEvent => ({
   job_id,
   outcome: "completed",
   error: null,
-  model_id: "medium-semantic",
+  model_id: "medium-main",
   duration_ms: 9000,
   segments: [
     { start_ms: 0, end_ms: 4000, text: "Dette er første linje." },
@@ -81,7 +81,7 @@ describe("oppstart", () => {
 
 describe("modell som mangler", () => {
   it("finner modellen valgene peker på, med størrelse fra kjernen", () => {
-    // Standard er tolket + anbefalt = medium semantic, som er installert.
+    // Standard er tolket + anbefalt = medium hovedmodell, som er installert.
     expect(c.modelNeed()?.installed).toBe(true);
   });
 
@@ -90,7 +90,7 @@ describe("modell som mangler", () => {
     const need = c.modelNeed();
     expect(need?.installed).toBe(false);
     expect(need?.model.bytes).toBe(1_081_140_203);
-    expect(need?.model.id).toBe("large-semantic");
+    expect(need?.model.id).toBe("large-main");
   });
 
   it("starter ikke uten modell", async () => {
@@ -106,13 +106,13 @@ describe("modell som mangler", () => {
     await c.setChoice("kvalitet", "best");
     c.addFiles(["/a/x.mp3"]);
     await c.downloadModel();
-    expect(backend.downloads).toEqual(["large-semantic"]);
+    expect(backend.downloads).toEqual(["large-main"]);
     expect(c.download?.status).toBe("active");
     const h = backend.handlers;
-    h?.downloadProgress({ job_id: 1, model_id: "large-semantic", downloaded: 500, total: 1000 });
+    h?.downloadProgress({ job_id: 1, model_id: "large-main", downloaded: 500, total: 1000 });
     expect(c.download?.downloaded).toBe(500);
-    backend.install("large-semantic");
-    h?.downloadDone({ job_id: 1, model_id: "large-semantic", outcome: "completed", error: null });
+    backend.install("large-main");
+    h?.downloadDone({ job_id: 1, model_id: "large-main", outcome: "completed", error: null });
     await flush();
     await flush();
     expect(c.download).toBeNull();
@@ -126,7 +126,7 @@ describe("modell som mangler", () => {
     await c.downloadModel();
     backend.handlers?.downloadDone({
       job_id: 1,
-      model_id: "large-semantic",
+      model_id: "large-main",
       outcome: "failed",
       error: { code: "network" },
     });
@@ -144,7 +144,7 @@ describe("modell som mangler", () => {
     await c.downloadModel();
     c.cancelDownload();
     expect(backend.cancelled).toEqual([1]);
-    backend.handlers?.downloadDone({ job_id: 1, model_id: "large-semantic", outcome: "cancelled", error: null });
+    backend.handlers?.downloadDone({ job_id: 1, model_id: "large-main", outcome: "cancelled", error: null });
     await flush();
     expect(c.download?.status).toBe("cancelled");
     expect(backend.transcribeCalls).toHaveLength(0);
@@ -342,7 +342,7 @@ describe("resultat", () => {
     expect(req?.timestamps).toBe(true);
     expect(req?.segments[1]?.text).toBe("Rettet.");
     expect(req?.date).toBe("18. oktober 2026");
-    expect(req?.model_id).toBe("medium-semantic");
+    expect(req?.model_id).toBe("medium-main");
     expect(c.busy()).toBeNull(); // lagret
   });
 

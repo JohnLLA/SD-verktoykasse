@@ -228,6 +228,8 @@ const nb = {
         tolket: "Tolket",
         explainLydrett: "Lydrett: det som blir sagt, også muntlige former.",
         explainTolket: "Tolket: rettet til skriftlig språk.",
+        explainLydrettNynorsk:
+          "Lydrett gir det som blir sagt. Snakker personen bokmål, blir noe stående på bokmål.",
       },
       kvalitet: {
         legend: "Kvalitet",
@@ -373,7 +375,7 @@ const nb = {
       inAppFolder: "I appens mappe",
       deleteBlocked: "Ligger i din egen mappe. Slett filen der.",
       deleted: (name: string) => `${name} er slettet.`,
-      stil: { verbatim: "Lydrett", semantic: "Tolket", main: "Hovedmodell" },
+      stil: { verbatim: "Lydrett", semantic: "Eldre tolket-modell (brukes ikke)", main: "Tolket" },
       size: { small: "Rask", medium: "Anbefalt", large: "Best" },
       loadFailed: "Kunne ikke hente listen over modeller.",
     },
@@ -396,7 +398,7 @@ const nb = {
       beam5: "Grundig",
       beam5Hint: "Litt bedre tekst, litt tregere.",
       greedy: "Raskere",
-      greedyHint: "Omtrent halvannen gang så fort, med litt flere feil.",
+      greedyHint: "Raskere for tolket, men litt mindre nøyaktig. Lydrett bruker alltid grundig.",
       legend: "Nøyaktighet og fart",
     },
     updates: {
