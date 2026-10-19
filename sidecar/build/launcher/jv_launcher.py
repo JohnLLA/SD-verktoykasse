@@ -31,18 +31,25 @@ def _version(cfg) -> int:
 
     This is the trial run the app does before a package is taken into use:
     it fails (code 2) if Python or a bundled program cannot start.
+    cfg.PROGRAMS maps program -> version arguments (None: only check that
+    JV_<NAME> points to an executable file).
     """
     programs = {}
     ok = True
-    for name in cfg.PROGRAMS:
+    for name, version_args in cfg.PROGRAMS.items():
         var = "JV_" + name.upper().replace("-", "_")
         path = os.environ.get(var)
-        if not path:
+        if not path or not os.path.isabs(path):
             programs[name] = {"ok": False, "error": f"{var} er ikke satt"}
             ok = False
             continue
+        if version_args is None:
+            good = os.path.isfile(path) and os.access(path, os.X_OK)
+            programs[name] = {"ok": good, "version": ""}
+            ok = ok and good
+            continue
         try:
-            proc = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=30)
+            proc = subprocess.run([path, *version_args], capture_output=True, text=True, timeout=30)
             first = (proc.stdout or proc.stderr).strip().splitlines()[:1]
             programs[name] = {"ok": proc.returncode == 0, "version": first[0] if first else ""}
             ok = ok and proc.returncode == 0

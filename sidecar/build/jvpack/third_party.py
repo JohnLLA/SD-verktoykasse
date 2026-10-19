@@ -6,7 +6,7 @@
 Read from «Kildekode og versjoner.txt» in every built package
 (out/work/<target>/<id>/pakke/Lisenser). The Rust and npm parts of the app
 are listed in src/assets/tredjepart.txt (tools/lag-tredjepartsmelding.mjs);
-merging the two lists is steg 6.2.
+merging the two lists is byggmester's step (docs/brief-jv-distribusjon.md).
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ def main() -> int:
         "Systemprogrammene står med kilde og SHA-256 i `sidecar/build/binaries.json`.",
         "",
         "Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). "
-        "De to listene slås sammen i steg 6.2.",
+        "De to listene slås sammen av byggmester (docs/brief-jv-distribusjon.md).",
         "",
         "| Del | Versjon | Lisens | Type | Brukt i | Kilde |",
         "|---|---|---|---|---|---|",

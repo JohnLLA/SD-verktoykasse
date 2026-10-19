@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """sidecar/build/binaries.json: source, version, SHA-256 and licence of every
-system program and library that goes into a package.
+system program and library that goes into a package (Homebrew on Mac;
+Apertium, built from source, is listed in each package's «Kildekode og
+versjoner.txt» with repository and commit).
 
 On Mac they come from Homebrew bottles. The SHA-256 recorded is the one of
 the upstream source archive (from the formula), which is what the AGPL/GPL
@@ -37,6 +39,11 @@ def record(target: str, tool_id: str, brew: list[Package]) -> None:
         "source": "Homebrew-bottles (/opt/homebrew), kopiert inn med omskrevne bibliotekstier og signert på nytt",
         "programs": {},
     })
+    # This build is the truth for tool_id: forget what it used before (for
+    # example Ghostscript in ocr from the spike), and drop parts no tool uses.
+    for entry in tgt["programs"].values():
+        entry["used_by"] = [t for t in entry.get("used_by", []) if t != tool_id]
+    tgt["programs"] = {k: v for k, v in tgt["programs"].items() if v["used_by"]}
     info = _brew_info([p.name for p in brew])
     for p in brew:
         f = info.get(p.name, {})

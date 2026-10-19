@@ -306,6 +306,41 @@ def pyinstaller_bootloader(env: dict[str, str]) -> Package:
     )
 
 
+# ------------------------------------------------------------------ Apertium
+
+
+def apertium_packages(sources: Path | None = None) -> list[Package]:
+    """Apertium programs and language data, built from source in ~/.local.
+
+    Licence texts come from the COPYING files in the source checkouts
+    (~/Kilder/apertium/<repo>); the source line names the GitHub repository
+    and the exact commit that was built.
+    """
+    from . import apertium
+
+    root = sources or apertium.SOURCES
+    out = []
+    for repo, version, lic, extra in apertium.REPOS:
+        folder = root / repo
+        texts = [folder / "COPYING", *(folder / name for name in extra)]
+        texts = [t for t in texts if t.is_file()]
+        commit = apertium.git_commit(folder)
+        url = apertium.git_url(folder)
+        note = ""
+        if repo in ("apertium-nob", "apertium-nno"):
+            note = "Ordbøkene er kompilert inn i språkdataene til apertium-nno-nob."
+        elif repo == "apertium-nno-nob":
+            note = ("Bare filene modusene nob-nno og nno-nob bruker, er med. Stiene i "
+                    "mode-filene er skrevet om til ${APERTIUM_DATADIR}/….")
+        elif repo == "apertium":
+            note = ("Skriptet «apertium» er med. Linjene som setter APERTIUM_PATH og "
+                    "APERTIUM_DATADIR er endret til relative standardverdier (regnet ut fra "
+                    "skriptets egen mappe), og to linjer er lagt til: «_jv_here=…» og "
+                    "«export APERTIUM_PATH APERTIUM_DATADIR». Resten av skriptet er uendret.")
+        out.append(Package(repo, version, lic, f"{url} (commit {commit})", "Apertium", texts, note))
+    return out
+
+
 # ------------------------------------------------------------------ writing
 
 

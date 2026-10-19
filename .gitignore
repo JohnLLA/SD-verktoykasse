@@ -25,3 +25,4 @@ sidecar/**/.claude/
 sidecar/**/oppsett/
 **/pakking/*/build/
 **/pakking/*/dist/
+*.key

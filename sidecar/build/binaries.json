@@ -6,7 +6,7 @@
     "programs": {
       "brotli": {
         "used_by": [
-          "ocr"
+          "redact"
         ],
         "version": "1.2.0",
         "license": "MIT",
@@ -19,9 +19,56 @@
         "homepage": "https://github.com/google/brotli",
         "built_as_bottle": true
       },
+      "dav1d": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "1.5.4",
+        "license": "BSD-2-Clause",
+        "source_url": "https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.bz2",
+        "source_sha256": "2abfb0c89212e6e4733a54e0ae509ec00a5b845a6360946f918806e14aedb011",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "d30ff747564febd643ec4b279c5adc74f708b8d6eb8e172f914b9fcdec26c464"
+        },
+        "homepage": "https://code.videolan.org/videolan/dav1d",
+        "built_as_bottle": true
+      },
+      "exiftool": {
+        "used_by": [
+          "metadata"
+        ],
+        "version": "13.55_1",
+        "license": "Artistic-1.0-Perl OR GPL-1.0-or-later",
+        "source_url": "https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-13.55.tar.gz",
+        "source_sha256": "5f4c81d34ad406538c2871ad72dbfceb5d9b412b2f16cbbeb4d712d270846667",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "4477e036ab8db27aab707d35d077057d012637290604cd95e0aca0abae28da64"
+        },
+        "homepage": "https://exiftool.org",
+        "built_as_bottle": null
+      },
+      "ffmpeg": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "9.0.2_1",
+        "license": "GPL-3.0-or-later",
+        "source_url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+        "source_sha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "595b0bb854e692d7f6f89b866e860afacfdab5e3698451555547f58f523ed04d"
+        },
+        "homepage": "https://ffmpeg.org/",
+        "built_as_bottle": null
+      },
       "fontconfig": {
         "used_by": [
-          "ocr"
+          "redact"
         ],
         "version": "2.18.3",
         "license": "HPND-sell-variant AND Unicode-3.0 AND MIT-Modern-Variant AND MIT AND LicenseRef-Homebrew-public-domain",
@@ -36,7 +83,7 @@
       },
       "freetype": {
         "used_by": [
-          "ocr"
+          "redact"
         ],
         "version": "2.15.0",
         "license": "FTL",
@@ -49,9 +96,25 @@
         "homepage": "https://www.freetype.org/",
         "built_as_bottle": true
       },
+      "gawk": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "version": "5.4.1",
+        "license": "GPL-3.0-or-later",
+        "source_url": "https://ftpmirror.gnu.org/gawk/gawk-5.4.1.tar.xz",
+        "source_sha256": "07f6f7342b7febe4313fc2c2542ad93d64fe20ad8717200109f105a826f5fd37",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "73633c61674c5ab754b70403f14eb57d21d750fe8629eecc8023d5e4228f26fe"
+        },
+        "homepage": "https://www.gnu.org/software/gawk/",
+        "built_as_bottle": true
+      },
       "gettext": {
         "used_by": [
-          "ocr"
+          "nynorsk",
+          "redact"
         ],
         "version": "1.0",
         "license": "GPL-3.0-or-later AND LGPL-2.1-or-later",
@@ -62,21 +125,6 @@
           "sha256": "3af5392939e50a6ef73e42799fc3ead6ef72fe0040c0a45183d04a4008306d6a"
         },
         "homepage": "https://www.gnu.org/software/gettext/",
-        "built_as_bottle": true
-      },
-      "ghostscript": {
-        "used_by": [
-          "ocr"
-        ],
-        "version": "10.08.0",
-        "license": "AGPL-3.0-or-later",
-        "source_url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/ghostpdl-10.08.0.tar.xz",
-        "source_sha256": "94943e3c4adb7115d132b3c28b913672f2e62e6a9d802f7e754e716b1634174a",
-        "bottle": {
-          "tag": "arm64_tahoe",
-          "sha256": "9fdf9326aaf65459113953809f9abbffbd48e99158ba7a3505895bd61df89e46"
-        },
-        "homepage": "https://www.ghostscript.com/",
         "built_as_bottle": true
       },
       "giflib": {
@@ -94,24 +142,115 @@
         "homepage": "https://giflib.sourceforge.net/",
         "built_as_bottle": true
       },
-      "jbig2dec": {
+      "glib": {
         "used_by": [
-          "ocr"
+          "redact"
         ],
-        "version": "0.20",
-        "license": "AGPL-3.0-or-later",
-        "source_url": "https://github.com/ArtifexSoftware/jbig2dec/releases/download/0.20/jbig2dec-0.20.tar.gz",
-        "source_sha256": "7b63ff6470289547e7a3a0f145cb8ea6c2afffdd65645b7d87d3b7febc96fb3a",
+        "version": "2.90.1",
+        "license": "LGPL-2.1-or-later",
+        "source_url": "https://download.gnome.org/sources/glib/2.90/glib-2.90.1.tar.xz",
+        "source_sha256": "93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396",
         "bottle": {
           "tag": "arm64_tahoe",
-          "sha256": "08de3bbe75ccd99324756e5687677f3855f31ec9057f16ce068de9301072dfd0"
+          "sha256": "56145c606a672f7b69845be6e16e8e6f1611052620e4638237116c177fe15c43"
         },
-        "homepage": "https://github.com/ArtifexSoftware/jbig2dec",
+        "homepage": "https://docs.gtk.org/glib/",
+        "built_as_bottle": true
+      },
+      "gmp": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "version": "6.3.0",
+        "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+        "source_url": "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz",
+        "source_sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "fa46330de5d003bd9294ae042c8f4ae0a51bcb8c57de2c94c073ff4a7ffa10c3"
+        },
+        "homepage": "https://gmplib.org/",
+        "built_as_bottle": true
+      },
+      "gpgme": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "2.2.0",
+        "license": "LGPL-2.1-or-later",
+        "source_url": "https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-2.2.0.tar.bz2",
+        "source_sha256": "7160e80e84dafd00d956c84891c533bb7ab16a6a54fbe1574b2f3acf0496977b",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "c9e850e7f6254e826ea76b15d02825fe712cebad5ed54505ffea7feab5da12c3"
+        },
+        "homepage": "https://www.gnupg.org/related_software/gpgme/",
+        "built_as_bottle": true
+      },
+      "gpgmepp": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "2.2.0",
+        "license": "LGPL-2.1-or-later",
+        "source_url": "https://www.gnupg.org/ftp/gcrypt/gpgmepp/gpgmepp-2.2.0.tar.xz",
+        "source_sha256": "6651c5f7f801543d5b676719df9fec8053b0a6f5aba40b98ca0d2bee11136f30",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "e182e7620bfe67c8ff4d39eb3061cbd7dcff08bc3ec7d51435f6575d07426897"
+        },
+        "homepage": "https://www.gnupg.org/related_software/gpgme/",
+        "built_as_bottle": true
+      },
+      "graphite2": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "1.3.15",
+        "license": "MIT OR MPL-2.0 OR LGPL-2.1-or-later OR GPL-2.0-or-later",
+        "source_url": "https://github.com/silnrsi/graphite/releases/download/1.3.15/graphite2-1.3.15.tgz",
+        "source_sha256": "c6bc8b4252724665297f7cad0c55897285c673f9b8e6db3522ace833593fe0b1",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "c05e664c8872f3a9e08ada587a33d71b841673126840fe0cd301300c1f59acea"
+        },
+        "homepage": "https://graphite.sil.org/",
+        "built_as_bottle": true
+      },
+      "harfbuzz": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "14.6.0",
+        "license": "MIT",
+        "source_url": "https://github.com/harfbuzz/harfbuzz/releases/download/14.6.0/harfbuzz-14.6.0.tar.xz",
+        "source_sha256": "d07a007327277708a2a73ae437887cdbaf282937f6d03ca5467723e9099af586",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "a7dc136cbae7f770873fdcfd938743d3b8095559d35d986ca251ca6c1e10ff59"
+        },
+        "homepage": "https://github.com/harfbuzz/harfbuzz",
+        "built_as_bottle": true
+      },
+      "icu4c@78": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "version": "78.3",
+        "license": "Unicode-3.0",
+        "source_url": "https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz",
+        "source_sha256": "3a2e7a47604ba702f345878308e6fefeca612ee895cf4a5f222e7955fabfe0c0",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "0476be299494b97e50a48b0ba08811255300228aef664058e555480d6aee4fb5"
+        },
+        "homepage": "https://icu.unicode.org/home",
         "built_as_bottle": true
       },
       "jpeg-turbo": {
         "used_by": [
-          "ocr"
+          "ocr",
+          "redact"
         ],
         "version": "3.2.0",
         "license": "IJG AND Zlib AND BSD-3-Clause",
@@ -122,6 +261,22 @@
           "sha256": "02539b0736cfacdc6c4bb6a7d274d0c5c8b6e1faf9b5bab1e155168961d288aa"
         },
         "homepage": "https://www.libjpeg-turbo.org/",
+        "built_as_bottle": true
+      },
+      "lame": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "4.0",
+        "license": "LGPL-2.0-or-later",
+        "source_url": "https://downloads.sourceforge.net/project/lame/lame/4.0/lame-4.0.tar.gz",
+        "source_sha256": "3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "b0fe0cfb39c74a53b7635833fe3293a62c886b084bc5ccc8ed7cd177803182e4"
+        },
+        "homepage": "https://lame.sourceforge.io/",
         "built_as_bottle": true
       },
       "leptonica": {
@@ -154,6 +309,21 @@
         "homepage": "https://www.libarchive.org",
         "built_as_bottle": true
       },
+      "libassuan": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "3.0.2",
+        "license": "LGPL-2.1-or-later AND GPL-3.0-or-later AND FSFULLR",
+        "source_url": "https://gnupg.org/ftp/gcrypt/libassuan/libassuan-3.0.2.tar.bz2",
+        "source_sha256": "d2931cdad266e633510f9970e1a2f346055e351bb19f9b78912475b8074c36f6",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "0561b0dae24dbd1bfb2ebcc1b6ca6b4f10cab80d30a73558b8b87ab129415dc5"
+        },
+        "homepage": "https://www.gnupg.org/related_software/libassuan/",
+        "built_as_bottle": true
+      },
       "libb2": {
         "used_by": [
           "ocr"
@@ -169,24 +339,25 @@
         "homepage": "https://blake2.net/",
         "built_as_bottle": true
       },
-      "libidn": {
+      "libgpg-error": {
         "used_by": [
-          "ocr"
+          "redact"
         ],
-        "version": "1.44",
-        "license": "GPL-2.0-or-later OR LGPL-3.0-or-later",
-        "source_url": "https://ftpmirror.gnu.org/libidn/libidn-1.44.tar.gz",
-        "source_sha256": "499608bab3a65650a0ea52888c13a8deebe3f71408e319acd9ec52e02eb13959",
+        "version": "1.61",
+        "license": "LGPL-2.1-or-later",
+        "source_url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.61.tar.bz2",
+        "source_sha256": "7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93",
         "bottle": {
           "tag": "arm64_tahoe",
-          "sha256": "56332a793245f898e13eefa84d08e42819d83c249c982687f045c7da71522549"
+          "sha256": "74ecfae7911e36e85f9400931acab43770544c7826a3e7a8176c6410dfc10735"
         },
-        "homepage": "https://www.gnu.org/software/libidn/",
+        "homepage": "https://www.gnupg.org/related_software/libgpg-error/",
         "built_as_bottle": true
       },
       "libpng": {
         "used_by": [
-          "ocr"
+          "ocr",
+          "redact"
         ],
         "version": "1.6.59",
         "license": "libpng-2.0",
@@ -201,7 +372,8 @@
       },
       "libtiff": {
         "used_by": [
-          "ocr"
+          "ocr",
+          "redact"
         ],
         "version": "4.7.2",
         "license": "libtiff",
@@ -214,9 +386,41 @@
         "homepage": "https://libtiff.gitlab.io/libtiff/",
         "built_as_bottle": true
       },
+      "libvmaf": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "3.2.1",
+        "license": "BSD-2-Clause-Patent",
+        "source_url": "https://github.com/Netflix/vmaf/archive/refs/tags/v3.2.1.tar.gz",
+        "source_sha256": "5df7386911bc15fd1ca783132528748d219768ae4fc5f8e0b61184f041648092",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "703f56cd94ba6bb86ee1463bec792d8ad6f9841f67152fa6e93040b966bbf82f"
+        },
+        "homepage": "https://github.com/Netflix/vmaf",
+        "built_as_bottle": true
+      },
+      "libvpx": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "1.17.0",
+        "license": "BSD-3-Clause",
+        "source_url": "https://github.com/webmproject/libvpx/archive/refs/tags/v1.17.0.tar.gz",
+        "source_sha256": "1020f184046187baa2985dbde38e0691f49c44088bca7a1842b0236c6081dc0a",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "f98fa074f8eef7b2de3346fb83d4da15e7e6284fd13bf65210d855043f78f8c1"
+        },
+        "homepage": "https://www.webmproject.org/code/",
+        "built_as_bottle": true
+      },
       "little-cms2": {
         "used_by": [
-          "ocr"
+          "redact"
         ],
         "version": "2.19.1",
         "license": "MIT",
@@ -244,9 +448,71 @@
         "homepage": "https://lz4.github.io/lz4/",
         "built_as_bottle": true
       },
+      "mpfr": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "version": "4.2.2",
+        "license": "LGPL-3.0-or-later",
+        "source_url": "https://ftpmirror.gnu.org/mpfr/mpfr-4.2.2.tar.xz",
+        "source_sha256": "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "495b04c82ef8638368a5cc62141e7ac195377d292503f5b30e5915b1ff478dda"
+        },
+        "homepage": "https://www.mpfr.org/",
+        "built_as_bottle": true
+      },
+      "mpg123": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "1.33.7",
+        "license": "LGPL-2.1-only",
+        "source_url": "https://www.mpg123.de/download/mpg123-1.33.7.tar.bz2",
+        "source_sha256": "31d0e35a4ca567ec9b5ebda6c3062bb4435d6d3eacd6ef0d95cadd7854dc03ee",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "5fcd87caeb9b6e6730d7de5c7738e785c84814c641d1ba9ac578a142d2b033f5"
+        },
+        "homepage": "https://www.mpg123.de/",
+        "built_as_bottle": true
+      },
+      "nspr": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "4.40",
+        "license": "MPL-2.0",
+        "source_url": "https://archive.mozilla.org/pub/nspr/releases/v4.40/src/nspr-4.40.tar.gz",
+        "source_sha256": "c0c1884c627f3db7a783f7c7314c695226b2043696791d15519e7e0578c19bdc",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "5dcb6d1b73ec8c839dacd46dfad6d34ab2cde7339593e106aaccc20cf72ddb62"
+        },
+        "homepage": "https://hg.mozilla.org/projects/nspr",
+        "built_as_bottle": true
+      },
+      "nss": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "3.131",
+        "license": "MPL-2.0",
+        "source_url": "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_131_RTM/src/nss-3.131.tar.gz",
+        "source_sha256": "ca0005bc77e9255d9942103e6f9756cfe311a3df72afa99860709e386eb3c167",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "7b427378bbebafca018417bcccb236c3c087339f94f67c25836d701951bd8cbb"
+        },
+        "homepage": "https://firefox-source-docs.mozilla.org/security/nss/index.html",
+        "built_as_bottle": true
+      },
       "openjpeg": {
         "used_by": [
-          "ocr"
+          "ocr",
+          "redact"
         ],
         "version": "2.5.4_1",
         "license": "BSD-2-Clause",
@@ -258,6 +524,99 @@
         },
         "homepage": "https://www.openjpeg.org/",
         "built_as_bottle": null
+      },
+      "openssl@4": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "4.0.3",
+        "license": "Apache-2.0",
+        "source_url": "https://github.com/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz",
+        "source_sha256": "325b5c806167c13b40b1ffeadfe0248197c00eccc4cf123ec1e28d2d2fd216d9",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "39fb74d25429fbb9794cf4327530ba458b97d0000406715270d3b0715bd6ba35"
+        },
+        "homepage": "https://openssl-library.org",
+        "built_as_bottle": true
+      },
+      "opus": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "1.6.1",
+        "license": "BSD-3-Clause",
+        "source_url": "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.6.1.tar.gz",
+        "source_sha256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "5e8146a64fab2683ea447aaa7d0de0b1d717539b4cdabd1fedd4a510e4be0d1e"
+        },
+        "homepage": "https://www.opus-codec.org/",
+        "built_as_bottle": true
+      },
+      "pcre2": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "10.49",
+        "license": "BSD-3-Clause",
+        "source_url": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2",
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "475d36ffae1f472554eac1fd96ca3ead3840c3d8fd2d34b257d2d7c4c1e5a17f"
+        },
+        "homepage": "https://www.pcre.org/",
+        "built_as_bottle": true
+      },
+      "poppler": {
+        "used_by": [
+          "redact"
+        ],
+        "version": "26.10.0",
+        "license": "GPL-2.0-only OR GPL-3.0-only",
+        "source_url": "https://poppler.freedesktop.org/poppler-26.10.0.tar.xz",
+        "source_sha256": "6792cb7c69205007ad87d2e936cecc5b3a31fac29ab54ffc3175fdb6b2a6ce35",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "b18684b27a7892b537548befc7494210779f54007633e611ea1c41b5c3f11f58"
+        },
+        "homepage": "https://poppler.freedesktop.org/",
+        "built_as_bottle": true
+      },
+      "readline": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "version": "8.3.6",
+        "license": "GPL-3.0-or-later",
+        "source_url": "https://ftpmirror.gnu.org/readline/readline-8.3.tar.gz",
+        "source_sha256": "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "15cdd69af824537192843db389cbfd2459b3797cf4f36c906f8f8ab617d7d59f"
+        },
+        "homepage": "https://tiswww.case.edu/php/chet/readline/rltop.html",
+        "built_as_bottle": true
+      },
+      "svt-av1": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "4.2.0",
+        "license": "BSD-3-Clause",
+        "source_url": "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.2.0/SVT-AV1-v4.2.0.tar.bz2",
+        "source_sha256": "512f2ea5649e3e76c2dddcc25c2556fb67a9582baaab207c9c96161c94659dad",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "bd6186cc963d1980f0d81d59ecef58c8fa6263eb1124211dd3537b224e04c9e0"
+        },
+        "homepage": "https://gitlab.com/AOMediaCodec/SVT-AV1",
+        "built_as_bottle": true
       },
       "tesseract": {
         "used_by": [
@@ -291,7 +650,8 @@
       },
       "webp": {
         "used_by": [
-          "ocr"
+          "ocr",
+          "redact"
         ],
         "version": "1.6.0",
         "license": "BSD-3-Clause",
@@ -304,9 +664,44 @@
         "homepage": "https://developers.google.com/speed/webp/",
         "built_as_bottle": true
       },
+      "x264": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "r3222",
+        "license": "GPL-2.0-or-later",
+        "source_url": "https://code.videolan.org/videolan/x264.git",
+        "source_sha256": null,
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "b631667b5ad55c6c3ae383484f658c5b4ba14da8a2fbb1d537975695852529ca"
+        },
+        "homepage": "https://www.videolan.org/developers/x264.html",
+        "built_as_bottle": true
+      },
+      "x265": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "version": "4.3",
+        "license": "GPL-2.0-or-later",
+        "source_url": "https://github.com/Multicorewareinc/x265/releases/download/4.3/x265_4.3.tar.gz",
+        "source_sha256": "83c53e4c8bbb8f1e33ed59e10a7d621d1d7801ca853910c3eb41f038b8ffb121",
+        "bottle": {
+          "tag": "arm64_tahoe",
+          "sha256": "46dd2b3656ec8e99438a789b627e41a25e3a24407dc76a3a6b88cf159b447858"
+        },
+        "homepage": "https://github.com/Multicorewareinc/x265",
+        "built_as_bottle": true
+      },
       "xz": {
         "used_by": [
-          "ocr"
+          "keyframes",
+          "loudness",
+          "ocr",
+          "redact"
         ],
         "version": "5.8.4",
         "license": "0BSD AND GPL-2.0-or-later",
@@ -321,7 +716,8 @@
       },
       "zstd": {
         "used_by": [
-          "ocr"
+          "ocr",
+          "redact"
         ],
         "version": "1.5.7_1",
         "license": "(BSD-3-Clause OR GPL-2.0-only) AND BSD-2-Clause AND MIT",

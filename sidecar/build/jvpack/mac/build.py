@@ -28,7 +28,7 @@ from pathlib import Path
 
 from .. import APP_IDENTIFIER, BUILD_ROOT, DIST, MANIFEST, MANIFEST_SCHEMA, TARGET_MAC, WORK, archive_name
 from .. import pack, tools
-from . import binaries, licenses, macho, resources, sign
+from . import apertium, binaries, licenses, macho, notarize, resources, sign
 from .macho import BuildError
 
 LAUNCHER = BUILD_ROOT / "launcher" / "jv_launcher.py"
@@ -111,6 +111,7 @@ class Result:
     min_os: str = ""
     signed_files: int = 0
     signing: str = ""
+    notarization: str = ""
     checks: dict[str, tuple[bool, str]] = field(default_factory=dict)
     missing_licenses: list[str] = field(default_factory=list)
     seconds: float = 0.0
@@ -124,7 +125,7 @@ def _run_pyinstaller(spec: tools.ToolSpec, version: str, work: Path, env: dict[s
     (config / "jv_pack_config.py").write_text(
         "# Written by sidecar/build at build time.\n"
         f"TOOL_ID = {spec.tool_id!r}\nENTRY = {entry!r}\nVERSION = {version!r}\n"
-        f"PROGRAMS = {list(spec.programs)!r}\n",
+        f"PROGRAMS = {({p: tools.VERSION_ARGS[p] for p in spec.checked_programs})!r}\n",
         encoding="utf-8",
     )
     module = entry.split(":")[0]
@@ -157,49 +158,95 @@ def _run_pyinstaller(spec: tools.ToolSpec, version: str, work: Path, env: dict[s
     return work / "pyi-dist" / "jv.app"
 
 
-def _add_programs(spec: tools.ToolSpec, contents: Path) -> list[Path]:
-    """Bundled Homebrew programs and their data. Returns the Homebrew files used."""
-    used: list[Path] = []
+@dataclass
+class Added:
+    used: list[Path]  # Homebrew and ~/.local files that went in (for licences)
+    fontconfig: bool  # a bundled library links fontconfig
+
+
+def _add_programs(spec: tools.ToolSpec, contents: Path) -> Added:
+    """Bundled programs and their data."""
     exes: dict[str, Path] = {}
     for b in spec.programs:
         found = shutil.which(b, path=str(resources.HOMEBREW / "bin"))
         if not found:
             raise BuildError(f"Fant ikke {b} i /opt/homebrew/bin.")
         exes[b] = Path(found)
+    ap_plan = None
+    if "apertium" in spec.extra:
+        ap_plan = apertium.plan()
+        for name, path in ap_plan.programs.items():
+            if name in exes:
+                raise BuildError(f"{name} finnes både i Homebrew-listen og i Apertium.")
+            exes[name] = path
+    used: list[Path] = []
+    fontconfig = False
     if exes:
+        # One closure, so libraries shared by Homebrew and Apertium (ICU) are copied once.
         closure = macho.collect(exes)
         macho.install(closure, contents)
         used += list(closure.executables.values()) + list(closure.libs.values())
+        fontconfig = any(name.startswith("libfontconfig") for name in closure.libs)
     res = contents / "Resources"
+    if ap_plan is not None:
+        apertium.install_data(ap_plan, res)
     if "tessdata" in spec.extra:
         resources.copy_tessdata(res)
-    if "ghostscript" in spec.extra:
-        resources.copy_ghostscript(res)
     if "exiftool" in spec.extra:
         resources.copy_exiftool(res)
-    if "fontconfig" in spec.extra:
+    if fontconfig:
         resources.write_fontconfig(res)
-    return used
+    return Added(used, fontconfig)
 
 
-def manifest(spec: tools.ToolSpec, version: str, app_name: str, min_os: str, pyi_version: str) -> dict:
+def _license_packages(spec: tools.ToolSpec, used: list[Path], work: Path, env: dict[str, str]) -> tuple[list, list]:
+    """(all packages, the Homebrew ones) for Lisenser/ and binaries.json."""
+    formulas = []
+    if "tessdata" in spec.extra:
+        formulas += ["tesseract", "tesseract-lang"]
+    if "exiftool" in spec.extra:
+        formulas.append("exiftool")
+    brew = licenses.homebrew_packages(used, formulas)
+    for p in brew:
+        if p.name == "exiftool":
+            p.texts = [resources.keg("exiftool") / "README", *licenses.exiftool_extra()]
+            p.license = "Artistic-1.0-Perl OR GPL-1.0-or-later (samme vilkår som Perl)"
+            p.note = ("Lisensen står i README (COPYRIGHT AND LICENSE). Perls Artistic- og "
+                      "GPL-tekst er hentet fra macOS' Perl. Kjøres med macOS' egen /usr/bin/perl, "
+                      "som ikke er pakket inn.")
+        if p.name == "tesseract-lang" and not p.texts:
+            p.note = "Språkdata (nor). Samme lisens som tesseract (Apache-2.0); se tesseract."
+    ap = licenses.apertium_packages() if "apertium" in spec.extra else []
+    packages = (licenses.python_runtime() + [licenses.pyinstaller_bootloader(env)] + brew + ap
+                + licenses.python_packages(work / "pyi-work" / "jv"))
+    return packages, brew
+
+
+def manifest(spec: tools.ToolSpec, version: str, app_name: str, min_os: str, pyi_version: str,
+             fontconfig: bool) -> dict:
     """jv-package.json. Every path is relative to the package root."""
     c = f"{app_name}/Contents"
     env: dict[str, str | list[str]] = {}
+    path: list[str] = []
+    if spec.programs or "apertium" in spec.extra:
+        path.append(f"{c}/{macho.HELPERS_DIR}")
     for name in spec.programs:
         env["JV_" + name.upper().replace("-", "_")] = f"{c}/{macho.HELPERS_DIR}/{name}"
     if "tessdata" in spec.extra:
         env["TESSDATA_PREFIX"] = f"{c}/Resources/tessdata"
-    if "ghostscript" in spec.extra:
-        gs = f"{c}/Resources/ghostscript"
-        env["GS_LIB"] = [f"{gs}/Resource/Init", f"{gs}/lib", f"{gs}/Resource/Font", f"{gs}/fonts", f"{gs}/iccprofiles"]
-        env["GS_FONTPATH"] = [f"{gs}/fonts"]
-    if "fontconfig" in spec.extra:
+    if fontconfig:
         env["FONTCONFIG_FILE"] = f"{c}/Resources/fontconfig/fonts.conf"
         env["FONTCONFIG_PATH"] = f"{c}/Resources/fontconfig"
     if "exiftool" in spec.extra:
+        path.append(f"{c}/Resources/exiftool")
         env["JV_EXIFTOOL"] = f"{c}/Resources/exiftool/exiftool"
-    path = [f"{c}/{macho.HELPERS_DIR}"] if spec.programs else []
+    if "apertium" in spec.extra:
+        # The apertium script reads both variables; the rewritten mode files use
+        # APERTIUM_DATADIR for every data path (apertium.py).
+        path.append(f"{c}/Resources/{apertium.RESOURCE_DIR}/bin")
+        env["JV_APERTIUM"] = f"{c}/Resources/{apertium.RESOURCE_DIR}/bin/apertium"
+        env[apertium.DATA_VAR] = f"{c}/Resources/{apertium.RESOURCE_DIR}"
+        env[apertium.PATH_VAR] = f"{c}/{macho.HELPERS_DIR}"
     return {
         "schema": MANIFEST_SCHEMA,
         "id": spec.tool_id,
@@ -210,7 +257,7 @@ def manifest(spec: tools.ToolSpec, version: str, app_name: str, min_os: str, pyi
         "path": path,
         "env": env,
         "codesign": [app_name],
-        "programs": list(spec.programs),
+        "programs": list(spec.checked_programs),
         "min_os": min_os,
         "built_with": {"python": ".".join(map(str, sys.version_info[:3])), "pyinstaller": pyi_version},
     }
@@ -252,7 +299,7 @@ def _du(path: Path) -> int:
     return sum(p.stat().st_size for p in path.rglob("*") if p.is_file() and not p.is_symlink())
 
 
-def build(tool_id: str) -> Result:
+def build(tool_id: str, notary_profile: str | None = None) -> Result:
     start = time.time()
     spec = tools.spec(tool_id)
     version = tools.version(tool_id)
@@ -275,9 +322,9 @@ def build(tool_id: str) -> Result:
     contents = app / "Contents"
     result.sizes["python"] = _du(app)
 
-    log(f"[{tool_id}] innebygde programmer: {', '.join(spec.programs) or 'ingen'}")
-    used = _add_programs(spec, contents)
-    for part in ("Helpers", "Frameworks/jv-lib", "Resources/tessdata", "Resources/ghostscript"):
+    log(f"[{tool_id}] innebygde programmer: {', '.join(spec.checked_programs) or 'ingen'}")
+    added = _add_programs(spec, contents)
+    for part in ("Helpers", "Frameworks/jv-lib", "Resources/tessdata", "Resources/exiftool", "Resources/apertium"):
         if (contents / part).exists():
             result.sizes[part] = _du(contents / part)
 
@@ -287,9 +334,7 @@ def build(tool_id: str) -> Result:
         raise BuildError("Disse filene peker utenfor pakken:\n" + "\n".join(problems[:30]))
 
     log(f"[{tool_id}] lisenser")
-    formulas = ["tesseract", "tesseract-lang"] if "tessdata" in spec.extra else []
-    brew = licenses.homebrew_packages(used, formulas)
-    packages = licenses.python_runtime() + [licenses.pyinstaller_bootloader(env)] + brew + licenses.python_packages(work / "pyi-work" / "jv")
+    packages, brew = _license_packages(spec, added.used, work, env)
     missing = licenses.write(stage / "Lisenser", packages, tool_id, version)
     result.missing_licenses = [f"{p.name} {p.version}" for p in missing]
     binaries.record(TARGET_MAC, tool_id, brew)
@@ -307,7 +352,14 @@ def build(tool_id: str) -> Result:
     result.signed_files = sign.sign_app(app, identity)
     result.checks.update(sign.verify_app(app))
 
-    data = manifest(spec, version, app_name, result.min_os, pyi_version)
+    if notary_profile and identity != "-":
+        log(f"[{tool_id}] notariserer (notarytool-profil «{notary_profile}»)")
+        result.notarization = notarize.notarize_app(app, notary_profile, work)
+        result.checks.update(sign.verify_app(app))
+    else:
+        result.notarization = "ikke notarisert"
+
+    data = manifest(spec, version, app_name, result.min_os, pyi_version, added.fontconfig)
     (stage / MANIFEST).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     result.unpacked_bytes = _du(stage)
 

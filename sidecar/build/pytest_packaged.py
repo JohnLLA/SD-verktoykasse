@@ -17,7 +17,8 @@ rules as the Rust module) and inside `sandbox-exec` with
 The report on stdout and the progress lines on stderr are written to the test's
 own sys.stdout/sys.stderr, so capsys sees exactly what the app would see.
 
-Tests that ask for `monkeypatch` themselves patch the tool's internals in
+Tests that use `monkeypatch` (themselves or through a fixture, such as the
+fake apertium in nynorsk) patch the tool's internals or the environment in
 process; the patch cannot reach a subprocess, so they keep running in process
 and are counted separately. Unit tests of core functions run in process too.
 """
@@ -59,7 +60,9 @@ def pytest_configure(config):
     env = pack.package_env(_ROOT, _DATA)
     os.environ["PATH"] = env["PATH"]
     for name, value in env.items():
-        if name not in ("HOME", "TMPDIR"):
+        # JV_* only reach the packaged binary: in-process tests that hide a
+        # program (monkeypatch shutil.which) must not find it via JV_<NAME>.
+        if name not in ("HOME", "TMPDIR") and not name.startswith("JV_"):
             os.environ[name] = value
 
 
@@ -73,16 +76,36 @@ def _run_packed(argv) -> int:
     return proc.returncode
 
 
+# The root conftest's network block uses monkeypatch on socket only; it does
+# not change anything the packaged binary would see.
+_IGNORED_MONKEYPATCH_USERS = {"_block_network"}
+
+
+def _uses_monkeypatch(request) -> bool:
+    info = request.node._fixtureinfo
+    if "monkeypatch" in info.argnames:
+        return True
+    for name in request.fixturenames:
+        if name in _IGNORED_MONKEYPATCH_USERS:
+            continue
+        for fixturedef in info.name2fixturedefs.get(name, ()):
+            if "monkeypatch" in fixturedef.argnames:
+                return True
+    return False
+
+
 @pytest.fixture(autouse=True)
 def _packaged_binary(request):
     tool_id = _DATA["id"]
-    if "monkeypatch" in request.fixturenames and "monkeypatch" in request.node._fixtureinfo.argnames:
+    # A test that uses monkeypatch, directly or through a fixture (for example
+    # nynorsk's fake apertium first in PATH), changes things in this process
+    # that cannot reach the packaged binary: it runs in process.
+    if _uses_monkeypatch(request):
         _COUNTS["i_prosess_monkeypatch"] += 1
         yield
         return
     mp = pytest.MonkeyPatch()
     module = importlib.import_module(f"jv_{tool_id.replace('-', '_')}.cli")
-    mp.setattr(module, "main", lambda argv=None: _run_packed(list(argv or [])))
     import jv_common.cli as jv_cli
 
     def dispatch(argv=None):
@@ -91,7 +114,20 @@ def _packaged_binary(request):
             return _run_packed(argv[1:])
         raise AssertionError("bare dette verktøyet finnes i pakken")
 
+    packed = lambda argv=None: _run_packed(list(argv or []))  # noqa: E731
+    originals = {id(module.main): packed, id(jv_cli.main): dispatch}
+    mp.setattr(module, "main", packed)
     mp.setattr(jv_cli, "main", dispatch)
+    # Tests and conftest files often do «from jv_<id>.cli import main»: patch
+    # every name in the tool's test modules that is one of the two functions.
+    tests_dir = str(Path(request.node.path).resolve().parent)
+    for mod in list(sys.modules.values()):
+        f = getattr(mod, "__file__", None)
+        if not f or not str(Path(f).resolve()).startswith(tests_dir):
+            continue
+        for name, value in list(vars(mod).items()):
+            if id(value) in originals and callable(value):
+                mp.setattr(mod, name, originals[id(value)])
     try:
         yield
     finally:

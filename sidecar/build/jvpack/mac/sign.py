@@ -46,7 +46,8 @@ def check(cmd: list[str]) -> tuple[bool, str]:
 def verify_app(app: Path) -> dict[str, tuple[bool, str]]:
     return {
         "codesign": check(["codesign", "--verify", "--deep", "--strict", "--verbose=2", str(app)]),
-        # Not notarised: spctl is expected to say «Unnotarized Developer ID».
+        # Not notarised: spctl says «Unnotarized Developer ID». Notarised and
+        # stapled: «accepted, source=Notarized Developer ID».
         "spctl": check(["spctl", "-a", "-t", "exec", "-vv", str(app)]),
     }
 
