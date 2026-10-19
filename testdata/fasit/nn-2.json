@@ -1,0 +1,133 @@
+{
+ "id": "nn-2",
+ "kilde": "NPSC",
+ "sprak": "nn",
+ "setninger": [
+  {
+   "id": 11695,
+   "lydrett": "takk <ee> president",
+   "skriftlig": "takk <ee> president",
+   "maskinoversatt": "takk <*ee> president"
+  },
+  {
+   "id": 11696,
+   "lydrett": "det meste som påverkar helsa i befolkninga skjer utanfor helsesektoren",
+   "skriftlig": "det meste som påverkar helsa i befolkninga skjer utanfor helsesektoren",
+   "maskinoversatt": "det meste som påvirker hilste i befolkningen skjer utenfor helsesektoren"
+  },
+  {
+   "id": 11697,
+   "lydrett": "og når Senterpartiet vårt alternative budsjett legg opp til <ee> legg til rette for god økonomisk fordeling mellom grupper i samfunnet så bidrar det til utjamning og små forskjellar mellom folk",
+   "skriftlig": "og når Senterpartiet vårt alternative budsjett legg opp til <ee> legg til rette for god økonomisk fordeling mellom grupper i samfunnet så bidrar det til utjamning og små forskjellar mellom folk",
+   "maskinoversatt": "og når Senterpartiet vårt alternative budsjett legger opp til <*ee> tilrettelegger for god økonomisk fordeling mellom grupper i samfunnet så bidrar det til utjevning og små forskjeller mellom folk"
+  },
+  {
+   "id": 11698,
+   "lydrett": "og det er den aller viktigaste helsepolitiske prioriteringa",
+   "skriftlig": "og det er den aller viktigaste helsepolitiske prioriteringa",
+   "maskinoversatt": "og det er den aller viktigste helsepolitiske prioriteringen"
+  },
+  {
+   "id": 11699,
+   "lydrett": "for sosiale helseforskjellar er vår tids helsepolitisk utfordring",
+   "skriftlig": "for sosiale helseforskjellar er vår tids helsepolitisk utfordring",
+   "maskinoversatt": "for sosiale helseforskjeller er vår tids helsepolitisk utfordring"
+  },
+  {
+   "id": 11700,
+   "lydrett": "levealder og helse er i dag avhengig av utdanningsnivå og inntekt",
+   "skriftlig": "levealder og helse er i dag avhengig av utdanningsnivå og inntekt",
+   "maskinoversatt": "levealder og helse er i dag avhengig av utdannelsesnivå og inntekt"
+  },
+  {
+   "id": 11701,
+   "lydrett": "målet for Senterpartiets helse- og velferdspolitikk er å skapa helsefremmande samfunn førebygga sjukdom og utjamne geografiske og sosiale helseforskjellar",
+   "skriftlig": "målet for Senterpartiets helse- og velferdspolitikk er å skapa helsefremmande samfunn førebygga sjukdom og utjamne geografiske og sosiale helseforskjellar",
+   "maskinoversatt": "målet for Senterpartiets helse- og velferdpolitikk er å skape helsefremmende samfunn forebygd sykdom og utjamne geografiske og sosiale helseforskjeller"
+  },
+  {
+   "id": 11702,
+   "lydrett": "nyleg kom Folkehelseinstituttets rapport om dødsrisiko",
+   "skriftlig": "nyleg kom Folkehelseinstituttets rapport om dødsrisiko",
+   "maskinoversatt": "nylig kom Folkehelseinstituttets rapport om *dødsrisiko"
+  },
+  {
+   "id": 11703,
+   "lydrett": "den viser at vi har mindre risiko for å døy av folkesjukdommar no enn før",
+   "skriftlig": "den viser at vi har mindre risiko for å døy av folkesjukdommar no enn før",
+   "maskinoversatt": "den viser at vi har mindre risiko for å dø av folkesykdommer nå enn før"
+  },
+  {
+   "id": 11704,
+   "lydrett": "og det er ei gledeleg utvikling",
+   "skriftlig": "og det er ei gledeleg utvikling",
+   "maskinoversatt": "og det er en gledelig utvikling"
+  },
+  {
+   "id": 11705,
+   "lydrett": "risikoen for døy av hjarte- og karsjukdommar er halvert på tjue år",
+   "skriftlig": "risikoen for døy av hjarte- og karsjukdommar er halvert på 20 år",
+   "maskinoversatt": "risikoen for dø av hjerte- og karsykdommer er halvert på 20 år"
+  },
+  {
+   "id": 11706,
+   "lydrett": "for kreft er risikoen redusert med rundt seksten prosent",
+   "skriftlig": "for kreft er risikoen redusert med rundt 16%",
+   "maskinoversatt": "for kreft er risikoen redusert med rundt 16%"
+  },
+  {
+   "id": 11707,
+   "lydrett": "ein annan hyppig dødsår ør dødsårsak no er demens",
+   "skriftlig": "ein annan hyppig dødsår ør dødsårsak no er demens",
+   "maskinoversatt": "en annet hyppig dødsår ør dødsårsak nå er demens"
+  },
+  {
+   "id": 11708,
+   "lydrett": "men rapporten viste òg at det er store fylkesvise og bydelsforskjellar og også forskjellar mellom utdanningsgrupper i levealder",
+   "skriftlig": "men rapporten viste òg at det er store fylkesvise og bydelsforskjellar og også forskjellar mellom utdanningsgrupper i levealder",
+   "maskinoversatt": "men rapporten viste også at det er store fylkesvise og bydelsforskjeller og også forskjeller mellom utdannelsesgrupper i levealder"
+  },
+  {
+   "id": 11709,
+   "lydrett": "dei ti siste åra har dødelegheita vore høgast i Finnmark og lågast i Sogn og Fjordane",
+   "skriftlig": "dei ti siste åra har dødelegheita vore høgast i Finnmark og lågast i Sogn og Fjordane",
+   "maskinoversatt": "de ti siste årene har dødeligheten vært høyest i Finnmark og lavest i #Sogn og fjordane"
+  },
+  {
+   "id": 11710,
+   "lydrett": "i Oslo så er han omtrent på ja landsgjennomsnittet men f forskjellane i bydelane i Oslo er større enn den som er mellom fylka",
+   "skriftlig": "i Oslo så er han omtrent på ja landsgjennomsnittet men f forskjellane i bydelane i Oslo er større enn den som er mellom fylka",
+   "maskinoversatt": "i Oslo så er han omtrent på ja landsgjennomsnittet men f forskjellene i bydelene i Oslo er større enn den som er mellom fylkene"
+  },
+  {
+   "id": 11711,
+   "lydrett": "fortsett arbeid for å styrke folkehelsa og å gje alle like muligheter til gode leveår og eit langt liv er derfor ei sterk prioritering i Senterpartiet sitt alternative statsbudsjett",
+   "skriftlig": "fortsett arbeid for å styrke folkehelsa og å gje alle like muligheter til gode leveår og eit langt liv er derfor ei sterk prioritering i Senterpartiet sitt alternative statsbudsjett",
+   "maskinoversatt": "fortsetter arbeid for å styrke folkehelsen og å gi alle like muligheter til gode leveår og et langt liv er derfor en sterk prioritering i Senterpartiet sitt alternative statsbudsjett"
+  },
+  {
+   "id": 11712,
+   "lydrett": "Senterpartiet er bekymra for det offentlege helsetilbodet no",
+   "skriftlig": "Senterpartiet er bekymra for det offentlege helsetilbodet no",
+   "maskinoversatt": "Senterpartiet er bekymret for det offentlige helsetilbudet nå"
+  },
+  {
+   "id": 11713,
+   "lydrett": "etter fleire år med privatisering sentralisering og stadige høgare krav til effektivisering så må sjukehusa nå gjera smertelege kutt",
+   "skriftlig": "etter fleire år med privatisering sentralisering og stadige høgare krav til effektivisering så må sjukehusa nå gjera smertelege kutt",
+   "maskinoversatt": "etter gjentatte år med privatisering sentralisering og stadige høyere krav til effektivisering så må sykehusene nå gjøre smertelige kutt"
+  },
+  {
+   "id": 11714,
+   "lydrett": "vi er snart på god veg inn i eit todelt helsevesen",
+   "skriftlig": "vi er snart på god veg inn i eit todelt helsevesen",
+   "maskinoversatt": "vi er snart på god vei inn i et todelt helsevesen"
+  },
+  {
+   "id": 11715,
+   "lydrett": "nøytral moms fritt behandlingsval val fleire tenester på anbod og høg grad av innsatsstyrt finansiering er òg drivarar i denne negative utviklinga",
+   "skriftlig": "nøytral moms fritt behandlingsval val fleire tenester på anbod og høg grad av innsatsstyrt finansiering er òg drivarar i denne negative utviklinga",
+   "maskinoversatt": "nøytral moms fridd *behandlingsval valg gjentatte tjenester på anbud og høy grad av innsatsstyrt finansiering er også drivere i denne negative utviklingen"
+  }
+ ]
+}
