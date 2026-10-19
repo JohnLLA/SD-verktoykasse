@@ -14,6 +14,7 @@
 //!   stier, typer og symlenker skjer her i Rust.
 //! - `package`: `jv-package.json`, miljøet, kodesignatur, prøvekjøring,
 //!   nedlasting (koden fra modellnedlastingen i Transkribering) og installasjon.
+//! - `plan`: planfilen fra `redact finn`, lest for visning og lagret med avkrysningene.
 //! - `args`: argumentene fra en hviteliste per verktøy, aldri skall.
 //! - `runner`: kjøring med fremdrift, rapport og avbryt av hele prosesstreet.
 //! - `service`: logikken bak kommandoene (uten Tauri, testbar).
@@ -28,6 +29,7 @@ pub mod commands;
 pub mod error;
 pub mod net;
 pub mod package;
+pub mod plan;
 pub mod runner;
 pub mod service;
 
@@ -48,6 +50,8 @@ pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
             commands::jv_remove,
             commands::jv_run,
             commands::jv_cancel,
+            commands::jv_read_plan,
+            commands::jv_save_plan,
         ])
         .setup(|app, _api| {
             let data_dir = app.path().app_data_dir()?;

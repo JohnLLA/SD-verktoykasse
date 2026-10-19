@@ -11,6 +11,8 @@
 //! | `jv_remove` | `id` | – |
 //! | `jv_run` | `id`, `request` ([`RunRequest`]) | jobb-ID; hendelser `run-progress`/`run-done` |
 //! | `jv_cancel` | `job_id` | – |
+//! | `jv_read_plan` | `path` | [`PlanView`] (treffene i planen fra `redact finn`) |
+//! | `jv_save_plan` | `path`, `redact` (id → bool) | – (endrer bare `sladd`) |
 //!
 //! Hendelser (`jv:<navn>`), alle med `job_id` og `id`:
 //! `install-progress {phase, downloaded, total}`, `install-done {outcome, error, version}`,
@@ -28,6 +30,7 @@ use tauri::{AppHandle, Emitter, Manager, Runtime, State};
 
 use super::args::RunRequest;
 use super::error::JvError;
+use super::plan::{self, PlanView};
 use super::runner::{self, Finished};
 use super::service::{CatalogView, InstallPhase, InstalledView, JobId, Jv};
 
@@ -225,4 +228,17 @@ pub async fn jv_run<R: Runtime>(
 pub async fn jv_cancel(state: State<'_, Jv>, job_id: JobId) -> Result<(), JvError> {
     state.cancel(job_id);
     Ok(())
+}
+
+#[tauri::command]
+pub async fn jv_read_plan(path: String) -> Result<PlanView, JvError> {
+    plan::read_plan(&path)
+}
+
+#[tauri::command]
+pub async fn jv_save_plan(
+    path: String,
+    redact: std::collections::BTreeMap<String, bool>,
+) -> Result<(), JvError> {
+    plan::save_plan(&path, &redact)
 }

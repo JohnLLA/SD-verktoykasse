@@ -8,4 +8,6 @@ pub const JV_COMMANDS: &[&str] = &[
     "jv_remove",
     "jv_run",
     "jv_cancel",
+    "jv_read_plan",
+    "jv_save_plan",
 ];
