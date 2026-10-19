@@ -5,3 +5,23 @@ node_modules/
 dist/
 .DS_Store
 src-tauri/gen/schemas/
+
+# Steg 6: journalistverktøyene (sidecar)
+sidecar/jv/.venv/
+sidecar/build/out/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+
+# Hemmeligheter og byggrester fra Verktoy2_0 skal aldri inn
+# (spesifikasjon-journalistverktoy.md). tools/sjekk-hemmeligheter.sh stopper CI hvis noe slipper gjennom.
+*.p8
+*.p12
+*.pem
+*.env
+.env*
+notarisering/
+sidecar/**/.claude/
+sidecar/**/oppsett/
+**/pakking/*/build/
+**/pakking/*/dist/

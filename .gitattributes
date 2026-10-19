@@ -1,0 +1,3 @@
+
+# Signerte testfiler: byte for byte, ellers stemmer ikke minisign-signaturen på Windows.
+src-tauri/src/tools/jv/testdata/** -text
