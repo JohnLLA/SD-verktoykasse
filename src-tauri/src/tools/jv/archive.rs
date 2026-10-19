@@ -337,7 +337,7 @@ pub fn extract_tar_stream<R: Read>(mut r: R, dest: &Path) -> JvResult<ExtractSta
         let parts = checked_parts(&name)?;
         // Ingen sti får gå gjennom en symlenke fra arkivet.
         for i in 1..parts.len() {
-            if symlinks.contains(&parts[..i].to_vec()) {
+            if symlinks.contains(&parts[..i]) {
                 return Err(JvError::UnsafeArchive {
                     reason: "through_symlink",
                 });

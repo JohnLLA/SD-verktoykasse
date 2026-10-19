@@ -6,7 +6,7 @@
 //! signaturer («ED») godtas, ikke den gamle typen.
 
 use minisign_verify::{PublicKey, Signature};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::error::{JvError, JvResult};
 
@@ -20,16 +20,67 @@ pub const CURRENT_TARGET: &str = TARGET_MAC;
 #[cfg(not(target_os = "macos"))]
 pub const CURRENT_TARGET: &str = TARGET_WINDOWS;
 
+// =====================================================================
+// KATALOGNØKKELEN – PLASSHOLDER. John Inge setter inn den offentlige nøkkelen.
+//
+// 1. Lag nøkkelparet (én gang, på egen maskin):   minisign -G -p katalog.pub -s katalog.key
+// 2. Sikkerhetskopier katalog.key og passordet. Mistes nøkkelen, kan appene
+//    ikke få nye verktøy før appen er oppdatert med en ny nøkkel.
+// 3. Lim inn den andre linjen i katalog.pub (begynner med «RW…») mellom
+//    anførselstegnene i PUBLIC_KEY under, og bygg appen på nytt.
+//
+// Den skal være en annen nøkkel enn oppdateringsnøkkelen i tauri.conf.json.
+// Så lenge PUBLIC_KEY er tom, avviser appen alle kataloger (CatalogKeyMissing),
+// med mindre appen er bygget med JV_CATALOG_PUBLIC_KEY=<nøkkel> (lokal beta,
+// se sidecar/build/README.md).
+// =====================================================================
+pub const PUBLIC_KEY: &str = "";
+
+/// Den offentlige nøkkelen appen stoler på: `JV_CATALOG_PUBLIC_KEY` ved bygging
+/// (lokal beta) eller [`PUBLIC_KEY`]. `None` hvis ingen er satt.
+pub fn trusted_public_key() -> Option<&'static str> {
+    match option_env!("JV_CATALOG_PUBLIC_KEY") {
+        Some(k) if !k.trim().is_empty() => Some(k.trim()),
+        _ if !PUBLIC_KEY.trim().is_empty() => Some(PUBLIC_KEY.trim()),
+        _ => None,
+    }
+}
+
 /// Offentlig TESTNØKKEL (ikke hemmelig, se `sidecar/build/jvpack/catalog.py`).
-/// Appen stoler bare på den i tester. Den ekte nøkkelen lages av John Inge og
-/// bygges inn i steg 6.2; den er en annen enn oppdateringsnøkkelen.
+/// Appen stoler bare på den i tester.
 #[cfg(test)]
 pub const TEST_PUBLIC_KEY: &str = "RWTFfRytwwVmgKnJsuxEairT7gRXXXln9Rww6j6VoszCOejDf1lKLaBj";
+
+/// Katalogen ligger i den faste releasen `katalog` i release-repoet.
+pub const CATALOG_URL: &str =
+    "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/katalog/tools.json";
+pub const CATALOG_SIG_URL: &str =
+    "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/katalog/tools.json.sig";
+
+/// Vertene katalogen og pakkene kan hentes fra: GitHub og CDN-et for vedlegg.
+pub const RELEASE_HOSTS: &[&str] = &[
+    "github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com",
+];
+
+/// De ni journalistverktøyene, i menyrekkefølge.
+pub const KNOWN_TOOLS: &[&str] = &[
+    "compare",
+    "metadata",
+    "keyframes",
+    "loudness",
+    "subtitles",
+    "pdf-tables",
+    "ocr",
+    "redact",
+    "nynorsk",
+];
 
 /// Største katalog vi leser (den er noen få kB).
 pub const MAX_CATALOG_BYTES: usize = 1024 * 1024;
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct CatalogEntry {
     pub id: String,
     pub name: String,
@@ -49,6 +100,9 @@ pub struct CatalogEntry {
 pub struct Catalog {
     pub schema: u32,
     pub tools: Vec<CatalogEntry>,
+    /// `timestamp:` fra den signerte kommentaren (sekunder). 0 hvis den mangler.
+    #[serde(skip)]
+    pub signed_at: u64,
 }
 
 /// Hva skjermen for et verktøy skal vise.
@@ -58,6 +112,8 @@ pub enum Availability<'a> {
     Available(&'a CatalogEntry),
     /// Pakken krever en nyere app.
     NeedsNewerApp(&'a CatalogEntry),
+    /// Pakken krever en nyere versjon av operativsystemet (Mac: `min_os`).
+    NeedsNewerOs(&'a CatalogEntry),
     /// Ingen linje for plattformen: «Kommer for Windows» (eller Mac), ingen knapp.
     NotForPlatform,
 }
@@ -74,10 +130,20 @@ pub fn verify_and_parse(json: &[u8], signature: &str, public_key: &str) -> JvRes
     let sig = Signature::decode(signature).map_err(|_| JvError::CatalogSignature)?;
     pk.verify(json, &sig, false)
         .map_err(|_| JvError::CatalogSignature)?;
-    let catalog: Catalog =
+    let mut catalog: Catalog =
         serde_json::from_slice(json).map_err(|_| JvError::CatalogInvalid { reason: "json" })?;
     validate(&catalog)?;
+    catalog.signed_at = signed_timestamp(sig.trusted_comment());
     Ok(catalog)
+}
+
+/// `timestamp:<sekunder>` fra den signerte kommentaren (minisign skriver den selv).
+fn signed_timestamp(trusted_comment: &str) -> u64 {
+    trusted_comment
+        .split('\t')
+        .find_map(|p| p.trim().strip_prefix("timestamp:"))
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(0)
 }
 
 fn is_id(s: &str) -> bool {
@@ -121,7 +187,12 @@ fn validate(c: &Catalog) -> JvResult<()> {
         if e.bytes == 0 {
             return Err(JvError::CatalogInvalid { reason: "bytes" });
         }
-        if !e.url.starts_with("https://") {
+        if e.min_os.as_deref().is_some_and(|v| !is_version(v)) {
+            return Err(JvError::CatalogInvalid { reason: "version" });
+        }
+        // Bare https. Testene (full_chain) bruker en lokal testserver over http.
+        let local_test = cfg!(test) && e.url.starts_with("http://127.0.0.1:");
+        if !e.url.starts_with("https://") && !local_test {
             return Err(JvError::CatalogInvalid { reason: "url" });
         }
         if !seen.insert((e.id.clone(), e.target.clone())) {
@@ -150,16 +221,25 @@ pub fn version_at_least(have: &str, need: &str) -> bool {
 }
 
 impl Catalog {
+    /// `os_version`: macOS-versjonen (`None` på Windows eller hvis ukjent;
+    /// da sjekkes ikke `min_os`).
     pub fn availability<'a>(
         &'a self,
         id: &str,
         target: &str,
         app_version: &str,
+        os_version: Option<&str>,
     ) -> Availability<'a> {
         match self.tools.iter().find(|e| e.id == id && e.target == target) {
             None => Availability::NotForPlatform,
             Some(e) if !version_at_least(app_version, &e.min_app_version) => {
                 Availability::NeedsNewerApp(e)
+            }
+            Some(e)
+                if matches!((os_version, e.min_os.as_deref()),
+                    (Some(have), Some(need)) if !version_at_least(have, need)) =>
+            {
+                Availability::NeedsNewerOs(e)
             }
             Some(e) => Availability::Available(e),
         }

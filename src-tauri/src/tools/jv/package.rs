@@ -11,8 +11,9 @@ use std::ffi::OsString;
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
+#[cfg(target_os = "macos")]
 use std::process::{Command, Stdio};
-use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
@@ -22,6 +23,7 @@ use sha2::{Digest, Sha256};
 use super::archive;
 use super::catalog::CatalogEntry;
 use super::error::{JvError, JvResult};
+use super::runner;
 use crate::tools::transkribering::download::{self, HostPolicy};
 use crate::tools::transkribering::models::{hex, ModelDirs, ModelEntry, VerifyCache};
 
@@ -41,6 +43,8 @@ pub enum EnvValue {
 pub struct Manifest {
     pub schema: u32,
     pub id: String,
+    #[serde(default)]
+    pub name: Option<String>,
     pub version: String,
     pub target: String,
     pub entry: String,
@@ -113,7 +117,7 @@ pub fn read_manifest(root: &Path) -> JvResult<Manifest> {
     Ok(m)
 }
 
-fn join_rel(root: &Path, rel: &str) -> PathBuf {
+pub fn join_rel(root: &Path, rel: &str) -> PathBuf {
     rel.split('/').fold(root.to_path_buf(), |p, s| p.join(s))
 }
 
@@ -181,6 +185,8 @@ pub enum SignatureCheck<'a> {
 /// om Developer ID fra teamet. `entry` må ligge inne i en av buntene, ellers
 /// kunne en usignert fil bli kjørt.
 #[cfg(target_os = "macos")]
+// Utenfor tester har SignatureCheck bare én variant.
+#[allow(clippy::infallible_destructuring_match)]
 pub fn verify_codesign(root: &Path, m: &Manifest, check: SignatureCheck) -> JvResult<()> {
     let team = match check {
         SignatureCheck::Team(t) => t,
@@ -223,72 +229,26 @@ pub fn verify_codesign(_root: &Path, _m: &Manifest, _check: SignatureCheck) -> J
     Ok(())
 }
 
-pub struct Output {
-    pub code: Option<i32>,
-    pub stdout: Vec<u8>,
-    pub stderr: Vec<u8>,
-}
-
-/// Kjører pakken med argumentliste (aldri skall) og tidsgrense.
-pub fn run(root: &Path, m: &Manifest, args: &[OsString], timeout: Duration) -> JvResult<Output> {
-    let mut child = Command::new(join_rel(root, &m.entry))
-        .args(args)
-        .env_clear()
-        .envs(command_env(root, m))
-        .current_dir(root)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
-    let mut out = child.stdout.take().ok_or(JvError::TrialRunFailed)?;
-    let mut err = child.stderr.take().ok_or(JvError::TrialRunFailed)?;
-    let t_out = std::thread::spawn(move || {
-        let mut v = Vec::new();
-        let _ = out.read_to_end(&mut v);
-        v
-    });
-    let t_err = std::thread::spawn(move || {
-        let mut v = Vec::new();
-        let _ = err.read_to_end(&mut v);
-        v
-    });
-    let start = Instant::now();
-    let status = loop {
-        if let Some(s) = child.try_wait()? {
-            break Some(s);
-        }
-        if start.elapsed() > timeout {
-            let _ = child.kill();
-            let _ = child.wait();
-            break None;
-        }
-        std::thread::sleep(Duration::from_millis(10));
-    };
-    Ok(Output {
-        code: status.and_then(|s| s.code()),
-        stdout: t_out.join().unwrap_or_default(),
-        stderr: t_err.join().unwrap_or_default(),
-    })
-}
-
 #[derive(Debug, Deserialize)]
 pub struct VersionInfo {
     pub id: String,
     pub version: String,
 }
 
-/// Prøvekjøring: `--version` må gi kode 0 og riktig id og versjon.
+/// Prøvekjøring: `--version` må gi kode 0 og riktig id og versjon innen to minutter.
 pub fn trial_run(root: &Path, m: &Manifest) -> JvResult<VersionInfo> {
-    let out = run(root, m, &["--version".into()], Duration::from_secs(120))?;
-    if out.code != Some(0) {
-        return Err(JvError::TrialRunFailed);
+    let cmd = runner::command(root, m, &["--version".into()]);
+    let never = AtomicBool::new(false);
+    match runner::run_job(cmd, &never, Some(Duration::from_secs(120)), &mut |_| {})? {
+        runner::Finished::Report(v) => {
+            let v: VersionInfo = serde_json::from_value(v).map_err(|_| JvError::TrialRunFailed)?;
+            if v.id != m.id || v.version != m.version {
+                return Err(JvError::TrialRunFailed);
+            }
+            Ok(v)
+        }
+        _ => Err(JvError::TrialRunFailed),
     }
-    let v: VersionInfo =
-        serde_json::from_slice(&out.stdout).map_err(|_| JvError::TrialRunFailed)?;
-    if v.id != m.id || v.version != m.version {
-        return Err(JvError::TrialRunFailed);
-    }
-    Ok(v)
 }
 
 pub fn sha256_file(path: &Path) -> JvResult<(String, u64)> {
@@ -307,12 +267,15 @@ pub fn sha256_file(path: &Path) -> JvResult<(String, u64)> {
     Ok((hex(&h.finalize()), n_total))
 }
 
+/// Navnet nedlastingen får i nedlastingsmappen (`<navn>.bin.part` under
+/// nedlasting, `<navn>.bin` når SHA-256 stemmer).
+pub fn download_name(entry: &CatalogEntry) -> String {
+    format!("jv-{}-{}-{}", entry.id, entry.version, entry.target)
+}
+
 /// Laster ned pakken med koden fra modellnedlastingen (gjenopptak, biter,
-/// SHA-256, fremdrift). Returnerer stien til den kontrollerte filen.
-///
-/// Spike: `HostPolicy` for GitHub finnes ikke ennå (`HostPolicy::production`
-/// er låst til Hugging Face). Steg 6.2 trenger en konstruktør for vertene i
-/// release-repoet; det er en endring i Transkriberings nedlastingskode.
+/// SHA-256, fremdrift). Returnerer stien til den kontrollerte filen. En avbrutt
+/// nedlasting blir liggende som `.part` og fortsetter neste gang.
 pub fn download_package(
     entry: &CatalogEntry,
     download_dir: &Path,
@@ -321,7 +284,7 @@ pub fn download_package(
     progress: download::ProgressFn,
 ) -> JvResult<PathBuf> {
     let model_entry = ModelEntry {
-        id: format!("jv-{}-{}-{}", entry.id, entry.version, entry.target),
+        id: download_name(entry),
         variant: "jv".into(),
         style: None,
         size: String::new(),
@@ -339,17 +302,8 @@ pub fn download_package(
         custom_dir: None,
     };
     let cache = Mutex::new(VerifyCache::default());
-    download::download_model(&model_entry, &dirs, policy, &cache, cancel, progress).map_err(|e| {
-        match e {
-            crate::tools::transkribering::error::CoreError::ChecksumMismatch
-            | crate::tools::transkribering::error::CoreError::SizeMismatch => {
-                JvError::ChecksumMismatch
-            }
-            other => JvError::Download {
-                kind: format!("{other:?}").chars().take(40).collect(),
-            },
-        }
-    })
+    download::download_model(&model_entry, &dirs, policy, &cache, cancel, progress)
+        .map_err(JvError::from)
 }
 
 #[derive(Debug, Default, Clone)]
@@ -363,13 +317,22 @@ pub struct InstallTimes {
 /// Installerer en nedlastet pakke. Rekkefølgen er fast:
 /// SHA-256 → utpakking i midlertidig mappe → manifest mot katalogen →
 /// kodesignatur (Mac) → `--version` → flytt på plass → slett eldre versjoner.
-/// Feiler et steg, slettes den midlertidige mappen og den gamle versjonen står urørt.
+/// Feiler et steg (eller avbryter brukeren), slettes den midlertidige mappen og
+/// den gamle versjonen står urørt.
 pub fn install(
     entry: &CatalogEntry,
     archive: &Path,
     tools_dir: &Path,
     check: SignatureCheck,
+    cancel: &AtomicBool,
 ) -> JvResult<(PathBuf, InstallTimes)> {
+    let cancelled = || -> JvResult<()> {
+        if cancel.load(Ordering::SeqCst) {
+            Err(JvError::Cancelled)
+        } else {
+            Ok(())
+        }
+    };
     let mut times = InstallTimes::default();
     let t = Instant::now();
     let (sum, len) = sha256_file(archive)?;
@@ -386,8 +349,10 @@ pub fn install(
     }
     fs::create_dir_all(&staging)?;
     let result = (|| -> JvResult<()> {
+        cancelled()?;
         let t = Instant::now();
         archive::extract(archive, &staging)?;
+        cancelled()?;
         times.extract = t.elapsed();
         let m = read_manifest(&staging)?;
         if m.id != entry.id || m.version != entry.version || m.target != entry.target {
@@ -396,10 +361,11 @@ pub fn install(
         let t = Instant::now();
         verify_codesign(&staging, &m, check)?;
         times.codesign = t.elapsed();
+        cancelled()?;
         let t = Instant::now();
         trial_run(&staging, &m)?;
         times.trial_run = t.elapsed();
-        Ok(())
+        cancelled()
     })();
     if let Err(e) = result {
         let _ = fs::remove_dir_all(&staging);
@@ -424,4 +390,59 @@ pub fn install(
     }
     let _ = fs::remove_file(archive);
     Ok((final_dir, times))
+}
+
+/// Et installert verktøy.
+#[derive(Debug, Clone)]
+pub struct Installed {
+    pub root: PathBuf,
+    pub manifest: Manifest,
+}
+
+/// Den installerte versjonen av `id` i `tools_dir/<id>/<versjon>/`, eller `None`.
+/// Mapper som begynner med «.» (under installasjon) telles ikke. Finnes flere
+/// versjoner (skal ikke skje), brukes den høyeste.
+pub fn installed(tools_dir: &Path, id: &str) -> Option<Installed> {
+    let dir = tools_dir.join(id);
+    let mut best: Option<Installed> = None;
+    for e in fs::read_dir(&dir).ok()?.flatten() {
+        let name = e.file_name().to_string_lossy().into_owned();
+        if name.starts_with('.') || !e.path().is_dir() {
+            continue;
+        }
+        let Ok(m) = read_manifest(&e.path()) else {
+            continue;
+        };
+        if m.id != id || m.version != name || m.target != super::catalog::CURRENT_TARGET {
+            continue;
+        }
+        let newer = best
+            .as_ref()
+            .is_none_or(|b| !super::catalog::version_at_least(&b.manifest.version, &m.version));
+        if newer {
+            best = Some(Installed {
+                root: e.path(),
+                manifest: m,
+            });
+        }
+    }
+    best
+}
+
+/// Plass på disken (filer, ikke symlenker).
+pub fn dir_size(p: &Path) -> u64 {
+    let mut total = 0;
+    if let Ok(rd) = fs::read_dir(p) {
+        for e in rd.flatten() {
+            let Ok(md) = e.path().symlink_metadata() else {
+                continue;
+            };
+            if md.is_dir() {
+                total += dir_size(&e.path());
+            } else if md.is_file() {
+                total += md.len();
+            }
+        }
+    }
+    total
 }

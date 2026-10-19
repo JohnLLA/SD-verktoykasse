@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Hovedvinduet. Ingen nettilgang fra webvisningen; modellnedlasting skjer i Rust. Dialogene kan bare åpne og lagre filer, og opener kan bare vise en fil i Finder/Utforsker (ikke åpne nettadresser).",
+  "description": "Hovedvinduet. Ingen nettilgang fra webvisningen; modellnedlasting skjer i Rust. Dialogene kan bare åpne og lagre filer, og opener kan bare vise en fil i Finder/Utforsker (ikke åpne nettadresser). Journalistverktøyene (jv) hentes og kjøres bare gjennom Rust-modulen; webvisningen har ingen shell- eller nettilgang.",
   "windows": ["main"],
   "permissions": [
     "core:default",
@@ -10,6 +10,7 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "opener:allow-reveal-item-in-dir",
-    "transkribering:default"
+    "transkribering:default",
+    "jv:default"
   ]
 }

@@ -55,6 +55,15 @@ impl HostPolicy {
         }
     }
 
+    /// Bare https og bare disse vertene. Brukes av jv-modulen for release-repoet
+    /// med verktøypakkene (github.com og GitHubs CDN for vedlegg).
+    pub fn https_only(hosts: &[&str]) -> Self {
+        HostPolicy {
+            hosts: hosts.iter().map(|s| s.to_string()).collect(),
+            allow_http: false,
+        }
+    }
+
     #[cfg(test)]
     pub fn for_tests(hosts: &[&str]) -> Self {
         HostPolicy {
@@ -857,6 +866,15 @@ pub(crate) mod tests {
         for m in &c.models {
             assert!(p.check(&m.url).is_ok(), "{}", m.id);
         }
+    }
+
+    #[test]
+    fn https_only_policy_allows_only_its_hosts_over_https() {
+        let p = HostPolicy::https_only(&["github.com"]);
+        assert!(p.check("https://github.com/a/b").is_ok());
+        assert!(p.check("http://github.com/a/b").is_err());
+        assert!(p.check("https://huggingface.co/x").is_err());
+        assert!(p.check("https://github.com.evil.net/x").is_err());
     }
 
     #[test]
