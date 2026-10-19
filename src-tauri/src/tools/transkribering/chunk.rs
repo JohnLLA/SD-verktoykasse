@@ -133,7 +133,9 @@ pub fn place_segment(
         } else {
             floor.max(by_text)
         }
-        .min(start);
+        .min(start)
+        // Whisper kan gi en start før forrige segments start; rekkefølgen skal holde.
+        .max(floor);
         end = end_limit;
     }
     Some(Segment {
@@ -321,6 +323,15 @@ mod tests {
         // Forrige segment fra en tidligere bit trekker ikke starten ut av biten.
         let s = place_segment(61_000, 61_000, &long, 598_500, 600_000, Some(&early)).unwrap();
         assert_eq!((s.start_ms, s.end_ms), (598_500, 600_000));
+        // Whisper gir start før forrige segments start: klemmes til den.
+        let prev = Segment {
+            start_ms: 9_900,
+            end_ms: 10_000,
+            text: "x".into(),
+        };
+        let s = place_segment(985, 985, "ja", 0, 10_000, Some(&prev)).unwrap();
+        assert_eq!((s.start_ms, s.end_ms), (9_900, 10_000));
+        assert!(s.start_ms >= prev.start_ms && s.end_ms > s.start_ms);
         // Et kort, ekte segment midt i biten endres ikke.
         let s = place_segment(100, 115, "eh", 0, 10_000, Some(&early)).unwrap();
         assert_eq!((s.start_ms, s.end_ms), (1_000, 1_150));

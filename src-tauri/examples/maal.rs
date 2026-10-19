@@ -162,8 +162,9 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
     let catalog = Catalog::builtin().map_err(|e| format!("{e:?}"))?;
     let entry = catalog.get(&model_id).ok_or("ukjent modell-ID")?;
     // Appens egne innstillinger per variant (models.json), slik appen bruker dem.
-    // `--options <variant>` låner innstillingene til en annen variant (til å måle om
-    // tidsstempler per token også hjelper semantic og hovedmodellen).
+    // `--options <variant>` låner innstillingene til en annen variant (steg 3 målte
+    // slik om tidsstempler per token hjalp semantic og hovedmodellen; hovedmodellen
+    // har dem nå selv i models.json).
     let options = match arg(args, "--options") {
         Some(v) => catalog
             .variant_options
