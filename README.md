@@ -1,6 +1,6 @@
 # Agenter for LLAs verktøykasse
 
-Fem Claude Code-agenter som bygger en skrivebordsapp for Mac og Windows som LLA-medlemmene laster ned og installerer selv. Første verktøy: **Transkribering** med NB-Whisper, lokalt på maskinen, bokmål eller nynorsk, lydrett eller tolket. Nedlastingssiden kjører på Railway under LLA-kontoen.
+Fem Claude Code-agenter som bygger en skrivebordsapp for Mac og Windows som LLA-medlemmene laster ned og installerer selv. Første verktøy: **Transkribering** med NB-Whisper, lokalt på maskinen, bokmål eller nynorsk, lydrett eller tolket. Nedlastingssiden ligger på lla.no, og installasjonsfilene på GitHub Releases i `JohnLLA/lla-verktoykasse-releases`.
 
 ## Installering
 
@@ -14,7 +14,7 @@ Pakk ut mappen der repoet skal ligge. `CLAUDE.md` og `docs/spesifikasjon-v1.md` 
 | `grensesnittbygger` | Skallet med verktøymeny og Transkribering-skjermen | Ja (frontend) | sonnet |
 | `kvalitetsmaler` | Testlyd, fasiter, ordfeilrate per målform og stil, fart | Bare måleskript | sonnet |
 | `kontraktvokter` | Gjennomgår hver PR, særlig personvern og nettkall | Nei | sonnet |
-| `byggmester` | CI for Mac og Windows, signering, oppdatering, nedlastingssiden på Railway | Konfig | sonnet |
+| `byggmester` | CI for Mac og Windows, signering, oppdatering, releaser til det offentlige repoet | Konfig | sonnet |
 
 ## Flyt
 
@@ -28,16 +28,6 @@ Pakk ut mappen der repoet skal ligge. `CLAUDE.md` og `docs/spesifikasjon-v1.md` 
 ## Lydrett og tolket
 
 NB-Whisper har en modell for hver stil: **verbatim** (bokstavelig, retter ikke grammatikk, små bokstaver) for lydrett, og **hovedmodellen** `nb-whisper-<størrelse>` (retter til skriftlig, egnet til referat og teksting) for tolket. Valget ble tatt etter kvalitetsmålingen i steg 3. Nynorsk eller bokmål velges med språkparameteren.
-
-## Railway-tilgang
-
-Agentene logger aldri inn på Railway. Du lager et **prosjekttoken** i LLA-prosjektet og legger det i `site/.env`:
-
-```
-RAILWAY_TOKEN=<token fra LLA-prosjektet>
-```
-
-Da deployer `byggmester` nedlastingssiden dit, mens CLI-en din fortsatt er logget inn på den private kontoen.
 
 ## Åpne spørsmål
 

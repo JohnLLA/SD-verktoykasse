@@ -17,7 +17,7 @@ Skrivebordsapp (Tauri 2) for Mac og Windows som LLA-medlemmene installerer selv.
 9. **Begge plattformer i hver PR.** CI bygger Mac og Windows. Bygger det ikke på begge, er det ikke ferdig.
 10. **Norsk mot brukeren, engelsk i kode.** Alle brukertekster i én språkfil.
 11. **Agentene lager ikke releaser.** Ingen push av versjonstagger, ingen opplasting av installasjonsfiler, ingen utsending. John Inge gjør det.
-12. **Nedlastingssiden ligger på Railway under LLA-kontoen (john@lla.no), aldri den private.** Deploy bare med prosjekttokenet i `RAILWAY_TOKEN` fra `.env`, og bare når John Inge ber om det. Installasjonsfilene ligger på GitHub Releases, ikke på Railway.
+12. **Nedlastingssiden ligger på lla.no, og John Inge legger den ut selv.** Siden er `site/lla-no/verktoy.html` og eies av ham; agentene endrer den ikke uten at han ber om det. Installasjonsfilene ligger på GitHub Releases i det offentlige repoet `JohnLLA/lla-verktoykasse-releases`.
 
 ## Mapper
 
@@ -28,7 +28,7 @@ src/                  Frontend (TypeScript + Vite)
   tools/transkribering/
 models.json           Modell-URL-er, størrelser, SHA-256
 testdata/             Testlyd og fasiter (kvalitetsmaler)
-site/                 Nedlastingssiden (Railway, LLA-kontoen)
+site/                 Nedlastingssiden (lla.no) og LLA-logo
 docs/                 Spesifikasjon, spike, sjekklister, senere.md
 .github/workflows/    Bygg for Mac og Windows
 ```
