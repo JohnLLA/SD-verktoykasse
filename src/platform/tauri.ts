@@ -117,6 +117,25 @@ export function createTauriPlatform(): Platform {
       }
     },
 
+    async checkForUpdate() {
+      try {
+        const r = await invoke<{ version: string } | null>("check_for_update");
+        return r ? r.version : null;
+      } catch {
+        // Ingen nett, bryteren av eller annen feil: ingen melding til brukeren.
+        return null;
+      }
+    },
+
+    async installUpdate() {
+      try {
+        await invoke("install_update");
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
     async onCloseRequested(guard) {
       return getCurrentWindow().onCloseRequested(async (event) => {
         if (!(await guard())) event.preventDefault();

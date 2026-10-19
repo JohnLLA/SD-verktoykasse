@@ -38,6 +38,14 @@ export interface Platform {
   copyText(text: string): Promise<boolean>;
   appVersion(): Promise<string | null>;
   /**
+   * Spør om det finnes en nyere versjon. Gir versjonsnummeret, eller `null`
+   * hvis det ikke finnes noen, sjekken feilet eller bryteren er av.
+   * Det eneste nettkallet appen gjør uten at brukeren ber om det.
+   */
+  checkForUpdate(): Promise<string | null>;
+  /** Laster ned og installerer funnet oppdatering, og starter appen på nytt. `false` ved feil. */
+  installUpdate(): Promise<boolean>;
+  /**
    * `guard` kalles når brukeren lukker vinduet. Gir den `false`, blir
    * vinduet åpent. Returnerer en funksjon som fjerner vakten.
    */

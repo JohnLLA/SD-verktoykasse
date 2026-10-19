@@ -10,6 +10,7 @@ import { icon } from "../ui/icons";
 import { confirmDialog } from "../ui/modal";
 import { createAboutView } from "./about-view";
 import { createSettingsView } from "./settings-view";
+import { runStartupUpdateCheck } from "./update-check";
 import { createUpdateNotice, type UpdateNotice } from "./update-notice";
 
 type Page = { kind: "tool"; id: string } | { kind: "settings" } | { kind: "about" };
@@ -117,6 +118,22 @@ export async function startApp(
   await Promise.all(instances.map((i) => i.tool.init?.().catch(() => undefined)));
   const first = tools[0];
   navigate(first ? { kind: "tool", id: first.id } : { kind: "settings" });
+
+  // ---- versjonssjekk (hopper over alt nettarbeid hvis bryteren er av). Feil vises ikke.
+  void runStartupUpdateCheck({
+    platform,
+    notice: updateNotice,
+    confirmInstall: async () => {
+      if (!instances.some((i) => i.tool.busy?.())) return true;
+      return confirmDialog({
+        title: t.update.busyTitle,
+        body: t.update.busyBody,
+        confirmLabel: t.update.busyConfirm,
+        cancelLabel: t.update.busyCancel,
+        danger: true,
+      });
+    },
+  }).catch(() => undefined);
 
   // ---- vakt ved lukking
   await platform.onCloseRequested(async () => {

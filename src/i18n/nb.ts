@@ -192,9 +192,15 @@ const nb = {
   },
 
   update: {
-    /** Plass til oppdateringsvarselet (steg 4). */
     available: (version: string) => `Det finnes en ny versjon: ${version}.`,
-    dismiss: "Skjul",
+    install: "Oppdater nå",
+    dismiss: "Senere",
+    installing: "Laster ned og installerer. Appen starter på nytt av seg selv.",
+    failed: "Oppdateringen mislyktes. Prøv igjen senere, eller last ned den nye versjonen fra nedlastingssiden.",
+    busyTitle: "Oppdatere nå?",
+    busyBody: "Noe pågår i appen, og appen starter på nytt under oppdateringen. Avbryt oppdateringen og vent til jobben er ferdig, hvis du ikke vil miste arbeid.",
+    busyConfirm: "Oppdater likevel",
+    busyCancel: "Vent",
   },
 
   transkribering: {
@@ -452,6 +458,13 @@ const nb = {
         note: "Blant annet rubato (omregning av lyd) og docx-rs (Word-filer).",
       },
     ],
+    fullLicenses: {
+      summary: "Vis full lisenstekst",
+      intro: "Hele lisensteksten for NB-Whisper, whisper.cpp, Tauri, Symphonia og alle andre komponenter som følger med appen.",
+      loading: "Henter lisensteksten …",
+      failed: "Kunne ikke vise lisensteksten.",
+      regionLabel: "Full lisenstekst",
+    },
     licenseLine: (by: string, license: string) => (by ? `${by} · ${license}` : license),
   },
 

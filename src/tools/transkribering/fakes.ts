@@ -182,6 +182,12 @@ export function fakePlatform(): FakePlatform {
     async appVersion() {
       return "0.1.0";
     },
+    async checkForUpdate() {
+      return null;
+    },
+    async installUpdate() {
+      return false;
+    },
     async onCloseRequested() {
       return () => undefined;
     },

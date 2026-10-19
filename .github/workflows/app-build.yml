@@ -22,6 +22,7 @@ on:
       - "vite.config.ts"
       - "models.json"
       - ".cargo/**"
+      - "tools/**"
       - ".github/workflows/app-build.yml"
   push:
     branches: [main]
@@ -35,6 +36,7 @@ on:
       - "vite.config.ts"
       - "models.json"
       - ".cargo/**"
+      - "tools/**"
       - ".github/workflows/app-build.yml"
 
 permissions:
@@ -77,11 +79,20 @@ jobs:
         working-directory: .
         run: npm run typecheck
 
+      - name: Verktøyskript for release (npm run test:tools)
+        working-directory: .
+        run: npm run test:tools
+
       - name: Bygg frontend (dist/)
         working-directory: .
         run: npm run build
 
       - uses: dtolnay/rust-toolchain@stable
+
+      - name: Tredjepartsmeldingen er oppdatert (Om-vinduet)
+        if: runner.os == 'macOS'
+        working-directory: .
+        run: node tools/lag-tredjepartsmelding.mjs --check
 
       - name: libclang (Windows)
         if: runner.os == 'Windows'
