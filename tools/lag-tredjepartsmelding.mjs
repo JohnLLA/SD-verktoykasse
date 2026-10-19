@@ -26,6 +26,9 @@ const OUT = join(ROOT, "src", "assets", "tredjepart.txt");
 const TARGETS = ["aarch64-apple-darwin", "x86_64-pc-windows-msvc"];
 const LICENSE_FILE = /^(licen[cs]e|copying|unlicense|notice)([-_. ].*)?$/i;
 
+// Enkel sammenligning på tegnkoder: samme rekkefølge på alle maskiner (localeCompare avhenger av ICU).
+const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
 const norm = (s) =>
   s.replace(/\r\n?/g, "\n").split("\n").map((l) => l.replace(/\s+$/, "")).join("\n").trim();
 
@@ -131,10 +134,12 @@ for (const p of cargoPkgs.values()) {
   for (const dep of Object.keys(pj.dependencies ?? {})) walk(dep);
 }
 
+components.sort((a, b) => cmp(a.name, b.name) || cmp(a.version, b.version) || cmp(a.source, b.source));
+
 // ---- finn full Apache- og MPL-tekst
 const all = new Map(standard);
 for (const [id, re] of Object.entries(SIGNATURES)) {
-  const hit = components.flatMap((c) => c.texts).filter((t) => re.test(t)).sort((a, b) => a.length - b.length)[0];
+  const hit = components.flatMap((c) => c.texts).filter((t) => re.test(t)).sort((a, b) => a.length - b.length || cmp(a, b))[0];
   if (!hit) throw new Error(`Fant ikke full tekst for ${id} i noen komponent.`);
   all.set(id, hit);
 }
@@ -154,7 +159,7 @@ const add = (key, text, user) => {
   groups.set(key, g);
 };
 
-for (const c of components.sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version))) {
+for (const c of components.sort((a, b) => cmp(a.name, b.name) || cmp(a.version, b.version) || cmp(a.source, b.source))) {
   const label = `${c.name} ${c.version}` + (c.authors.length ? ` (${c.authors.join(", ")})` : "");
   if (c.texts.length > 0) {
     for (const t of c.texts) add("h:" + createHash("sha256").update(t).digest("hex"), t, label);
@@ -200,13 +205,13 @@ out.push("=".repeat(28));
 out.push("");
 out.push("Hver lisenstekst står én gang, med listen over komponentene den gjelder for. Der en komponent ikke har med lisensfil, står standardteksten for lisensen den oppgir, og opphavsrettshaverne står i parentes ved navnet.");
 out.push("");
-const sorted = [...groups.values()].sort((a, b) => b.users.length - a.users.length || a.text.localeCompare(b.text));
+const sorted = [...groups.values()].sort((a, b) => b.users.length - a.users.length || cmp(a.text, b.text));
 sorted.forEach((g, i) => {
   out.push("-".repeat(72));
   out.push(`Lisenstekst ${i + 1} av ${sorted.length}`);
   out.push("-".repeat(72));
   out.push("Gjelder:");
-  for (const u of [...new Set(g.users)].sort((a, b) => a.localeCompare(b))) out.push("  " + u);
+  for (const u of [...new Set(g.users)].sort(cmp)) out.push("  " + u);
   out.push("");
   out.push(g.text);
   out.push("");
