@@ -2,6 +2,7 @@
 
 pub mod shell;
 pub mod tools;
+pub mod updater;
 
 /// Panikkmeldinger kan inneholde data fra der panikken skjedde. Vi skriver
 /// bare hvor i koden den skjedde, aldri meldingen (regel 2: ingen tekst eller
@@ -22,7 +23,16 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![shell::allow_playback]);
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .setup(|app| {
+            updater::manage(app.handle());
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            shell::allow_playback,
+            updater::check_for_update,
+            updater::install_update
+        ]);
     let builder = tools::register(builder);
     if builder.run(tauri::generate_context!()).is_err() {
         eprintln!("the app failed to start");

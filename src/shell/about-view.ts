@@ -29,6 +29,33 @@ export function createAboutView(platform: Platform): AboutView {
     ),
   );
 
+  // Hele lisensteksten (ca. 750 kB) ligger i en egen fil som bare hentes når
+  // brukeren åpner den. Den ligger i appen; ingen nettkall.
+  const fullText = h("pre", { class: "license-full", tabindex: 0, role: "region", "aria-label": A.fullLicenses.regionLabel, hidden: true });
+  const full = h(
+    "details",
+    { class: "license-details" },
+    h("summary", { text: A.fullLicenses.summary }),
+    h("p", { class: "help", text: A.fullLicenses.intro }),
+    fullText,
+  );
+  let fullLoaded = false;
+  full.addEventListener("toggle", () => {
+    if (!full.open || fullLoaded) return;
+    fullLoaded = true;
+    fullText.hidden = false;
+    fullText.textContent = A.fullLicenses.loading;
+    import("../assets/tredjepart.txt?raw").then(
+      (m) => {
+        fullText.textContent = m.default;
+      },
+      () => {
+        fullLoaded = false;
+        fullText.textContent = A.fullLicenses.failed;
+      },
+    );
+  });
+
   const el = h(
     "div",
     { class: "about" },
@@ -49,6 +76,7 @@ export function createAboutView(platform: Platform): AboutView {
       h("h2", { id: "about-licenses", class: "block-title", text: A.licensesTitle }),
       h("p", { class: "help", text: A.licensesIntro }),
       licenses,
+      full,
     ),
   );
 

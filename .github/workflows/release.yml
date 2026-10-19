@@ -1,0 +1,570 @@
+# Bygger installasjonsfilene og (når John Inge ber om det) legger dem som UTKAST i
+# det offentlige releases-repoet JohnLLA/lla-verktoykasse-releases.
+#
+# Når kjører den?
+# - Tagg `v*` pushes (John Inge): bygger, signerer og laster opp et release-UTKAST.
+# - Manuell start (Actions -> release -> Run workflow): testbygg. Uten «publish»
+#   lastes ingenting opp; filene ligger som artefakter på kjøringen (14 dager).
+#   Kjør den gjerne fra main først: det fyller hurtigbufferen for tagg-byggene.
+# - Pull request som endrer denne filen eller tauri.conf.json: usignert prøvebygg,
+#   uten opplasting, for å se at pipelinen virker. Ingen andre PR-er bygger her.
+#
+# Hemmeligheter og variabler: se docs/distribusjon.md. Ingenting ligger i repoet.
+# PR-bygg signerer aldri og laster aldri opp, selv om hemmelighetene finnes.
+#
+# Filnavnene er en avtale med nedlastingssiden (site/lla-no/verktoy.html velger
+# fil på endelsen .dmg, og .msi eller setup.exe for Windows) og med oppdateringsfilen latest.json:
+#   LLAs-verktoykasse_<versjon>_aarch64.dmg
+#   LLAs-verktoykasse_<versjon>_x64-setup.exe   (NSIS, installeres per bruker uten administrator)
+# (+ .app.tar.gz og .sig-filer til appens oppdatering)
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Last opp som utkast til releases-repoet (krever alle hemmeligheter)"
+        type: boolean
+        default: false
+      windows_signing:
+        description: "Windows-signering"
+        type: choice
+        options: ["fra variabelen WINDOWS_SIGNING", "none (usignert testbygg)"]
+        default: "fra variabelen WINDOWS_SIGNING"
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - "src-tauri/tauri.conf.json"
+      - "tools/lag-latest-json.mjs"
+      - "tools/lag-byggkonfig.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RELEASES_REPO: JohnLLA/lla-verktoykasse-releases
+
+jobs:
+  # ------------------------------------------------------------------ plan
+  plan:
+    name: Plan og kontroller
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.p.outputs.version }}
+      tag: ${{ steps.p.outputs.tag }}
+      publish: ${{ steps.p.outputs.publish }}
+      prerelease: ${{ steps.p.outputs.prerelease }}
+      mac_sign: ${{ steps.p.outputs.mac_sign }}
+      updater_sign: ${{ steps.p.outputs.updater_sign }}
+      win_mode: ${{ steps.p.outputs.win_mode }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Kontroller før bygging (tester, tredjepartsmelding)
+        run: |
+          npm ci
+          npm test
+          npm run typecheck
+          npm run test:tools
+          node tools/lag-tredjepartsmelding.mjs --check
+
+      - name: Plan
+        id: p
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_PUBLISH: ${{ inputs.publish }}
+          INPUT_WINDOWS: ${{ inputs.windows_signing }}
+          VAR_WINDOWS: ${{ vars.WINDOWS_SIGNING }}
+          # Bare for å se om de finnes. Verdiene skrives aldri ut.
+          S_RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          S_TAURI_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          S_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE }}
+          S_APPLE_CERT_PW: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          S_APPLE_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          S_APPLE_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+          S_APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          S_APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          S_APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          S_APPLE_ID: ${{ secrets.APPLE_ID }}
+          S_APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          S_WIN_CERT: ${{ secrets.WINDOWS_CERTIFICATE }}
+          S_WIN_CERT_PW: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          S_AZ_TENANT: ${{ secrets.AZURE_TENANT_ID }}
+          S_AZ_CLIENT: ${{ secrets.AZURE_CLIENT_ID }}
+          S_AZ_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          V_TS_ENDPOINT: ${{ vars.AZURE_TS_ENDPOINT }}
+          V_TS_ACCOUNT: ${{ vars.AZURE_TS_ACCOUNT }}
+          V_TS_PROFILE: ${{ vars.AZURE_TS_PROFILE }}
+        run: |
+          set -euo pipefail
+          errors=()
+          err() { errors+=("$1"); echo "::error::$1"; }
+          have() { [ -n "${!1:-}" ]; }
+
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          pubkey=$(node -p "require('./src-tauri/tauri.conf.json').plugins.updater.pubkey")
+          tag="v$version"
+          prerelease=false
+          if [[ "$version" == *-* ]]; then prerelease=true; fi
+
+          publish=false
+          case "$EVENT" in
+            push)
+              publish=true
+              if [ "$REF_NAME" != "$tag" ]; then
+                err "Taggen $REF_NAME stemmer ikke med versjonen i src-tauri/tauri.conf.json ($version). Forventet $tag."
+              fi
+              ;;
+            workflow_dispatch)
+              if [ "$INPUT_PUBLISH" = "true" ]; then publish=true; fi
+              if [ "$publish" = true ] && [ "$REF" != "refs/heads/main" ]; then
+                err "Opplasting fra manuell start er bare lov fra grenen main (denne kjøringen er på $REF)."
+              fi
+              ;;
+          esac
+
+          # Pull request: aldri signering, aldri opplasting.
+          can_sign=true
+          if [ "$EVENT" = "pull_request" ]; then can_sign=false; fi
+
+          # --- oppdateringsnøkkel
+          updater_sign=false
+          if [ "$can_sign" = true ] && have S_TAURI_KEY; then updater_sign=true; fi
+
+          # --- Mac
+          apple_base=true
+          for v in S_APPLE_CERT S_APPLE_CERT_PW S_APPLE_IDENTITY S_APPLE_TEAM; do
+            have $v || apple_base=false
+          done
+          notary_ok=false
+          if have S_APPLE_API_ISSUER && have S_APPLE_API_KEY && have S_APPLE_API_KEY_P8; then notary_ok=true; fi
+          if have S_APPLE_ID && have S_APPLE_PASSWORD; then notary_ok=true; fi
+          mac_sign=false
+          if [ "$can_sign" = true ] && [ "$apple_base" = true ] && [ "$notary_ok" = true ]; then mac_sign=true; fi
+
+          # --- Windows
+          win_mode="${VAR_WINDOWS:-none}"
+          if [ "$can_sign" != true ]; then win_mode=none; fi
+          case "$INPUT_WINDOWS" in none*) win_mode=none;; esac
+          case "$win_mode" in
+            none) ;;
+            certificate)
+              if ! { have S_WIN_CERT && have S_WIN_CERT_PW; }; then
+                err "WINDOWS_SIGNING=certificate, men hemmelighetene WINDOWS_CERTIFICATE og WINDOWS_CERTIFICATE_PASSWORD mangler."
+              fi
+              ;;
+            trusted-signing)
+              for v in S_AZ_TENANT S_AZ_CLIENT S_AZ_SECRET V_TS_ENDPOINT V_TS_ACCOUNT V_TS_PROFILE; do
+                have $v || err "WINDOWS_SIGNING=trusted-signing, men oppsettet for Azure ($v) mangler. Se docs/distribusjon.md."
+              done
+              ;;
+            *) err "Ukjent verdi for WINDOWS_SIGNING: $win_mode (bruk none, certificate eller trusted-signing)." ;;
+          esac
+
+          # --- krav ved opplasting
+          if [ "$publish" = true ]; then
+            have S_RELEASES_TOKEN || err "Hemmeligheten RELEASES_TOKEN mangler (token med skrivetilgang til $RELEASES_REPO). Se docs/distribusjon.md."
+            if [ "$updater_sign" != true ]; then
+              err "Hemmeligheten TAURI_SIGNING_PRIVATE_KEY mangler. Uten den kan ikke appen oppdatere seg selv. Se docs/distribusjon.md."
+            fi
+            if [[ "$pubkey" == ERSTATT* ]]; then
+              err "Den offentlige oppdateringsnøkkelen i src-tauri/tauri.conf.json (plugins.updater.pubkey) er ikke byttet ut. Se docs/distribusjon.md."
+            fi
+            if [ "$mac_sign" != true ]; then
+              err "Apple-hemmelighetene (APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY, APPLE_TEAM_ID og enten APPLE_API_ISSUER + APPLE_API_KEY + APPLE_API_KEY_P8 eller APPLE_ID + APPLE_PASSWORD) mangler eller er ufullstendige. En Mac-versjon uten signering stoppes av Gatekeeper, så den lastes ikke opp."
+            fi
+          fi
+
+          if [ ${#errors[@]} -gt 0 ]; then
+            {
+              echo "### Release stoppet"
+              for e in "${errors[@]}"; do echo "- $e"; done
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "publish=$publish"
+            echo "prerelease=$prerelease"
+            echo "mac_sign=$mac_sign"
+            echo "updater_sign=$updater_sign"
+            echo "win_mode=$win_mode"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### Plan for $tag"
+            echo "- Opplasting som utkast til $RELEASES_REPO: **$publish**"
+            echo "- Mac signert og notarisert: **$mac_sign**"
+            echo "- Windows-signering: **$win_mode**"
+            echo "- Oppdateringspakker signert: **$updater_sign**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ----------------------------------------------------------------- bygg
+  build:
+    name: Bygg ${{ matrix.name }}
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            name: macOS (arm64)
+            bundles: app,dmg
+          - os: windows-latest
+            name: Windows (x64)
+            bundles: nsis
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      MAC_SIGN: ${{ needs.plan.outputs.mac_sign }}
+      UPDATER_SIGN: ${{ needs.plan.outputs.updater_sign }}
+      WIN_MODE: ${{ needs.plan.outputs.win_mode }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: libclang (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: '"LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV'
+
+      - name: Cache cargo og bygg (inkl. whisper.cpp)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/trusted-signing-cli
+            src-tauri/target
+          key: release-v1-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock', '.cargo/config.toml', 'src-tauri/cmake/**') }}
+          restore-keys: release-v1-${{ runner.os }}-
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Byggeflagg (fra .cargo/config.toml)
+        run: |
+          grep -E "^(GGML|CMAKE|MACOSX)" .cargo/config.toml
+          cmake --version | head -n 1
+          rustc --version
+
+      # ---------------- Mac: sertifikat og notarisering
+      - name: Importer Developer ID-sertifikat (Mac)
+        if: runner.os == 'macOS' && env.MAC_SIGN == 'true'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KCPW="$(uuidgen)"
+          echo "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KCPW" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KCPW" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KCPW" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/cert.p12"
+          if ! security find-identity -v -p codesigning "$KEYCHAIN" | grep -qF "$APPLE_SIGNING_IDENTITY"; then
+            echo "::error::Fant ikke signeringsidentiteten i sertifikatet. Sjekk APPLE_SIGNING_IDENTITY (f.eks. «Developer ID Application: Navn (TEAMID)»)."
+            exit 1
+          fi
+          echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Notarisering – innlogging (Mac)
+        if: runner.os == 'macOS' && env.MAC_SIGN == 'true'
+        env:
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          # App Store Connect API-nøkkel har forrang; ellers Apple-ID med app-passord.
+          if [ -n "$APPLE_API_KEY_P8" ] && [ -n "$APPLE_API_KEY" ] && [ -n "$APPLE_API_ISSUER" ]; then
+            printf '%s' "$APPLE_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+            {
+              echo "APPLE_API_ISSUER=$APPLE_API_ISSUER"
+              echo "APPLE_API_KEY=$APPLE_API_KEY"
+              echo "APPLE_API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8"
+              echo "NOTARY_MODE=api"
+            } >> "$GITHUB_ENV"
+          else
+            {
+              echo "APPLE_ID=$APPLE_ID"
+              echo "APPLE_PASSWORD=$APPLE_PASSWORD"
+              echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+              echo "NOTARY_MODE=appleid"
+            } >> "$GITHUB_ENV"
+          fi
+
+      # ---------------- Windows: signering
+      - name: Importer Windows-sertifikat (OV/EV, .pfx)
+        if: runner.os == 'Windows' && env.WIN_MODE == 'certificate'
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP "kode.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+          $pw = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+          $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pw
+          Remove-Item $pfx
+          "WIN_THUMBPRINT=$($cert.Thumbprint)" >> $env:GITHUB_ENV
+          "WIN_TIMESTAMP_URL=$($env:WINDOWS_TIMESTAMP_URL)" >> $env:GITHUB_ENV
+
+      - name: Installer trusted-signing-cli (Azure Trusted Signing)
+        if: runner.os == 'Windows' && env.WIN_MODE == 'trusted-signing'
+        run: |
+          if [ ! -x "$HOME/trusted-signing-cli/bin/trusted-signing-cli.exe" ]; then
+            cargo install trusted-signing-cli --locked --root "$HOME/trusted-signing-cli"
+          fi
+          echo "$HOME/trusted-signing-cli/bin" >> "$GITHUB_PATH"
+
+      - name: Azure-pålogging for Trusted Signing
+        if: runner.os == 'Windows' && env.WIN_MODE == 'trusted-signing'
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TS_ENDPOINT: ${{ vars.AZURE_TS_ENDPOINT }}
+          AZURE_TS_ACCOUNT: ${{ vars.AZURE_TS_ACCOUNT }}
+          AZURE_TS_PROFILE: ${{ vars.AZURE_TS_PROFILE }}
+        run: |
+          {
+            echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+            echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+            echo "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
+            echo "TS_ENDPOINT=$AZURE_TS_ENDPOINT"
+            echo "TS_ACCOUNT=$AZURE_TS_ACCOUNT"
+            echo "TS_PROFILE=$AZURE_TS_PROFILE"
+          } >> "$GITHUB_ENV"
+
+      - name: Oppdateringsnøkkel (privat, bare i denne jobben)
+        if: env.UPDATER_SIGN == 'true'
+        env:
+          KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          {
+            echo "TAURI_SIGNING_PRIVATE_KEY<<LLA_EOF"
+            echo "$KEY"
+            echo "LLA_EOF"
+            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      # ---------------- bygg
+      - name: Bygg installasjonsfiler (tauri build)
+        run: |
+          set -euo pipefail
+          node tools/lag-byggkonfig.mjs "$RUNNER_TEMP/bygg.json"
+          echo "Tillegg til konfigurasjonen (uten hemmeligheter):"
+          cat "$RUNNER_TEMP/bygg.json"
+          npx tauri build --bundles ${{ matrix.bundles }} --config "$RUNNER_TEMP/bygg.json"
+
+      - name: Kontroller at ggml er bygget med /O2 og AVX2, ikke AVX-512 (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          fail=0
+          for p in ggml-cpu ggml-base whisper; do
+            f=$(find src-tauri/target/release/build -name "$p.vcxproj" -path "*whisper-rs-sys*" | head -n 1)
+            if [ -z "$f" ]; then echo "fant ikke $p.vcxproj"; fail=1; continue; fi
+            opt=$(awk '/<ItemDefinitionGroup Condition=.*Release\|x64/{r=1} /<\/ItemDefinitionGroup>/{r=0} r && /<Optimization>/{print}' "$f" | tr -d ' ')
+            echo "$p: $opt"
+            case "$opt" in *MaxSpeed*) ;; *) echo "::error::$p er bygget uten /O2"; fail=1;; esac
+          done
+          cpu=$(find src-tauri/target/release/build -name "ggml-cpu.vcxproj" -path "*whisper-rs-sys*" | head -n 1)
+          if [ -n "$cpu" ]; then
+            if grep -qiE "AVX512|AdvancedVectorExtensions512" "$cpu"; then
+              echo "::error::ggml-cpu er bygget med AVX-512 og vil krasje på PC-er uten det"; fail=1
+            fi
+            if grep -qiE "arch:AVX2|AdvancedVectorExtensions2" "$cpu"; then
+              echo "ggml-cpu: AVX2 påslått"
+            else
+              echo "::warning::Fant ikke AVX2-flagget i ggml-cpu.vcxproj. Sjekk byggeloggen."
+            fi
+          fi
+          exit $fail
+
+      # ---------------- Mac: dmg-filen signeres, notariseres og stiftes
+      # (appen i den er allerede signert, notarisert og stiftet av tauri build)
+      - name: Signer, notariser og stift dmg (Mac)
+        if: runner.os == 'macOS' && env.MAC_SIGN == 'true'
+        run: |
+          set -euo pipefail
+          dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg | head -n 1)
+          codesign --force --sign "$APPLE_SIGNING_IDENTITY" --timestamp "$dmg"
+          if [ "$NOTARY_MODE" = api ]; then
+            auth=(--key "$APPLE_API_KEY_PATH" --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER")
+          else
+            auth=(--apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID")
+          fi
+          xcrun notarytool submit "$dmg" "${auth[@]}" --wait 2>&1 | tee "$RUNNER_TEMP/notar.log"
+          grep -q "status: Accepted" "$RUNNER_TEMP/notar.log" || { echo "::error::Notariseringen av dmg ble ikke godkjent"; exit 1; }
+          xcrun stapler staple "$dmg"
+          xcrun stapler validate "$dmg"
+          spctl --assess --type open --context context:primary-signature -vv "$dmg"
+          # Appen inni: Gatekeeper skal godkjenne den, og billetten skal sitte på den.
+          mnt="$RUNNER_TEMP/dmgmnt"; mkdir -p "$mnt"
+          hdiutil attach -nobrowse -readonly -mountpoint "$mnt" "$dmg" >/dev/null
+          app=$(ls -d "$mnt"/*.app | head -n 1)
+          spctl --assess --type execute -vv "$app"
+          xcrun stapler validate "$app"
+          hdiutil detach "$mnt" >/dev/null
+
+      - name: Kontroller Windows-signaturen
+        if: runner.os == 'Windows' && env.WIN_MODE != 'none'
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          $sig = Get-AuthenticodeSignature $exe.FullName
+          Write-Host "Status: $($sig.Status), utsteder: $($sig.SignerCertificate.Issuer)"
+          if ($sig.Status -ne 'Valid') { Write-Error "installasjonsfilen har ikke gyldig signatur ($($sig.Status))"; exit 1 }
+
+      # ---------------- samle med faste, enkle filnavn
+      - name: Gi filene navn nedlastingssiden og updateren finner
+        run: |
+          set -euo pipefail
+          B=src-tauri/target/release/bundle
+          mkdir -p release-filer
+          if [ "$RUNNER_OS" = macOS ]; then
+            cp "$(ls $B/dmg/*.dmg | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.dmg"
+            if [ "$UPDATER_SIGN" = true ]; then
+              cp "$(ls $B/macos/*.app.tar.gz | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.app.tar.gz"
+              cp "$(ls $B/macos/*.app.tar.gz.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.app.tar.gz.sig"
+            fi
+          else
+            cp "$(ls $B/nsis/*-setup.exe | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64-setup.exe"
+            if [ "$UPDATER_SIGN" = true ]; then
+              cp "$(ls $B/nsis/*-setup.exe.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64-setup.exe.sig"
+            fi
+          fi
+          ls -l release-filer
+
+      - name: Merk testbygg som usignert
+        run: |
+          {
+            echo "### ${{ matrix.name }}"
+            if [ "$RUNNER_OS" = macOS ] && [ "$MAC_SIGN" != true ]; then echo "- **USIGNERT og ikke notarisert.** Bare til testing; Gatekeeper vil stoppe den."; fi
+            if [ "$RUNNER_OS" = Windows ] && [ "$WIN_MODE" = none ]; then echo "- **Usignert.** SmartScreen vil advare."; fi
+            if [ "$UPDATER_SIGN" != true ]; then echo "- Ingen oppdateringspakker (ingen oppdateringsnøkkel i denne kjøringen)."; fi
+            ls -l release-filer | tail -n +2
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ runner.os }}
+          path: release-filer/*
+          if-no-files-found: error
+          retention-days: 14
+
+      # Bundle-mappen skal ikke i hurtigbufferen.
+      - name: Rydd før hurtigbufferen lagres
+        if: always()
+        run: rm -rf src-tauri/target/release/bundle src-tauri/target/release/incremental
+
+  # -------------------------------------------------------------- publisering
+  publish:
+    name: Last opp utkast til releases-repoet
+    needs: [plan, build]
+    if: needs.plan.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      TAG: ${{ needs.plan.outputs.tag }}
+      PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+      WIN_MODE: ${{ needs.plan.outputs.win_mode }}
+      GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: release-filer
+
+      - name: Lag utgivelsesnotater
+        run: |
+          {
+            echo "LLAs verktøykasse $VERSION."
+            echo
+            echo "- **Mac:** last ned filen som slutter på .dmg (Apple Silicon, macOS 13 eller nyere)."
+            echo "- **Windows:** last ned filen som slutter på setup.exe (64-bit, Windows 10 eller 11). Den installeres for din bruker og trenger ikke administratorrettigheter."
+            echo
+            echo "Appen oppdaterer seg selv når en ny versjon kommer, hvis du ikke har slått det av under Innstillinger."
+            if [ "$WIN_MODE" = none ]; then
+              echo
+              echo "**Merk om Windows:** denne versjonen er ikke kodesignert ennå. Windows kan vise «Windows beskyttet PCen». Trykk «Mer informasjon» og så «Kjør likevel»."
+            fi
+          } > notater.md
+          cat notater.md
+
+      - name: Lag latest.json
+        run: node tools/lag-latest-json.mjs --version "$VERSION" --dir release-filer --notes-file notater.md --repo "$RELEASES_REPO"
+
+      - name: Kontroller filene
+        run: |
+          set -euo pipefail
+          ls -l release-filer
+          [ "$(ls release-filer/*.dmg | wc -l)" = 1 ]
+          [ "$(ls release-filer/*setup.exe | wc -l)" = 1 ]
+          [ "$(ls release-filer/*.msi 2>/dev/null | wc -l)" = 0 ]
+          node -e "JSON.parse(require('fs').readFileSync('release-filer/latest.json','utf8'))"
+
+      - name: Opprett eller oppdater utkastet i releases-repoet
+        run: |
+          set -euo pipefail
+          files=(release-filer/*)
+          if gh release view "$TAG" --repo "$RELEASES_REPO" >/dev/null 2>&1; then
+            draft=$(gh release view "$TAG" --repo "$RELEASES_REPO" --json isDraft --jq .isDraft)
+            if [ "$draft" != true ]; then
+              echo "::error::$TAG er allerede publisert i $RELEASES_REPO. Publiserte releaser endres ikke. Bruk et nytt versjonsnummer."
+              exit 1
+            fi
+            gh release upload "$TAG" "${files[@]}" --repo "$RELEASES_REPO" --clobber
+            gh release edit "$TAG" --repo "$RELEASES_REPO" --notes-file notater.md
+          else
+            flags=(--draft)
+            if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+            gh release create "$TAG" "${files[@]}" --repo "$RELEASES_REPO" --title "LLAs verktøykasse $VERSION" --notes-file notater.md "${flags[@]}"
+          fi
+          {
+            echo "### Utkast klart"
+            echo "Åpne https://github.com/$RELEASES_REPO/releases, kontroller filene og trykk «Publish release». Først da ser medlemmer og appens oppdatering den."
+          } >> "$GITHUB_STEP_SUMMARY"

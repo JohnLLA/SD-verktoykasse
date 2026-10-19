@@ -113,7 +113,7 @@ Logger skrives lokalt og inneholder aldri transkribert tekst eller filnavn utove
 | docx | `docx-rs` |
 | Nedlasting og sjekksum | `ureq` (features `rustls`, `platform-verifier`, `win-system-proxy`) og `sha2`. Godkjent etter spiken, sammen med `docx-rs`, `serde`/`serde_json` og featuren `raw-api` i `whisper-rs`. symphonia 0.5 |
 | Lagring av innstillinger | Tauri `store`-plugin, lokalt |
-| Oppdatering | Tauri `updater`-plugin mot GitHub Releases, signerte oppdateringer |
+| Oppdatering | Tauri `updater`-plugin mot GitHub Releases, signerte oppdateringer. Pluginen bruker `native-tls` (systemets TLS og sertifikatlager), så bedriftsproxy og egne rotsertifikater virker |
 
 ### Plattformer
 
@@ -134,7 +134,7 @@ Lydrett har et eget, slakkere mål fordi verbatim-modellene er omtrent fire gang
 
 ## Distribusjon
 
-- GitHub Actions bygger `.dmg` (Mac) og `.msi` (Windows) når en versjonstagg pushes.
+- GitHub Actions bygger `.dmg` (Mac) og en Windows-installasjon (`-setup.exe` fra NSIS, installeres per bruker uten administrator; bestemt av John Inge i steg 4) når en versjonstagg pushes.
 - **Mac:** signert med Developer ID og notarisert. Uten det stopper Gatekeeper appen.
 - **Windows:** kodesignert. Uten signatur viser SmartScreen en skremmende advarsel som vil stoppe mange medlemmer. Sertifikat avklares (se åpne spørsmål).
 ### Nedlastingssiden

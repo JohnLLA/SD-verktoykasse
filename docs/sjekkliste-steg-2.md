@@ -56,7 +56,7 @@ For å slippe å laste ned en modell på 175 MB til prøving: legg `nb-whisper-s
 - [ ] Innstillinger → Modeller: nedlastede modeller med størrelse og «Slett». Sletting spør først, og plassen i oversikten går ned. En delvis nedlastet modell kan slettes.
 - [ ] Egen modellmappe: velg en mappe med modellfilene (`<id>.bin`); modellene vises som «I din egen modellmappe» uten slett-knapp, og transkribering bruker dem uten ny nedlasting. «Bruk appens mappe» går tilbake. En mappe som er slettet etterpå, gir «Fant ikke mappen».
 - [ ] Nøyaktighet og fart: velg «Raskere», start en jobb og sjekk at den er raskere. Valget huskes etter omstart.
-- [ ] «Se etter ny versjon når appen starter»: bryteren huskes etter omstart. (Selve sjekken kommer i steg 4; appen gjør ingen nettkall for dette ennå.)
+- [ ] «Se etter ny versjon når appen starter»: bryteren huskes etter omstart. (Selve sjekken kom i steg 4: se `docs/sjekkliste-steg-4.md`, «Versjonssjekken slått av».)
 - [ ] Om: versjon, setningen «Lyden din forlater aldri maskinen.», NB-Whisper med Apache License 2.0 fra Nasjonalbibliotekets KI-lab, og de øvrige lisensene.
 - [ ] Siste valg (målform, stil, kvalitet) huskes etter omstart.
 - [ ] Lys og mørk modus følger systemet (Systeminnstillinger → Utseende), også mens appen er åpen.
@@ -88,4 +88,4 @@ Se PR-beskrivelsen for hva som faktisk ble kjørt (`npm run tauri dev`, prøvevi
 
 ## Til steg 4 (distribusjon)
 
-- [ ] Full lisenstekst for NB-Whisper (Apache 2.0) og øvrige komponenter (whisper.cpp, Tauri, Symphonia m.fl.) tas med i appen, som en tredjepartsmelding i Om-vinduet. Om-vinduet har i dag bare navn, eier og lisensnavn.
+- [x] (Gjort i steg 4: Om, «Vis full lisenstekst», `src/assets/tredjepart.txt`.) Full lisenstekst for NB-Whisper (Apache 2.0) og øvrige komponenter (whisper.cpp, Tauri, Symphonia m.fl.) tas med i appen, som en tredjepartsmelding i Om-vinduet. Om-vinduet har i dag bare navn, eier og lisensnavn.

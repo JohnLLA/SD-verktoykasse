@@ -966,6 +966,18 @@ dialog.modal h2 {
   overflow-wrap: anywhere;
 }
 
+.check-now {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.check-now-status {
+  margin: 0;
+}
+
 .switch-row {
   display: flex;
   align-items: center;
@@ -1046,6 +1058,32 @@ input.switch:checked::after {
 
 .license-line {
   color: var(--text);
+}
+
+.license-details {
+  margin-top: 16px;
+}
+
+.license-details > summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 6px 0;
+}
+
+.license-full {
+  margin-top: 8px;
+  max-height: 420px;
+  overflow: auto;
+  padding: 12px 16px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- melding nederst ---------- */

@@ -13,6 +13,8 @@ export default defineConfig({
     // Ingen innebygde (inline) skript eller stiler, siden CSP er streng.
     assetsInlineLimit: 0,
     cssCodeSplit: false,
+    // Lisensteksten (src/assets/tredjepart.txt, ca. 750 kB) er en egen, utsatt bit.
+    chunkSizeWarningLimit: 900,
   },
   test: {
     include: ["src/**/*.test.ts"],
