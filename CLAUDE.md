@@ -6,7 +6,7 @@ Skrivebordsapp (Tauri 2) for Mac og Windows som LLA-medlemmene installerer selv.
 
 ## Faste regler
 
-1. **Lyden forlater aldri maskinen.** Bare to nettkall er lov: modellnedlasting når brukeren ber om det, og versjonssjekk (kan slås av). Ingen analyse, ingen feilrapportering, ingen innlogging.
+1. **Lyden forlater aldri maskinen.** Bare disse nettkallene er lov: modellnedlasting når brukeren ber om det, nedlasting av verktøykatalogen og verktøypakker (GitHub Releases) når brukeren ber om det, og versjonssjekk (kan slås av). Filene og innholdet deres sendes aldri. Ingen analyse, ingen feilrapportering, ingen innlogging.
 2. **Ingen transkribert tekst eller filnavn i logger.**
 3. **Modellene følger ikke med installasjonen.** De lastes ned fra Nasjonalbibliotekets KI-lab på Hugging Face (`NbAiLab`, eller `NbAiLabBeta` der modellen bare finnes der) og sjekkes mot SHA-256 i `models.json`.
 4. **Lydrett = verbatim-modell, tolket = hovedmodellen (`nb-whisper-<størrelse>`).** Målform via Whisper-språk `no` / `nn`. Ikke etterbehandle lydrett tekst med stor forbokstav eller tegnsetting.
