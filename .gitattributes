@@ -3,3 +3,5 @@
 src-tauri/src/tools/jv/testdata/** -text
 # Tekst og fasiter for nynorsk: byte for byte, så Windows sammenligner med de samme bytene som Mac.
 sidecar/jv/testdata/nynorsk/** -text
+# datawrapper: fasit-TSV og CSV-testfiler sammenlignes byte for byte (CRLF/LF er en del av testen).
+sidecar/jv/testdata/datawrapper/** -text

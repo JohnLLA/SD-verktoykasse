@@ -180,6 +180,7 @@ TOOL_SOURCES: dict[str, tuple[str, ...]] = {
     "loudness": ("ffmpeg",),
     "subtitles": (),
     "pdf-tables": (),
+    "datawrapper": (),
     "ocr": ("tesseract", "tessdata-nor", "tessdata-eng", "tessdata-osd"),
     "redact": ("poppler",),
     "nynorsk": ("apertium", "apertium-data"),

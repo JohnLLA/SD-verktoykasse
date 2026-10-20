@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Per-tool build facts: menu name, bundled programs and PyInstaller extras.
 
-Only the tools listed here can be built. Runde A (Mac) covers all nine.
+Only the tools listed here can be built. Runde A (Mac) covered the first
+nine, and datawrapper (tool number ten) is built for Mac and Windows from
+the start.
 Runde B (Windows) covers the eight that could be packed then; nynorsk 0.2.0
 followed (Apertium's own Windows build, mirrored; docs/spike-sidecar.md,
 «nynorsk på Windows»). A tool with a Windows package gets a Windows line in
@@ -16,7 +18,9 @@ from dataclasses import dataclass
 
 from . import JV, TARGET_MAC, TARGET_WINDOWS
 
-ALL_IDS = ("compare", "metadata", "keyframes", "loudness", "subtitles", "pdf-tables", "ocr", "redact", "nynorsk")
+ALL_IDS = (
+    "compare", "metadata", "keyframes", "loudness", "subtitles", "pdf-tables", "datawrapper", "ocr", "redact", "nynorsk",
+)
 
 # How `jv --version` runs each bundled program in the trial run. None: only
 # check that the file is there and executable (the program has no version flag).
@@ -74,6 +78,8 @@ SPECS: dict[str, ToolSpec] = {
         ToolSpec("loudness", "Lydnivå", programs=("ffmpeg", "ffprobe"), targets=BOTH, note=FIRST),
         ToolSpec("subtitles", "Teksting", targets=BOTH, note=FIRST),
         ToolSpec("pdf-tables", "Tabeller fra PDF", targets=BOTH, note=FIRST),
+        # Verktøy nummer ti (docs/spesifikasjon-datawrapper.md): ingen systemprogrammer, Mac og Windows fra start.
+        ToolSpec("datawrapper", "Klargjør for Datawrapper", targets=BOTH, note=FIRST),
         ToolSpec(
             "ocr", "Søkbare PDF-er (OCR)",
             # No Ghostscript: ocrmypdf writes plain PDF (decided 19.10.2026).

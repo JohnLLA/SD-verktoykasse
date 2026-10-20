@@ -63,7 +63,7 @@ pub const RELEASE_HOSTS: &[&str] = &[
     "release-assets.githubusercontent.com",
 ];
 
-/// De ni journalistverktøyene, i menyrekkefølge.
+/// Journalistverktøyene, i menyrekkefølge (`datawrapper` er nummer ti).
 pub const KNOWN_TOOLS: &[&str] = &[
     "compare",
     "metadata",
@@ -71,6 +71,7 @@ pub const KNOWN_TOOLS: &[&str] = &[
     "loudness",
     "subtitles",
     "pdf-tables",
+    "datawrapper",
     "ocr",
     "redact",
     "nynorsk",

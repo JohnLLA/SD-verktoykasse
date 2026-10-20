@@ -1,4 +1,4 @@
-"""Parsing of Norwegian number formats.
+"""Parsing of Norwegian number formats (shared by pdf-tables and datawrapper).
 
 Certain formats (stored without comment):
   1 234 567,50   thousands separated by space, U+00A0, U+202F or U+2009

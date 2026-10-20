@@ -11,7 +11,7 @@ set -euo pipefail
 HER="$(cd "$(dirname "$0")" && pwd)"
 JV="$(cd "$HER/../jv" && pwd)"
 DIST="$HER/out/dist"
-ALLE="compare,metadata,keyframes,loudness,subtitles,pdf-tables,ocr,redact,nynorsk"
+ALLE="compare,metadata,keyframes,loudness,subtitles,pdf-tables,datawrapper,ocr,redact,nynorsk"
 ids="${1:-alle}"; [[ "$ids" == "alle" ]] && ids="$ALLE"
 UT="$(mktemp -d)"
 LOGG="$HER/out/test-logger-windows"; rm -rf "$LOGG"; mkdir -p "$LOGG"

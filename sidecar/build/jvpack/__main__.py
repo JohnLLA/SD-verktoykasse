@@ -2,7 +2,7 @@
 """python -m jvpack mac <id>[,<id>...]|alle [--notariser [profil]]
         build packages for aarch64-apple-darwin (optionally notarised)
 python -m jvpack windows <id>[,<id>...]|alle
-        build packages for x86_64-pc-windows-msvc (on Windows; «alle» = the eight
+        build packages for x86_64-pc-windows-msvc (on Windows; «alle» = the nine
         that can be packed, not nynorsk)
 python -m jvpack windows kilder [--sjekk]
         write (or check) the Windows section of binaries.json

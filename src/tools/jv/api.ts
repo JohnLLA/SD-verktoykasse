@@ -9,7 +9,7 @@ import type { CoreError } from "../transkribering/api";
 
 export type JvJobId = number;
 
-/** De ni verktøyene, i menyrekkefølge (Rust: `catalog::KNOWN_TOOLS`). */
+/** Journalistverktøyene, i menyrekkefølge (Rust: `catalog::KNOWN_TOOLS`). */
 export const JV_TOOL_IDS = [
   "compare",
   "metadata",
@@ -17,6 +17,7 @@ export const JV_TOOL_IDS = [
   "loudness",
   "subtitles",
   "pdf-tables",
+  "datawrapper",
   "ocr",
   "redact",
   "nynorsk",

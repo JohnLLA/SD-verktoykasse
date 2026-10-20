@@ -25,12 +25,13 @@ use super::error::{JvError, JvResult};
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RunRequest {
-    /// Underkommando: `vis`/`vask` (metadata) og `finn`/`sladd` (redact).
+    /// Underkommando: `vis`/`vask` (metadata), `finn`/`sladd` (redact) og
+    /// `analyser`/`lag` (datawrapper).
     #[serde(default)]
     pub command: Option<String>,
     /// Inngangsfiler (eller mapper der verktøyet tar mapper).
     pub inputs: Vec<String>,
-    /// Utmappen. Kreves av alle unntatt `metadata vis`.
+    /// Utmappen. Kreves av alle unntatt `metadata vis` og `datawrapper`.
     #[serde(default)]
     pub out_dir: Option<String>,
     /// Navngitte valg, se hvitelisten under.
@@ -187,6 +188,71 @@ impl<'a> Options<'a> {
         }
     }
 
+    /// En ny utfil (`csv_file`): absolutt sti med endelsen `ext`, i en mappe som finnes.
+    /// Verktøyet skriver aldri over en fil som finnes (det velger `-2`, `-3` …).
+    fn out_file(&mut self, key: &'static str, ext: &str) -> JvResult<Option<OsString>> {
+        match self.get(key) {
+            None => Ok(None),
+            Some(Value::String(s)) => {
+                let p = check_path(s)?;
+                let path = Path::new(&p);
+                let ok_ext = path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .is_some_and(|e| e.eq_ignore_ascii_case(ext));
+                if !ok_ext || path.is_dir() {
+                    return Err(invalid("option_value"));
+                }
+                match path.parent() {
+                    Some(parent) if parent.is_dir() => Ok(Some(p)),
+                    _ => Err(invalid("out_parent_missing")),
+                }
+            }
+            Some(_) => Err(invalid("option_type")),
+        }
+    }
+
+    /// Arknavn i Excel: 1–31 tegn, ingen kontrolltegn og ingen av `: \ / ? * [ ]`.
+    fn sheet_name(&mut self, key: &'static str) -> JvResult<Option<String>> {
+        match self.get(key) {
+            None => Ok(None),
+            Some(Value::String(s)) if is_sheet_name(s) => Ok(Some(s.clone())),
+            Some(Value::String(_)) => Err(invalid("option_value")),
+            Some(_) => Err(invalid("option_type")),
+        }
+    }
+
+    /// En liste med heltall i [min, max], uten like verdier, høyst `max_len` lang.
+    fn integers(
+        &mut self,
+        key: &'static str,
+        min: i64,
+        max: i64,
+        max_len: usize,
+    ) -> JvResult<Vec<i64>> {
+        match self.get(key) {
+            None => Ok(Vec::new()),
+            Some(Value::Array(items)) => {
+                if items.len() > max_len {
+                    return Err(invalid("option_range"));
+                }
+                let mut out: Vec<i64> = Vec::with_capacity(items.len());
+                for item in items {
+                    let v = item.as_i64().ok_or(invalid("option_type"))?;
+                    if v < min || v > max {
+                        return Err(invalid("option_range"));
+                    }
+                    if out.contains(&v) {
+                        return Err(invalid("option_value"));
+                    }
+                    out.push(v);
+                }
+                Ok(out)
+            }
+            Some(_) => Err(invalid("option_type")),
+        }
+    }
+
     fn pages(&mut self, key: &'static str) -> JvResult<Option<String>> {
         match self.get(key) {
             None => Ok(None),
@@ -217,6 +283,16 @@ fn is_page_list(s: &str) -> bool {
                 |x: &str| !x.is_empty() && x.len() <= 5 && x.bytes().all(|c| c.is_ascii_digit());
             num(a) && b.is_none_or(num)
         })
+}
+
+/// Arknavn slik Excel tillater dem. Navnet går videre som ett argument
+/// (`--ark=<navn>`), så en innledende bindestrek kan ikke bli et valg.
+fn is_sheet_name(s: &str) -> bool {
+    let n = s.chars().count();
+    (1..=31).contains(&n)
+        && !s
+            .chars()
+            .any(|c| c.is_control() || matches!(c, ':' | '\\' | '/' | '?' | '*' | '[' | ']'))
 }
 
 /// Tall uten eksponent og uten unødvendige desimaler («0.3», «2», «-19.5»).
@@ -340,6 +416,40 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 argv.push("--csv".into());
             }
             push_out(&mut argv, check_out_dir(req)?);
+        }
+        "datawrapper" => {
+            let cmd = match req.command.as_deref() {
+                Some("analyser") => "analyser",
+                Some("lag") => "lag",
+                _ => return Err(invalid("command")),
+            };
+            argv.push(cmd.into());
+            argv.extend(check_inputs(req, Inputs::Exactly(1))?);
+            // Ingen utmappe: resultatet står i rapporten, og CSV-filen er valgfri.
+            if req.out_dir.is_some() {
+                return Err(invalid("out_not_allowed"));
+            }
+            if cmd == "lag" {
+                if let Some(name) = o.sheet_name("sheet")? {
+                    argv.push(format!("--ark={name}").into());
+                }
+                if let Some(n) = o.integer("table", 1, 10_000)? {
+                    argv.push(format!("--tabell={n}").into());
+                }
+                if o.flag("with_sums")? == Some(true) {
+                    argv.push("--med-sum".into());
+                }
+                if o.flag("transpose")? == Some(true) {
+                    argv.push("--bytt".into());
+                }
+                for i in o.integers("remove_columns", 1, 16_384, 1_000)? {
+                    argv.push(format!("--fjern-kolonne={i}").into());
+                }
+                if let Some(p) = o.out_file("csv_file", "csv")? {
+                    argv.extend(["--csv".into(), p]);
+                }
+            }
+            argv.push("--json".into());
         }
         "ocr" => {
             no_command(req)?;
@@ -595,6 +705,115 @@ mod tests {
             build_args("metadata", &r).unwrap_err(),
             invalid("out_missing")
         );
+    }
+
+    #[test]
+    fn datawrapper_analyser_and_lag() {
+        let d = tmp();
+        let x = file(&d, "tabell æøå; rm -rf.xlsx");
+        let mut r = req(vec![x.clone()], &d, json!({}));
+        r.out_dir = None;
+        assert_eq!(
+            build_args("datawrapper", &r).unwrap_err(),
+            invalid("command")
+        );
+        r.command = Some("analyser".into());
+        assert_eq!(
+            strs(&build_args("datawrapper", &r).unwrap()),
+            ["datawrapper", "analyser", x.as_str(), "--json"]
+        );
+        // analyser tar ingen valg, og ingen av kommandoene tar utmappe.
+        r.options = serde_json::from_value(json!({"table": 2})).unwrap();
+        assert_eq!(
+            build_args("datawrapper", &r).unwrap_err(),
+            invalid("unknown_option")
+        );
+        r.options.clear();
+        r.out_dir = Some(d.to_string_lossy().into_owned());
+        assert_eq!(
+            build_args("datawrapper", &r).unwrap_err(),
+            invalid("out_not_allowed")
+        );
+        r.out_dir = None;
+
+        r.command = Some("lag".into());
+        let csv = d.join("ut.csv").to_string_lossy().into_owned();
+        r.options = serde_json::from_value(json!({
+            "sheet": "-Ark 1 (2024)",
+            "table": 2,
+            "with_sums": true,
+            "transpose": false,
+            "remove_columns": [3, 1],
+            "csv_file": csv,
+        }))
+        .unwrap();
+        assert_eq!(
+            strs(&build_args("datawrapper", &r).unwrap()),
+            [
+                "datawrapper",
+                "lag",
+                x.as_str(),
+                "--ark=-Ark 1 (2024)",
+                "--tabell=2",
+                "--med-sum",
+                "--fjern-kolonne=3",
+                "--fjern-kolonne=1",
+                "--csv",
+                csv.as_str(),
+                "--json"
+            ]
+        );
+        // Bare én fil.
+        let y = file(&d, "b.csv");
+        let mut two = r.clone();
+        two.inputs = vec![x.clone(), y];
+        assert_eq!(
+            build_args("datawrapper", &two).unwrap_err(),
+            invalid("input_count")
+        );
+    }
+
+    #[test]
+    fn datawrapper_rejects_bad_values() {
+        let d = tmp();
+        let x = file(&d, "a.xlsx");
+        std::fs::create_dir_all(d.join("mappe.csv")).unwrap();
+        let cases = [
+            (json!({"sheet": ""}), "option_value"),
+            (json!({"sheet": "a/b"}), "option_value"),
+            (json!({"sheet": "Ark[1]"}), "option_value"),
+            (json!({"sheet": "linje\nskift"}), "option_value"),
+            (json!({"sheet": "x".repeat(32)}), "option_value"),
+            (json!({"sheet": 1}), "option_type"),
+            (json!({"table": 0}), "option_range"),
+            (json!({"table": "2"}), "option_type"),
+            (json!({"remove_columns": 2}), "option_type"),
+            (json!({"remove_columns": [0]}), "option_range"),
+            (json!({"remove_columns": [2, 2]}), "option_value"),
+            (json!({"remove_columns": ["2"]}), "option_type"),
+            (json!({"remove_columns": vec![1; 1001]}), "option_range"),
+            (json!({"csv_file": "relativ.csv"}), "path_not_absolute"),
+            (json!({"csv_file": d.join("ut.txt")}), "option_value"),
+            (json!({"csv_file": d.join("mappe.csv")}), "option_value"),
+            (
+                json!({"csv_file": d.join("finnes-ikke").join("ut.csv")}),
+                "out_parent_missing",
+            ),
+            (json!({"with_sums": "ja"}), "option_type"),
+            (json!({"shell": "rm -rf /"}), "unknown_option"),
+        ];
+        for (opts, reason) in cases {
+            let mut r = req(vec![x.clone()], &d, opts.clone());
+            r.out_dir = None;
+            r.command = Some("lag".into());
+            assert_eq!(
+                build_args("datawrapper", &r).unwrap_err(),
+                JvError::InvalidArgs { reason },
+                "{opts}"
+            );
+        }
+        assert!(is_sheet_name("Befolkning 2024"));
+        assert!(is_sheet_name("Æøå – ‘tall’"));
     }
 
     #[test]

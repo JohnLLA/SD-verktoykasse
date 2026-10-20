@@ -19,11 +19,12 @@ import { schema as metadata } from "../metadata/schema";
 import { schema as nynorsk } from "../nynorsk/schema";
 import { schema as ocr } from "../ocr/schema";
 import { schema as pdfTables } from "../pdf-tables/schema";
+import { schema as datawrapper } from "../datawrapper/schema";
 import { schema as redact } from "../redact/schema";
 import { schema as subtitles } from "../subtitles/schema";
 import { JV_COMMANDS, JV_ERROR_CODES, JV_EVENTS, JV_TOOL_IDS } from "./api";
 
-const ALL_SCHEMAS = [compare, metadata, keyframes, loudness, subtitles, pdfTables, ocr, redact, nynorsk];
+const ALL_SCHEMAS = [compare, metadata, keyframes, loudness, subtitles, pdfTables, datawrapper, ocr, redact, nynorsk];
 
 const lf = (s: string) => s.replace(/\r\n/g, "\n");
 const errorRs = lf(errorRsRaw);
@@ -69,7 +70,7 @@ describe("kontrakt mot Rust (jv)", () => {
     expect(JV_EVENTS.runDone).toBe(ev.EV_RUN_DONE);
   });
 
-  it("kjenner de samme ni verktøyene som Rust, i samme rekkefølge", () => {
+  it("kjenner de samme verktøyene som Rust, i samme rekkefølge", () => {
     const start = catalogRs.indexOf("pub const KNOWN_TOOLS");
     const body = catalogRs.slice(start, catalogRs.indexOf("];", start));
     const rust = [...body.matchAll(/"([a-z-]+)"/g)].map((m) => m[1]);
@@ -106,10 +107,10 @@ describe("kontrakt mot Rust (jv)", () => {
     expect(argsRs).toContain('"plan_file"');
   });
 
-  it("har registrert alle ti verktøyene, hvert i én menygruppe, Transkribering først", () => {
+  it("har registrert alle elleve verktøyene, hvert i én menygruppe, Transkribering først", () => {
     const ids = tools.map((x) => x.id);
     expect(ids[0]).toBe("transkribering");
-    expect(new Set(ids).size).toBe(10);
+    expect(new Set(ids).size).toBe(11);
     for (const id of JV_TOOL_IDS) expect(ids).toContain(id);
     const grouped = menuGroups.flatMap((g) => g.ids);
     expect([...grouped].sort()).toEqual([...ids].sort());

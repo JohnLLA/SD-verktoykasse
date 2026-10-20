@@ -559,6 +559,15 @@ const nb = {
         dialogTitle: "Velg PDF-filer",
         filterName: "PDF",
       },
+      datawrapper: {
+        name: "Klargjør for Datawrapper",
+        description:
+          "Gjør en tabell fra Excel eller CSV klar til å limes inn i Datawrapper. Tittel, kilde og fotnoter skilles ut, og norske tall blir tall Datawrapper forstår.",
+        formats: "xlsx, xls og csv",
+        dropTitle: "Dra inn regnearket",
+        dialogTitle: "Velg regnearket",
+        filterName: "Regneark og CSV",
+      },
       ocr: {
         name: "Søkbare PDF-er (OCR)",
         description:

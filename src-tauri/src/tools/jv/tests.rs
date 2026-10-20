@@ -13,7 +13,7 @@
 //!   `sidecar/build/bygg-mac.sh` og en katalog laget for testserveren):
 //!   katalog fra en lokal testserver → signatur → nedlasting med brudd og
 //!   gjenopptak → SHA-256 → utpakking → codesign → `--version` → kjøring på en
-//!   testfil, for alle ni verktøyene. Skriver bare tall, aldri filnavn eller
+//!   testfil, for alle verktøyene i katalogen. Skriver bare tall, aldri filnavn eller
 //!   tekst fra verktøyene. Se `sidecar/build/README.md`.
 
 use std::io::{BufRead, BufReader, Write};
@@ -303,7 +303,7 @@ fn catalog_is_fetched_only_when_asked_and_cached_copy_is_used_offline() {
     assert_eq!(server.requests.load(Ordering::SeqCst), 0);
     assert_eq!(v.source, CatalogSource::None);
     assert!(v.tools.iter().all(|t| t.status == ToolStatus::Unknown));
-    assert_eq!(v.tools.len(), 9);
+    assert_eq!(v.tools.len(), catalog::KNOWN_TOOLS.len());
 
     // fetch = true: henter, kontrollerer og lagrer.
     let v = jv.catalog(true);
@@ -1016,6 +1016,10 @@ fn full_chain_case(id: &str, testdata: &Path, out: &Path) -> serde_json::Value {
         }
         "subtitles" => json!({"inputs": [t("subtitles/transkripsjon.json")], "out_dir": out}),
         "pdf-tables" => json!({"inputs": [t("pdf-tables/budsjett.pdf")], "out_dir": out}),
+        // Ingen utmappe: tabellen står i rapporten.
+        "datawrapper" => {
+            json!({"command": "lag", "inputs": [t("datawrapper/ssb_befolkning.xlsx")]})
+        }
         "ocr" => json!({"inputs": [t("ocr/skannet_side.pdf")], "out_dir": out}),
         "redact" => {
             json!({"command": "finn", "inputs": [t("redact/personopplysninger.pdf")], "out_dir": out})
@@ -1103,6 +1107,15 @@ fn full_chain() {
             Finished::Report(r) => r,
             other => panic!("{id}: {other:?}"),
         };
+        if id == "datawrapper" {
+            // Tabellen skal være lik fasiten, byte for byte (skrives ikke ut, regel 2).
+            let want =
+                std::fs::read(testdata.join("datawrapper/ssb_befolkning.fasit.tsv")).unwrap();
+            assert_eq!(
+                report["datawrapper"]["tsv"].as_str().map(str::as_bytes),
+                Some(&want[..])
+            );
+        }
         let outputs = report["outputs"].as_array().map(|a| a.len()).unwrap_or(0);
         println!(
             "{id}: arkiv {:.1} MB, utpakket {:.1} MB | nedlasting {} ms ({n_req} forespørsler) | \
