@@ -17,7 +17,7 @@ Skrivebordsapp (Tauri 2) for Mac og Windows som LLA-medlemmene installerer selv.
 9. **Begge plattformer i hver PR.** CI bygger Mac og Windows. Bygger det ikke på begge, er det ikke ferdig.
 10. **Norsk mot brukeren, engelsk i kode.** Alle brukertekster i én språkfil.
 11. **Agentene publiserer ikke releaser.** Når John Inge ber om det, pusher agentene versjonstaggen (`v` + versjonen i `tauri.conf.json`) fra en oppdatert `main`. Da lager `release.yml` et utkast. Agentene publiserer ikke utkastet, laster ikke opp installasjonsfiler for hånd og sender ikke ut noe. John Inge publiserer.
-12. **Nedlastingssiden ligger på lla.no, og John Inge legger den ut selv.** Siden er `site/lla-no/verktoy.html` og eies av ham; agentene endrer den ikke uten at han ber om det. Installasjonsfilene ligger på GitHub Releases i det offentlige repoet `JohnLLA/sd-verktoy-releases`.
+12. **Nedlastingssiden eies av John Inge.** Arbeidskopien er `site/lla-no/verktoy.html`. Den publiseres som `verktoy.html` på `main` i det offentlige repoet `JohnLLA/sd-verktoy-releases` (GitHub Pages: `https://johnlla.github.io/sd-verktoy-releases/verktoy.html`), og Dyplink viser den i en iframe på `www.samarbeidsdesken.no/verktoy.html`. Agentene endrer eller publiserer den ikke uten at han ber om det. Installasjonsfilene ligger på GitHub Releases i samme repo.
 
 ## Mapper
 

@@ -29,7 +29,7 @@ Hemmeligheter ligger bare i GitHub Secrets, aldri i repoet. Dokumenter navnene i
 ## Til medlemmene
 
 - `docs/installasjon.md`: kort, med plass til skjermbilder. Mac: åpne dmg, dra til Programmer. Windows: kjør msi, og hva de gjør hvis SmartScreen likevel spør. Hva som skjer første gang (modellnedlasting) og hvor mye plass det tar.
-- Nedlastingssiden er John Inges `site/lla-no/verktoy.html`, som han legger ut på lla.no selv. Du endrer den ikke. Den henter siste versjon fra GitHub Releases-API-et for `JohnLLA/sd-verktoy-releases` og velger filer etter navn, så release-filene må hete slik siden forventer (.dmg for Mac, .msi for Windows). Avvik meldes til John Inge.
+- Nedlastingssiden er John Inges `site/lla-no/verktoy.html`, som publiseres på GitHub Pages i `sd-verktoy-releases` og vises i en iframe på samarbeidsdesken.no (regel 12). Du endrer den ikke. Den henter siste versjon fra GitHub Releases-API-et for `JohnLLA/sd-verktoy-releases` og velger filer etter navn, så release-filene må hete slik siden forventer (.dmg for Mac, .msi for Windows). Avvik meldes til John Inge.
 
 ## Regler
 
