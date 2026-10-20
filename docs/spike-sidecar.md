@@ -422,7 +422,7 @@ DLL-ene (48,5 MB utpakket, med ICU-dataene som største del) og språkdataene (2
    bygg fra kilde med MSYS2 i CI.
 2. **Fast URL for nattbyggene (vei A):** du speiler arkivet eller arkivene (og kildearkivene for de
    samme commitene, for GPL) som vedlegg i en fast release, for eksempel taggen `kilder-apertium-windows`
-   i `lla-verktoykasse-releases`. Byggeskriptet henter dem bare derfra og sjekker SHA-256. Agentene
+   i `sd-verktoy-releases` (tidligere `lla-verktoykasse-releases`). Byggeskriptet henter dem bare derfra og sjekker SHA-256. Agentene
    laster ikke opp (regel 11). Kildene i `binaries.json` er da den opprinnelige URL-en og speilet.
 3. **Hvilket arkiv:** `apertium-all-dev` (ett sammenhengende sett, 44 MB) eller de fem
    komponentarkivene (versjon i filnavnet, men fem ulike kopier av ICU og libstdc++). Jeg anbefaler
