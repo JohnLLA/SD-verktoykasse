@@ -773,7 +773,10 @@ def translate_file(
             raise UserError(f"«{src.name}» inneholder ingen tekst å oversette.")
         result = translate_text(engine, text)
         dst = safe_output_path(src, out_dir, f"-{to}{suffix}")
-        dst.write_text(result.text, encoding="utf-8")
+        # newline="": the draft keeps the line endings of the original (LF or
+        # CRLF). Text mode on Windows would turn the \r\n already in the text
+        # into \r\r\n.
+        dst.write_text(result.text, encoding="utf-8", newline="")
         marks, warnings = result.marks, result.warnings
         paragraphs = len([b for b in re.split(r"\n\s*\n", text) if b.strip()])
     return FileResult(src, dst, engine.mode, paragraphs, marks, warnings)

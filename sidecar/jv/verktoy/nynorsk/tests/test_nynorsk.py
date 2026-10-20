@@ -600,3 +600,14 @@ def test_pipeline_large_text_does_not_block(fake_apertium):
     out = engine.run(text)
     assert out.count("\n") == 20000 - 1
     assert out.startswith("Skule og born frå neste månad.")
+
+
+def test_crlf_original_keeps_crlf(fake_apertium, tmp_path, capsys):
+    # a .txt saved on Windows: the draft has the same line endings, never \r\r\n
+    src = tmp_path / "windows.txt"
+    src.write_bytes("Skole og barn.\r\n\r\nFra neste måned.\r\n".encode("utf-8"))
+    code, report, err = run(capsys, src, "--to", "nn", "--out", tmp_path / "ut")
+    assert code == 0, err
+    out = (tmp_path / "ut" / "windows-nn.txt").read_bytes()
+    assert out == "Skule og born.\r\n\r\nFrå neste månad.\r\n".encode("utf-8")
+    assert report["outputs"][0]["paragraphs"] == 2
