@@ -13,7 +13,7 @@ Oppskrift for hemmeligheter og release: `docs/distribusjon.md`.
 - [ ] Windows med signering valgt: steget «Kontroller Windows-signaturen» er grønt.
 - [ ] Manglende hemmelighet gir tydelig feil: kjør en manuell start med «publish» på og fjern f.eks. `RELEASES_TOKEN` midlertidig. Arbeidsflyten stopper i planen med en melding som nevner navnet.
 - [ ] Taggen `v9.9.9` som ikke stemmer med `tauri.conf.json` stoppes (prøv på en testgren/privat kopi, ikke i hoved-repoet).
-- [ ] Utkastet i `JohnLLA/lla-verktoykasse-releases` har nøyaktig: `.dmg`, `-setup.exe`, `-setup.exe.sig`, `.app.tar.gz`, `.app.tar.gz.sig`, `latest.json`. Notatene nevner Windows-merknaden hvis Windows er usignert.
+- [ ] Utkastet i `JohnLLA/sd-verktoy-releases` har nøyaktig: `.dmg`, `-setup.exe`, `-setup.exe.sig`, `.app.tar.gz`, `.app.tar.gz.sig`, `latest.json`. Notatene nevner Windows-merknaden hvis Windows er usignert.
 - [ ] Før «Publish»: nedlastingssiden (som bruker `releases/latest`) viser fortsatt forrige versjon. Etter «Publish»: knappene peker på de nye `.dmg` og `-setup.exe`.
 
 ## Mac (ren Mac, Apple Silicon, macOS 13 eller nyere, uten utviklerverktøy)

@@ -33,7 +33,7 @@ Oppskrift for bygg, katalog og nøkler: `sidecar/build/README.md`.
 ## Appen med en lokal betakatalog
 
 Krever at pakkene og en katalog signert med betanøkkelen ligger et sted appen får hente fra. Appen
-henter bare fra `github.com/JohnLLA/lla-verktoykasse-releases` (og GitHubs CDN), så dette kan først
+henter bare fra `github.com/JohnLLA/sd-verktoy-releases` (og GitHubs CDN), så dette kan først
 prøves når John Inge har lastet opp pakkene og katalogen (agentene laster ikke opp).
 
 - [ ] Bygg appen med `JV_CATALOG_PUBLIC_KEY=<betanøkkelen>`.
@@ -43,7 +43,7 @@ prøves når John Inge har lastet opp pakkene og katalogen (agentene laster ikke
 - [ ] Avbryt en nedlasting midtveis, start på nytt: den fortsetter der den slapp.
 - [ ] Uten nett: verktøy som er lastet ned, virker; katalogen vises fra siste kopi.
 - [ ] Gatekeeper: ingen dialog når et verktøy kjøres. `xattr -l` på
-      `~/Library/Application Support/no.lla.verktoykasse/verktoy/<id>/<versjon>/jv-<id>.app/Contents/MacOS/jv`
+      `~/Library/Application Support/no.samarbeidsdesken.verktoy/verktoy/<id>/<versjon>/jv-<id>.app/Contents/MacOS/jv`
       viser ingen `com.apple.quarantine`.
 - [ ] Endre én byte i en fil inne i en installert pakke: appen nekter å kjøre den (kodesignatur).
 
