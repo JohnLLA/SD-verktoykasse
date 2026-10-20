@@ -25,6 +25,12 @@ Verktøyet er en verktøypakke som de ni andre: Python i `sidecar/jv/verktoy/dat
   - Skilletegnet `;`, `,` eller tab finnes automatisk.
   - Tegnkodingen er UTF-8, med eller uten BOM, eller Windows-1252.
 - Største fil er 50 MB. Er fila større, eller passordbeskyttet, får brukeren en norsk feilmelding.
+- Grenser mot fiendtlige filer (beslutning fra John Inge 20.10.2026, etter kontrollen av PR #19). Fila avvises med en norsk feilmelding hvis den bryter en av dem:
+  - Et ark kan ha høyst 5 millioner celler, regnet fra cellene med innhold, før rutenettet lages. Én celle i `XFD1048576` er nok til å avvise arket.
+  - En `.xlsx` sjekkes ut fra zip-katalogen før noe pakkes ut. Grensene er høyst 500 MB utpakket til sammen og høyst 200 MB per ark-XML, og ingen del over 1 MB kan ha komprimeringsgrad over 100:1.
+  - Ingen XML-del i en `.xlsx` kan ha DTD eller entiteter. Prologen i hver del leses ordentlig, i UTF-8 eller UTF-16, med eller uten BOM. XML-deklarasjon, `<?…?>` og `<!--…-->` hoppes over som hele enheter, og enhver annen `<!` avvises. Roten må begynne innen de første 256 kB.
+  - I tillegg leser openpyxl all XML med standardbiblioteket gjennom defusedxml, uten lxml (`OPENPYXL_LXML=False`). Verktøyet nekter å lese hvis det ikke er satt opp slik.
+- Feilmeldingene nevner ikke filnavn, arknavn eller mappenavn (regel 2).
 
 ## Analyse (regler, i denne rekkefølgen)
 
@@ -48,6 +54,7 @@ Verktøyet er en verktøypakke som de ni andre: Python i `sidecar/jv/verktoy/dat
    - Mellomrom, U+00A0 og U+202F som tusenskille, komma som desimaltegn, «−» og parentes som minus, og «%» fjernes og tallet beholdes.
    - SSB-symbolene «.», «..», «:», «-» og «x» blir tomme celler. Hvilke symboler som ble funnet, står i rapporten.
    - Tall lagret som tekst gjøres om til tall.
+   - Celler som er formatert som prosent i Excel, ganges med 100 (0,125 blir 12.5). Overskriften får « (%)» hvis den ikke sier prosent fra før. Det gis ingen advarsel (beslutning fra John Inge 20.10.2026).
    - Kan et tall leses på to måter, som «1.234», brukes samme regel som i `pdf-tables`, og det står en advarsel i rapporten.
 8. **Datoer og år:**
    - Excel-datoer skrives som `ÅÅÅÅ-MM-DD`.

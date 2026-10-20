@@ -3,6 +3,7 @@
 
 import { t } from "../i18n/nb";
 import { compare } from "./compare";
+import { datawrapper } from "./datawrapper";
 import { keyframes } from "./keyframes";
 import { loudness } from "./loudness";
 import { metadata } from "./metadata";
@@ -22,6 +23,7 @@ export const tools: readonly ToolDefinition[] = [
   compare,
   metadata,
   pdfTables,
+  datawrapper,
   ocr,
   redact,
   nynorsk,
@@ -30,6 +32,6 @@ export const tools: readonly ToolDefinition[] = [
 /** Gruppene i venstremenyen. Transkribering står først. */
 export const menuGroups: readonly { label: string; ids: readonly string[] }[] = [
   { label: t.jv.nav.groups.audio, ids: ["transkribering", "keyframes", "loudness", "subtitles"] },
-  { label: t.jv.nav.groups.documents, ids: ["compare", "metadata", "pdf-tables", "ocr", "redact"] },
+  { label: t.jv.nav.groups.documents, ids: ["compare", "metadata", "pdf-tables", "datawrapper", "ocr", "redact"] },
   { label: t.jv.nav.groups.language, ids: ["nynorsk"] },
 ];

@@ -1,6 +1,6 @@
 # Runde B: verktøypakkene for Windows (x86_64-pc-windows-msvc), docs/spesifikasjon-journalistverktoy.md.
 #
-# - Bygger alle ni pakkene med sidecar/build (python -m jvpack windows), fra faste
+# - Bygger alle ti pakkene med sidecar/build (python -m jvpack windows), fra faste
 #   nedlastinger med kjent SHA-256 (sidecar/build/jvpack/windows/sources.py, binaries.json).
 #   nynorsk bruker Apertiums Windows-bygg fra speilet «kilder-apertium-windows» i
 #   release-repoet og språkdataene fra Mac-pakken nynorsk 0.1.0.
@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       verktoy:
-        description: "Verktøy (kommaliste, eller «alle» for alle ni)"
+        description: "Verktøy (kommaliste, eller «alle» for alle ti)"
         default: "alle"
         type: string
   pull_request:
@@ -53,7 +53,7 @@ jobs:
           INPUT: ${{ inputs.verktoy }}
         run: |
           ids="${INPUT:-alle}"
-          [ "$ids" = alle ] && ids="compare,metadata,keyframes,loudness,subtitles,pdf-tables,ocr,redact,nynorsk"
+          [ "$ids" = alle ] && ids="compare,metadata,keyframes,loudness,subtitles,pdf-tables,datawrapper,ocr,redact,nynorsk"
           case "$ids" in *[!a-z,-]*) echo "::error::ugyldig verktøyliste"; exit 1;; esac
           echo "ids=$ids" >> "$GITHUB_OUTPUT"
 
@@ -253,7 +253,7 @@ jobs:
           key: app-v1-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: app-v1-${{ runner.os }}-
 
-      - name: full_chain (Windows, alle ni verktøy)
+      - name: full_chain (Windows, alle ti verktøy)
         timeout-minutes: 60
         working-directory: src-tauri
         env:

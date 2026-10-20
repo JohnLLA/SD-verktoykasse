@@ -2,6 +2,8 @@
 
 Bygger én nedlastbar pakke per journalistverktøy og plattform (`docs/spesifikasjon-journalistverktoy.md`).
 
+- **Verktøy nummer ti, `datawrapper`** (`docs/spesifikasjon-datawrapper.md`), har ingen systemprogrammer
+  og bygges for Mac og Windows fra start (lokalt på Mac, i GitHub Actions for Windows).
 - **Runde A (Mac):** alle ni for Apple Silicon, bygget **lokalt** på John Inges Mac. Funnene fra
   spiken står i `docs/spike-sidecar.md`.
 - **Runde B (Windows):** alle ni for Windows x64, bygget i GitHub Actions
@@ -11,7 +13,7 @@ Bygger én nedlastbar pakke per journalistverktøy og plattform (`docs/spesifika
 ## Kommandoer (fra repo-roten)
 
 ```
-sidecar/build/bygg-mac.sh alle                       # bygg, signer, pakk og prøvekjør alle ni
+sidecar/build/bygg-mac.sh alle                       # bygg, signer, pakk og prøvekjør alle ti
 sidecar/build/bygg-mac.sh alle --notariser           # … og notariser (notarytool-profilen «jv-notary»)
 sidecar/build/bygg-mac.sh ocr,redact                 # noen av dem
 sidecar/build/test-pakker-mac.sh alle                # verktøyenes Python-tester mot de pakkede binærfilene
@@ -49,7 +51,7 @@ jvpack lisenser                                           # THIRD_PARTY_LICENSES
   `PUBLIC_KEY` i `src-tauri/src/tools/jv/catalog.rs` (er den tom, avviser appen alle
   kataloger). Katalogen signeres da med `minisign -S -s <katalog.key> -m tools.json -x tools.json.sig` (samme format som Python-signeringen). Uten `-x` lagrer minisign signaturen som `tools.json.minisig`, men appen henter `tools.json.sig`.
 
-### Hele kjeden i Rust (alle ni)
+### Hele kjeden i Rust (alle ti)
 
 ```
 (cd sidecar/jv && jvpack katalog lag --test-key --base-url http://127.0.0.1:47613)
@@ -77,7 +79,7 @@ Arkivet har ingen toppmappe:
 
 | Verktøy | Innebygde programmer | Miljøvariabler |
 |---|---|---|
-| compare, subtitles, pdf-tables | – | – |
+| compare, subtitles, pdf-tables, datawrapper | – | – |
 | metadata | exiftool (kjøres med macOS' `/usr/bin/perl`) | `JV_EXIFTOOL` |
 | keyframes, loudness | ffmpeg, ffprobe | `JV_FFMPEG`, `JV_FFPROBE` |
 | ocr | tesseract med `nor`, `eng`, `osd` (ikke Ghostscript) | `JV_TESSERACT`, `TESSDATA_PREFIX` |
@@ -135,7 +137,7 @@ Pakkene kan ikke bygges på en Mac. Arbeidsflyten **jv-windows-pakker** kjører 
 
 - startes for hånd (Actions → jv-windows-pakker → Run workflow; feltet «verktoy» er `alle` eller en
   kommaliste), og på pull request bare når `sidecar/build/**` eller arbeidsflyten endres;
-- bygger med `python -m jvpack windows <id>[,<id>…]|alle` (alle = alle ni);
+- bygger med `python -m jvpack windows <id>[,<id>…]|alle` (alle = alle ti);
 - prøvekjører hver pakke (`jv.exe --version`), kjører verktøyenes Python-tester mot den pakkede
   binærfila med utgående trafikk sperret i Windows-brannmuren (`test-pakker-windows.sh`), og kjører
   `full_chain` i Rust med pakkene;
@@ -154,7 +156,7 @@ Pakkene kan ikke bygges på en Mac. Arbeidsflyten **jv-windows-pakker** kjører 
 
 | Verktøy | Programmer (kilde i `binaries.json`) | Miljøvariabler |
 |---|---|---|
-| compare, subtitles, pdf-tables | – | – |
+| compare, subtitles, pdf-tables, datawrapper | – | – |
 | metadata | ExifTool 13.59, Windows-pakken (med portabel Strawberry Perl) | `JV_EXIFTOOL` |
 | keyframes, loudness | ffmpeg og ffprobe 9.0.2 (gyan.dev essentials, GPL-3, uten «nonfree») | `JV_FFMPEG`, `JV_FFPROBE` |
 | ocr | Tesseract 5.5.3 (UB Mannheim, pakket ut med 7-Zip, aldri kjørt) | `JV_TESSERACT`, `TESSDATA_PREFIX` |
@@ -220,7 +222,7 @@ Kjør på Macen, i repoet. `jvpack` er
    ```zsh
    gh release upload katalog $K/ut/tools.json $K/ut/tools.json.sig --repo $REPO --clobber
    ```
-7. **Prøv** på en Windows-PC: «Se etter oppdateringer» i Innstillinger → Verktøy. Alle ni skal
+7. **Prøv** på en Windows-PC: «Se etter oppdateringer» i Innstillinger → Verktøy. Alle skal
    få «Last ned verktøyet» (nynorsk fra 0.2.0).
 
 Lisenslista: last ned artefakten `jv-windows-lisenser` til `sidecar/build/out/work/x86_64-pc-windows-msvc/`

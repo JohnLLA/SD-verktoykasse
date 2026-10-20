@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Bygger, signerer og pakker verktøypakker for aarch64-apple-darwin, lokalt.
-#   sidecar/build/bygg-mac.sh alle                       alle ni
+#   sidecar/build/bygg-mac.sh alle                       alle ti
 #   sidecar/build/bygg-mac.sh subtitles,ocr              noen
 #   sidecar/build/bygg-mac.sh alle --notariser [profil]  også notarisering (standard: jv-notary)
 # Resultat: sidecar/build/out/dist/jv-<id>-<versjon>-aarch64-apple-darwin.tar.gz

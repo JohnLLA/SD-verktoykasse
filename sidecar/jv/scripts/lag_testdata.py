@@ -927,6 +927,11 @@ def main():
     make_ocr()
     make_redact()
     make_nynorsk()
+    # datawrapper: own script (openpyxl and a small .xls writer), see testdata/FASIT.md.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import lag_testdata_datawrapper
+
+    lag_testdata_datawrapper.main()
     allok, log = verify(sub, tables)
     print("\n".join(log))
     print(json.dumps({k: v for k, v in LOUD.items()}, ensure_ascii=False, default=str))

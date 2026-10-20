@@ -15,8 +15,7 @@ from openpyxl import Workbook
 from openpyxl.comments import Comment
 
 from jv_common import UserError, safe_output_path
-
-from .numbers import parse_number
+from jv_common.numbers import parse_number
 
 if hasattr(pymupdf, "no_recommend_layout"):
     pymupdf.no_recommend_layout()

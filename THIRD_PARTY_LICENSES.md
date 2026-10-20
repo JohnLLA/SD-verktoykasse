@@ -61,45 +61,45 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | x265 | 4.3 | GPL-2.0-or-later | Homebrew | Mac | keyframes, loudness | https://github.com/Multicorewareinc/x265/releases/download/4.3/x265_4.3.tar.gz |
 | xz | 5.8.4 | 0BSD AND GPL-2.0-or-later | Homebrew | Mac | keyframes, loudness, ocr, redact | https://github.com/tukaani-project/xz/releases/download/v5.8.4/xz-5.8.4.tar.gz |
 | zstd | 1.5.7_1 | (BSD-3-Clause OR GPL-2.0-only) AND BSD-2-Clause AND MIT | Homebrew | Mac | ocr, redact | https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz |
-| bzip2 | ukjent | bzip2-1.0.6 | Kjøretid | Mac, Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://sourceware.org/bzip2/downloads.html |
-| expat | 2.8.4 | MIT | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
-| Expat | 2.7.1 | MIT | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
-| libffi | ukjent | MIT | Kjøretid | Mac, Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libffi/libffi/releases |
-| Microsoft Visual C++ Redistributable (vcruntime140, msvcp140) | 14.x | LicenseRef-Microsoft-Visual-C-Redistributable | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files |
-| mpdecimal | 4.0.0 | BSD-2-Clause | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
-| mpdecimal | 2.5.1 | BSD-2-Clause | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
-| OpenSSL | 3.5.8 | Apache-2.0 | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases/tag/openssl-3.5.8 |
-| OpenSSL | 3.0.16 | Apache-2.0 | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases |
-| PyInstaller (bootloader) | 6.6.0 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.6.0 |
-| PyInstaller (bootloader) | 6.22.3 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.22.3 |
-| Python | 3.12.14 | PSF-2.0 | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.14/Python-3.12.14.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
-| Python | 3.12.10 | PSF-2.0 | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
-| SQLite | 3.53.1 | blessing (public domain) | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.sqlite.org/download.html |
-| xz (liblzma) | ukjent | 0BSD | Kjøretid | Mac, Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/tukaani-project/xz/releases |
-| zlib | ukjent | Zlib | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://zlib.net/ |
+| bzip2 | ukjent | bzip2-1.0.6 | Kjøretid | Mac, Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://sourceware.org/bzip2/downloads.html |
+| expat | 2.8.4 | MIT | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
+| Expat | 2.7.1 | MIT | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
+| libffi | ukjent | MIT | Kjøretid | Mac, Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libffi/libffi/releases |
+| Microsoft Visual C++ Redistributable (vcruntime140, msvcp140) | 14.x | LicenseRef-Microsoft-Visual-C-Redistributable | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files |
+| mpdecimal | 4.0.0 | BSD-2-Clause | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
+| mpdecimal | 2.5.1 | BSD-2-Clause | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
+| OpenSSL | 3.5.8 | Apache-2.0 | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases/tag/openssl-3.5.8 |
+| OpenSSL | 3.0.16 | Apache-2.0 | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases |
+| PyInstaller (bootloader) | 6.6.0 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.6.0 |
+| PyInstaller (bootloader) | 6.22.3 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.22.3 |
+| Python | 3.12.14 | PSF-2.0 | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.14/Python-3.12.14.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
+| Python | 3.12.10 | PSF-2.0 | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
+| SQLite | 3.53.1 | blessing (public domain) | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.sqlite.org/download.html |
+| xz (liblzma) | ukjent | 0BSD | Kjøretid | Mac, Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/tukaani-project/xz/releases |
+| zlib | ukjent | Zlib | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://zlib.net/ |
 | altgraph | 0.17.5 | MIT | Python-pakke | Windows | ocr | https://pypi.org/project/altgraph/0.17.5/#files (kildekodearkiv: https://github.com/ronaldoussoren/altgraph) |
 | annotated-types | 0.8.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/annotated-types/0.8.0/#files (kildekodearkiv: https://github.com/annotated-types/annotated-types) |
 | attrs | 26.1.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/attrs/26.1.0/#files (kildekodearkiv: https://github.com/python-attrs/attrs) |
 | cffi | 2.1.1 | MIT-0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/cffi/2.1.1/#files (kildekodearkiv: https://github.com/python-cffi/cffi) |
 | charset-normalizer | 3.5.2 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/charset-normalizer/3.5.2/#files (kildekodearkiv: https://github.com/jawah/charset_normalizer) |
 | cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/cryptography/50.0.2/#files (kildekodearkiv: https://github.com/pyca/cryptography/) |
-| defusedxml | 0.7.1 | PSFL | Python-pakke | Mac, Windows | compare, keyframes, metadata, ocr, pdf-tables, redact | https://pypi.org/project/defusedxml/0.7.1/#files |
-| et_xmlfile | 2.0.0 | MIT | Python-pakke | Mac, Windows | pdf-tables | https://pypi.org/project/et_xmlfile/2.0.0/#files (kildekodearkiv: https://foss.heptapod.net/openpyxl/et_xmlfile) |
+| defusedxml | 0.7.1 | PSFL | Python-pakke | Mac, Windows | compare, datawrapper, keyframes, metadata, ocr, pdf-tables, redact | https://pypi.org/project/defusedxml/0.7.1/#files |
+| et_xmlfile | 2.0.0 | MIT | Python-pakke | Mac, Windows | datawrapper, pdf-tables | https://pypi.org/project/et_xmlfile/2.0.0/#files (kildekodearkiv: https://foss.heptapod.net/openpyxl/et_xmlfile) |
 | fonttools | 4.67.0 | MIT | Python-pakke | Mac, Windows | compare, ocr, pdf-tables, redact | https://pypi.org/project/fonttools/4.67.0/#files |
 | fpdf2 | 2.8.9 | LGPL-3.0-only | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/fpdf2/2.8.9/#files (kildekodearkiv: https://github.com/py-pdf/fpdf2) |
 | img2pdf | 0.6.3 | GNU Lesser General Public License v3 (LGPLv3) | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/img2pdf/0.6.3/#files |
 | jsonschema | 4.26.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/jsonschema/4.26.0/#files (kildekodearkiv: https://github.com/python-jsonschema/jsonschema) |
 | jsonschema-specifications | 2025.9.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/jsonschema-specifications/2025.9.1/#files (kildekodearkiv: https://github.com/python-jsonschema/jsonschema-specifications) |
-| lxml | 6.1.3 | BSD-3-Clause | Python-pakke | Mac, Windows | compare, metadata, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/lxml/6.1.3/#files (kildekodearkiv: https://github.com/lxml/lxml) |
+| lxml | 6.1.3 | BSD-3-Clause | Python-pakke | Mac, Windows | compare, datawrapper, metadata, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/lxml/6.1.3/#files (kildekodearkiv: https://github.com/lxml/lxml) |
 | markdown-it-py | 4.2.0 | MIT License | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/markdown-it-py/4.2.0/#files |
 | mdurl | 0.1.2 | MIT License | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/mdurl/0.1.2/#files |
 | ocrmypdf | 17.13.0 | MPL-2.0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/ocrmypdf/17.13.0/#files (kildekodearkiv: https://github.com/ocrmypdf/OCRmyPDF) |
-| openpyxl | 3.1.5 | MIT | Python-pakke | Mac, Windows | pdf-tables | https://pypi.org/project/openpyxl/3.1.5/#files (kildekodearkiv: https://foss.heptapod.net/openpyxl/openpyxl) |
+| openpyxl | 3.1.5 | MIT | Python-pakke | Mac, Windows | datawrapper, pdf-tables | https://pypi.org/project/openpyxl/3.1.5/#files (kildekodearkiv: https://foss.heptapod.net/openpyxl/openpyxl) |
 | packaging | 26.3 | Apache-2.0 OR BSD-2-Clause | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/packaging/26.3/#files (kildekodearkiv: https://github.com/pypa/packaging) |
 | pdfminer.six | 20260107 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pdfminer.six/20260107/#files |
 | pefile | 2024.8.26 | MIT | Python-pakke | Windows | ocr | https://pypi.org/project/pefile/2024.8.26/#files |
 | pikepdf | 10.17.0 | MPL-2.0 | Python-pakke | Mac, Windows | metadata, ocr | https://pypi.org/project/pikepdf/10.17.0/#files (kildekodearkiv: https://github.com/pikepdf/pikepdf) |
-| pillow | 13.0.0 | MIT-CMU | Python-pakke | Mac, Windows | compare, keyframes, metadata, ocr, pdf-tables, redact | https://pypi.org/project/pillow/13.0.0/#files (kildekodearkiv: https://github.com/python-pillow/Pillow) |
+| pillow | 13.0.0 | MIT-CMU | Python-pakke | Mac, Windows | compare, datawrapper, keyframes, metadata, ocr, pdf-tables, redact | https://pypi.org/project/pillow/13.0.0/#files (kildekodearkiv: https://github.com/python-pillow/Pillow) |
 | pluggy | 1.7.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pluggy/1.7.0/#files (kildekodearkiv: https://github.com/pytest-dev/pluggy) |
 | pycparser | 3.11 | BSD-3-Clause | Python-pakke | Windows | ocr | https://pypi.org/project/pycparser/3.11/#files |
 | pydantic | 2.14.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pydantic/2.14.1/#files (kildekodearkiv: https://github.com/pydantic/pydantic) |
@@ -117,6 +117,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | typing-inspection | 0.4.4 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/typing-inspection/0.4.4/#files (kildekodearkiv: https://github.com/pydantic/typing-inspection) |
 | typing_extensions | 4.16.0 | PSF-2.0 | Python-pakke | Mac, Windows | compare, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/typing_extensions/4.16.0/#files (kildekodearkiv: https://github.com/python/typing_extensions) |
 | uharfbuzz | 0.56.3 | Apache License 2.0 | Python-pakke | Mac, Windows | compare, ocr, pdf-tables, redact | https://pypi.org/project/uharfbuzz/0.56.3/#files |
+| xlrd | 2.0.2 | BSD | Python-pakke | Mac, Windows | datawrapper | https://pypi.org/project/xlrd/2.0.2/#files |
 | Brotli | ukjent | MIT | Windows-bibliotek | Windows | ocr | https://github.com/google/brotli/releases |
 | Expat | ukjent | MIT | Windows-bibliotek | Windows | ocr | https://github.com/libexpat/libexpat/releases |
 | FreeType | ukjent | FTL OR GPL-2.0-or-later | Windows-bibliotek | Windows | redact | https://download.savannah.gnu.org/releases/freetype/ |

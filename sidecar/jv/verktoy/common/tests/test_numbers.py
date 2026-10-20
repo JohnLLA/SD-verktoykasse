@@ -1,6 +1,6 @@
 import pytest
 
-from jv_pdf_tables.numbers import parse_number
+from jv_common.numbers import parse_number
 
 
 @pytest.mark.parametrize(
