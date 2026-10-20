@@ -1,0 +1,1 @@
+Fra Homebrews libidn2 (COPYING, COPYING.LESSERv3, COPYING.unicode).

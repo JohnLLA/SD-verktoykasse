@@ -1,0 +1,2 @@
+Hentet fra https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.1.0/COPYING
+GPL-2.0-teksten (standardteksten; jbigkit er GPL-2.0-or-later). Kilden til jbigkit: https://www.cl.cam.ac.uk/~mgk25/jbigkit/

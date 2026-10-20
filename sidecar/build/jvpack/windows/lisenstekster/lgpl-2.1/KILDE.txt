@@ -1,0 +1,1 @@
+Standardteksten for LGPL-2.1 (samme som i Mac-pakkene).

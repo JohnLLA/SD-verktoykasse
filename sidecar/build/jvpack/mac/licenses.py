@@ -364,8 +364,24 @@ def add_stored_texts(packages: list[Package]) -> None:
         p.note = f"{linked} {note}" if p.note.startswith(linked) else note
 
 
-def write(dst: Path, packages: list[Package], tool_id: str, tool_version: str) -> list[Package]:
-    """Write Lisenser/ and return the packages that lack a licence text."""
+MAC_INTRO = [
+    "Programmene fra Homebrew er kopiert uendret, bortsett fra at stiene til",
+    "bibliotekene er skrevet om (install_name_tool) og at de er signert på nytt.",
+    "I exiftool er #!-linjen endret til /usr/bin/perl og stien til bibliotekene",
+    "satt til mappen ved siden av skriptet.",
+    "",
+]
+
+# Order of the groups in «Kildekode og versjoner.txt».
+KINDS = ("Kjøretid", "Homebrew", "Apertium", "Windows-program", "Windows-bibliotek", "Python-pakke")
+
+
+def write(dst: Path, packages: list[Package], tool_id: str, tool_version: str,
+          intro: list[str] | None = None) -> list[Package]:
+    """Write Lisenser/ and return the packages that lack a licence text.
+
+    `intro`: the lines about how the programs were copied (default: Mac/Homebrew).
+    """
     if dst.exists():
         shutil.rmtree(dst)
     dst.mkdir(parents=True)
@@ -378,11 +394,7 @@ def write(dst: Path, packages: list[Package], tool_id: str, tool_version: str) -
         "versjon, lisens og hvor kildekoden kan lastes ned. Lisenstekstene ligger i",
         "mappen med samme navn som pakken.",
         "",
-        "Programmene fra Homebrew er kopiert uendret, bortsett fra at stiene til",
-        "bibliotekene er skrevet om (install_name_tool) og at de er signert på nytt.",
-        "I exiftool er #!-linjen endret til /usr/bin/perl og stien til bibliotekene",
-        "satt til mappen ved siden av skriptet.",
-        "",
+        *(MAC_INTRO if intro is None else intro),
     ]
     if any(p.kind == "Apertium" for p in packages):
         lines += [
@@ -390,7 +402,7 @@ def write(dst: Path, packages: list[Package], tool_id: str, tool_version: str) -
             "samme måte. I skriptet «apertium» og i mode-filene er bare stiene endret.",
             "",
         ]
-    for kind in ("Kjøretid", "Homebrew", "Apertium", "Python-pakke"):
+    for kind in KINDS:
         group = [p for p in packages if p.kind == kind]
         if not group:
             continue

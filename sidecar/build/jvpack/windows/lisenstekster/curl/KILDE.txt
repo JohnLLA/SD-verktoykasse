@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/curl/curl/curl-8_16_0/COPYING

@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/mingw-w64/mingw-w64/v12.0.0/mingw-w64-libraries/winpthreads/COPYING

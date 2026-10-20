@@ -731,5 +731,366 @@
         "built_as_bottle": null
       }
     }
+  },
+  "x86_64-pc-windows-msvc": {
+    "source": "Faste nedlastinger med kjent SHA-256 (jvpack/windows/sources.py). Bygget kjøres i GitHub Actions (jv-windows-pakker.yml) og kopierer bare programmene og DLL-ene de laster.",
+    "programs": {
+      "ffmpeg": {
+        "used_by": [
+          "keyframes",
+          "loudness"
+        ],
+        "name": "FFmpeg (gyan.dev essentials)",
+        "version": "9.0.2",
+        "license": "GPL-3.0-or-later",
+        "download_url": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-essentials_build.zip",
+        "download_sha256": "60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba",
+        "source_url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz (commit 946fcce07b; bibliotekene og versjonene står i README.txt)",
+        "homepage": "https://www.gyan.dev/ffmpeg/builds/",
+        "note": "Statisk bygg: ffmpeg.exe og ffprobe.exe er med, ffplay.exe ikke."
+      },
+      "exiftool": {
+        "used_by": [
+          "metadata"
+        ],
+        "name": "ExifTool (Windows-pakke)",
+        "version": "13.59",
+        "license": "Artistic-1.0-Perl OR GPL-1.0-or-later",
+        "download_url": "https://downloads.sourceforge.net/project/exiftool/exiftool-13.59_64.zip",
+        "download_sha256": "44b512b25af500724ba579d0a53c8fc5851628b692dd5e5d94ae4a15c2cba9ec",
+        "source_url": "https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-13.59.tar.gz (Strawberry Perl: https://strawberryperl.com/releases.html)",
+        "homepage": "https://exiftool.org/",
+        "note": "Inneholder en portabel Strawberry Perl (Artistic/GPL) og en liten oppstarter av Oliver Betz (CC0-1.0). «exiftool(-k).exe» er gitt nytt navn til exiftool.exe, slik pakken selv sier."
+      },
+      "tesseract": {
+        "used_by": [
+          "ocr"
+        ],
+        "name": "Tesseract OCR (UB Mannheim)",
+        "version": "5.5.3.20260724",
+        "license": "Apache-2.0",
+        "download_url": "https://github.com/tesseract-ocr/tesseract/releases/download/5.5.3/tesseract-ocr-w64-setup-5.5.3.20260724.exe",
+        "download_sha256": "bee9e3434bd94fd65387d9be28cd467a41f61b1275383b55b0f59a1331270ae4",
+        "source_url": "https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.3.tar.gz (byggeoppsett: https://github.com/UB-Mannheim/tesseract/tree/v5.5.3.20260724)",
+        "homepage": "https://github.com/UB-Mannheim/tesseract/wiki",
+        "note": "Installasjonsfilen pakkes ut med 7-Zip og kjøres aldri. Bare tesseract.exe, DLL-ene den laster og tessdata/configs er med."
+      },
+      "tessdata-nor": {
+        "used_by": [
+          "ocr"
+        ],
+        "name": "Tesseract-språkdata nor (tessdata_fast)",
+        "version": "4.1.0",
+        "license": "Apache-2.0",
+        "download_url": "https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/nor.traineddata",
+        "download_sha256": "0451eb4f8049ae78196806bf878a389a2f40f1386fe038568cf4441226ba6ef2",
+        "source_url": "https://github.com/tesseract-ocr/tessdata_fast/tree/4.1.0",
+        "homepage": "https://github.com/tesseract-ocr/tessdata_fast",
+        "note": "Samme fil som i Homebrews tesseract-lang (Mac)."
+      },
+      "tessdata-eng": {
+        "used_by": [
+          "ocr"
+        ],
+        "name": "Tesseract-språkdata eng (tessdata_fast)",
+        "version": "4.1.0",
+        "license": "Apache-2.0",
+        "download_url": "https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/eng.traineddata",
+        "download_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+        "source_url": "https://github.com/tesseract-ocr/tessdata_fast/tree/4.1.0",
+        "homepage": "https://github.com/tesseract-ocr/tessdata_fast",
+        "note": "Samme fil som i Homebrews tesseract (Mac)."
+      },
+      "tessdata-osd": {
+        "used_by": [
+          "ocr"
+        ],
+        "name": "Tesseract-språkdata osd (tessdata_fast)",
+        "version": "4.1.0",
+        "license": "Apache-2.0",
+        "download_url": "https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/osd.traineddata",
+        "download_sha256": "9cf5d576fcc47564f11265841e5ca839001e7e6f38ff7f7aacf46d15a96b00ff",
+        "source_url": "https://github.com/tesseract-ocr/tessdata_fast/tree/4.1.0",
+        "homepage": "https://github.com/tesseract-ocr/tessdata_fast",
+        "note": "Samme fil som i Homebrews tesseract (Mac)."
+      },
+      "poppler": {
+        "used_by": [
+          "redact"
+        ],
+        "name": "poppler (poppler-windows, conda-forge)",
+        "version": "26.09.0-0",
+        "license": "GPL-2.0-only OR GPL-3.0-only",
+        "download_url": "https://github.com/oschwartz10612/poppler-windows/releases/download/v26.09.0-0/Release-26.09.0-0.zip",
+        "download_sha256": "7a6f256a0ddf7536182246a5733331bf4677cbcc34f4663774947ad34556c8d0",
+        "source_url": "https://poppler.freedesktop.org/poppler-26.09.0.tar.xz (byggeoppskrift: https://github.com/conda-forge/poppler-feedstock)",
+        "homepage": "https://github.com/oschwartz10612/poppler-windows",
+        "note": "Bare pdftotext.exe og DLL-ene den laster er med (se components.py)."
+      }
+    },
+    "libraries": {
+      "note": "Lisensene for DLL-er programmene kan laste. Bare DLL-er som står her, kan komme med i en pakke (jvpack/windows/components.py). Hvilke som faktisk er med, står i hver pakkes «Kildekode og versjoner.txt».",
+      "items": {
+        "poppler": {
+          "name": "poppler",
+          "license": "GPL-2.0-only OR GPL-3.0-only",
+          "source_url": "https://poppler.freedesktop.org/",
+          "free_license": true
+        },
+        "freetype": {
+          "name": "FreeType",
+          "license": "FTL OR GPL-2.0-or-later",
+          "source_url": "https://download.savannah.gnu.org/releases/freetype/",
+          "free_license": true
+        },
+        "icu": {
+          "name": "ICU",
+          "license": "Unicode-3.0",
+          "source_url": "https://github.com/unicode-org/icu/releases",
+          "free_license": true
+        },
+        "libjpeg-turbo": {
+          "name": "libjpeg-turbo",
+          "license": "IJG AND BSD-3-Clause AND Zlib",
+          "source_url": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases",
+          "free_license": true
+        },
+        "lcms2": {
+          "name": "Little CMS",
+          "license": "MIT",
+          "source_url": "https://github.com/mm2/Little-CMS/releases",
+          "free_license": true
+        },
+        "lerc": {
+          "name": "LERC",
+          "license": "Apache-2.0",
+          "source_url": "https://github.com/Esri/lerc/releases",
+          "free_license": true
+        },
+        "openssl": {
+          "name": "OpenSSL",
+          "license": "Apache-2.0",
+          "source_url": "https://github.com/openssl/openssl/releases",
+          "free_license": true
+        },
+        "curl": {
+          "name": "libcurl",
+          "license": "curl",
+          "source_url": "https://curl.se/download.html",
+          "free_license": true,
+          "note": "Lenket inn av programmet (adresser som inndata). Verktøyene gir det bare lokale filer."
+        },
+        "xz": {
+          "name": "xz (liblzma)",
+          "license": "0BSD",
+          "source_url": "https://github.com/tukaani-project/xz/releases",
+          "free_license": true
+        },
+        "libpng": {
+          "name": "libpng",
+          "license": "libpng-2.0",
+          "source_url": "https://github.com/pnggroup/libpng/releases",
+          "free_license": true
+        },
+        "libssh2": {
+          "name": "libssh2",
+          "license": "BSD-3-Clause",
+          "source_url": "https://libssh2.org/download/",
+          "free_license": true
+        },
+        "openjpeg": {
+          "name": "OpenJPEG",
+          "license": "BSD-2-Clause",
+          "source_url": "https://github.com/uclouvain/openjpeg/releases",
+          "free_license": true
+        },
+        "libpsl": {
+          "name": "libpsl",
+          "license": "MIT",
+          "source_url": "https://github.com/rockdaboot/libpsl/releases",
+          "free_license": true
+        },
+        "libtiff": {
+          "name": "libtiff",
+          "license": "libtiff",
+          "source_url": "https://download.osgeo.org/libtiff/",
+          "free_license": true
+        },
+        "zlib": {
+          "name": "zlib",
+          "license": "Zlib",
+          "source_url": "https://zlib.net/",
+          "free_license": true
+        },
+        "zstd": {
+          "name": "Zstandard",
+          "license": "BSD-3-Clause OR GPL-2.0-only",
+          "source_url": "https://github.com/facebook/zstd/releases",
+          "free_license": true
+        },
+        "libdeflate": {
+          "name": "libdeflate",
+          "license": "MIT",
+          "source_url": "https://github.com/ebiggers/libdeflate/releases",
+          "free_license": true
+        },
+        "tesseract": {
+          "name": "Tesseract",
+          "license": "Apache-2.0",
+          "source_url": "https://github.com/tesseract-ocr/tesseract/releases",
+          "free_license": true
+        },
+        "leptonica": {
+          "name": "Leptonica",
+          "license": "BSD-2-Clause",
+          "source_url": "https://github.com/DanBloomberg/leptonica/releases",
+          "free_license": true
+        },
+        "libarchive": {
+          "name": "libarchive",
+          "license": "BSD-2-Clause",
+          "source_url": "https://github.com/libarchive/libarchive/releases",
+          "free_license": true
+        },
+        "gcc-runtime": {
+          "name": "GCC-kjøretid (libgcc, libstdc++, libgomp)",
+          "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+          "source_url": "https://gcc.gnu.org/",
+          "free_license": true,
+          "note": "Unntaket (GCC Runtime Library Exception) tillater å distribuere bibliotekene med programmer under andre lisenser."
+        },
+        "winpthreads": {
+          "name": "winpthreads (mingw-w64)",
+          "license": "MIT AND BSD-3-Clause",
+          "source_url": "https://github.com/mingw-w64/mingw-w64",
+          "free_license": true
+        },
+        "webp": {
+          "name": "libwebp",
+          "license": "BSD-3-Clause",
+          "source_url": "https://github.com/webmproject/libwebp/releases",
+          "free_license": true
+        },
+        "giflib": {
+          "name": "giflib",
+          "license": "MIT",
+          "source_url": "https://sourceforge.net/projects/giflib/files/",
+          "free_license": true
+        },
+        "bzip2": {
+          "name": "bzip2",
+          "license": "bzip2-1.0.6",
+          "source_url": "https://sourceware.org/bzip2/downloads.html",
+          "free_license": true
+        },
+        "jbigkit": {
+          "name": "JBIG-KIT",
+          "license": "GPL-2.0-or-later",
+          "source_url": "https://www.cl.cam.ac.uk/~mgk25/jbigkit/",
+          "free_license": true
+        },
+        "libiconv": {
+          "name": "GNU libiconv",
+          "license": "LGPL-2.1-or-later",
+          "source_url": "https://ftp.gnu.org/gnu/libiconv/",
+          "free_license": true
+        },
+        "gettext": {
+          "name": "gettext (libintl)",
+          "license": "LGPL-2.1-or-later",
+          "source_url": "https://ftp.gnu.org/gnu/gettext/",
+          "free_license": true
+        },
+        "libb2": {
+          "name": "libb2 (BLAKE2)",
+          "license": "CC0-1.0",
+          "source_url": "https://github.com/BLAKE2/libb2/releases",
+          "free_license": true
+        },
+        "lz4": {
+          "name": "LZ4",
+          "license": "BSD-2-Clause",
+          "source_url": "https://github.com/lz4/lz4/releases",
+          "free_license": true
+        },
+        "expat": {
+          "name": "Expat",
+          "license": "MIT",
+          "source_url": "https://github.com/libexpat/libexpat/releases",
+          "free_license": true
+        },
+        "libxml2": {
+          "name": "libxml2",
+          "license": "MIT",
+          "source_url": "https://gitlab.gnome.org/GNOME/libxml2/-/releases",
+          "free_license": true
+        },
+        "brotli": {
+          "name": "Brotli",
+          "license": "MIT",
+          "source_url": "https://github.com/google/brotli/releases",
+          "free_license": true
+        },
+        "libidn2": {
+          "name": "libidn2",
+          "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+          "source_url": "https://ftp.gnu.org/gnu/libidn/",
+          "free_license": true
+        },
+        "libunistring": {
+          "name": "libunistring",
+          "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+          "source_url": "https://ftp.gnu.org/gnu/libunistring/",
+          "free_license": true
+        },
+        "nghttp2": {
+          "name": "nghttp2",
+          "license": "MIT",
+          "source_url": "https://github.com/nghttp2/nghttp2/releases",
+          "free_license": true
+        },
+        "nghttp3": {
+          "name": "nghttp3",
+          "license": "MIT",
+          "source_url": "https://github.com/ngtcp2/nghttp3/releases",
+          "free_license": true
+        },
+        "ngtcp2": {
+          "name": "ngtcp2",
+          "license": "MIT",
+          "source_url": "https://github.com/ngtcp2/ngtcp2/releases",
+          "free_license": true
+        },
+        "libffi": {
+          "name": "libffi",
+          "license": "MIT",
+          "source_url": "https://github.com/libffi/libffi/releases",
+          "free_license": true
+        },
+        "sqlite": {
+          "name": "SQLite",
+          "license": "blessing (public domain)",
+          "source_url": "https://www.sqlite.org/download.html",
+          "free_license": true
+        },
+        "mpdecimal": {
+          "name": "mpdecimal",
+          "license": "BSD-2-Clause",
+          "source_url": "https://www.bytereef.org/mpdecimal/download.html",
+          "free_license": true
+        },
+        "msvc-runtime": {
+          "name": "Microsoft Visual C++ Redistributable (vcruntime140, msvcp140)",
+          "license": "LicenseRef-Microsoft-Visual-C-Redistributable",
+          "source_url": "https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files",
+          "free_license": false,
+          "note": "Microsofts kjøretid for programmer bygget med Visual C++. Ikke fri lisens; Microsoft tillater å distribuere filene sammen med programmer. Python for Windows og MSVC-byggene trenger den."
+        }
+      }
+    },
+    "not_free": "Microsofts Visual C++-kjøretid (vcruntime140.dll, vcruntime140_1.dll, msvcp140.dll) har ikke fri lisens. Python for Windows (python-build-standalone) og MSVC-byggene (poppler) trenger den, og PyInstaller legger den alltid med. Den er listet som unntak i binaries.json og må godkjennes av John Inge.",
+    "not_on_windows": {
+      "nynorsk": "Apertium (nob-nno, nno-nob) er ikke pakket for Windows ennå. Apertium-skriptet krever bash, og språkdataene må kompileres med lttoolbox og make. Venter, som spesifikasjonen sier."
+    }
   }
 }

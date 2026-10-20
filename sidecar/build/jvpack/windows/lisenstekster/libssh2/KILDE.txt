@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/libssh2/libssh2/libssh2-1.11.1/COPYING

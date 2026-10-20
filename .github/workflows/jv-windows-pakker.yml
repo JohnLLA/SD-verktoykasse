@@ -1,0 +1,257 @@
+# Runde B: verktøypakkene for Windows (x86_64-pc-windows-msvc), docs/spesifikasjon-journalistverktoy.md.
+#
+# - Bygger de åtte pakkene som lar seg pakke (nynorsk venter på Apertium) med
+#   sidecar/build (python -m jvpack windows), fra faste nedlastinger med kjent SHA-256
+#   (sidecar/build/jvpack/windows/sources.py, binaries.json).
+# - Prøvekjører hver pakke (jv.exe --version), kjører verktøyenes egne Python-tester
+#   mot den pakkede binærfila med utgående trafikk sperret i Windows-brannmuren, og
+#   kjører hele kjeden i Rust (katalog med testnøkkel → nedlasting med brudd og
+#   gjenopptak → SHA-256 → utpakking → prøvekjøring → kjøring på testfil).
+# - Pakkene lastes opp som ARTEFAKTER på kjøringen (14 dager). Ingenting lastes opp til
+#   releases, og ingen katalog signeres her. John Inge gjør det (sidecar/build/README.md).
+# - Signering: variabelen WINDOWS_SIGNING (none, certificate, trusted-signing) som i
+#   release.yml (docs/distribusjon.md). Uten den, og alltid på pull request: usignert,
+#   med tydelig merknad i sammendraget.
+#
+# Starter for hånd, og på pull request bare når byggeoppsettet for pakkene endres.
+name: jv-windows-pakker
+on:
+  workflow_dispatch:
+    inputs:
+      verktoy:
+        description: "Verktøy (kommaliste, eller «alle» for de åtte)"
+        default: "alle"
+        type: string
+  pull_request:
+    paths:
+      - "sidecar/build/**"
+      - ".github/workflows/jv-windows-pakker.yml"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  PYTHONUTF8: "1"
+
+jobs:
+  bygg:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      ids: ${{ steps.ids.outputs.ids }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verktøyliste
+        id: ids
+        env:
+          INPUT: ${{ inputs.verktoy }}
+        run: |
+          ids="${INPUT:-alle}"
+          [ "$ids" = alle ] && ids="compare,metadata,keyframes,loudness,subtitles,pdf-tables,ocr,redact"
+          case "$ids" in *[!a-z,-]*) echo "::error::ugyldig verktøyliste"; exit 1;; esac
+          echo "ids=$ids" >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.11"
+
+      - name: Python-pakkene fra uv.lock og PyInstaller (med SHA-256)
+        working-directory: sidecar/jv
+        run: |
+          uv sync --frozen --all-packages
+          uv pip install --require-hashes -r ../build/jvpack/windows/pyinstaller-krav.txt
+          uv run --frozen --all-packages --no-sync python -c "import sys, PyInstaller; print(sys.version); print('PyInstaller', PyInstaller.__version__)"
+
+      - name: binaries.json er oppdatert for Windows
+        working-directory: sidecar/jv
+        run: uv run --frozen --all-packages --no-sync env PYTHONPATH=../build python -m jvpack windows kilder --sjekk
+
+      - name: Signeringsplan
+        env:
+          EVENT: ${{ github.event_name }}
+          VAR_WINDOWS: ${{ vars.WINDOWS_SIGNING }}
+          S_WIN_CERT: ${{ secrets.WINDOWS_CERTIFICATE }}
+          S_WIN_CERT_PW: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          S_AZ_TENANT: ${{ secrets.AZURE_TENANT_ID }}
+          V_TS_ENDPOINT: ${{ vars.AZURE_TS_ENDPOINT }}
+        run: |
+          mode="${VAR_WINDOWS:-none}"
+          [ "$EVENT" = pull_request ] && mode=none
+          case "$mode" in
+            none) ;;
+            certificate) [ -n "$S_WIN_CERT" ] && [ -n "$S_WIN_CERT_PW" ] || { echo "::error::WINDOWS_SIGNING=certificate, men WINDOWS_CERTIFICATE eller WINDOWS_CERTIFICATE_PASSWORD mangler"; exit 1; } ;;
+            trusted-signing) [ -n "$S_AZ_TENANT" ] && [ -n "$V_TS_ENDPOINT" ] || { echo "::error::WINDOWS_SIGNING=trusted-signing, men Azure-oppsettet mangler (docs/distribusjon.md)"; exit 1; } ;;
+            *) echo "::error::Ukjent verdi for WINDOWS_SIGNING: $mode"; exit 1 ;;
+          esac
+          echo "JV_WINDOWS_SIGNING=$mode" >> "$GITHUB_ENV"
+          if [ "$mode" = none ]; then
+            echo "### USIGNERT: Windows-pakkene er ikke kodesignert (LLA har ikke Windows-sertifikat). Det må stå i release-notatet." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Importer Windows-sertifikat (OV/EV, .pfx)
+        if: env.JV_WINDOWS_SIGNING == 'certificate'
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP "kode.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+          $pw = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+          $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pw
+          Remove-Item $pfx
+          "WIN_THUMBPRINT=$($cert.Thumbprint)" >> $env:GITHUB_ENV
+          "WIN_TIMESTAMP_URL=$($env:WINDOWS_TIMESTAMP_URL)" >> $env:GITHUB_ENV
+
+      - name: Azure Trusted Signing
+        if: env.JV_WINDOWS_SIGNING == 'trusted-signing'
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TS_ENDPOINT: ${{ vars.AZURE_TS_ENDPOINT }}
+          AZURE_TS_ACCOUNT: ${{ vars.AZURE_TS_ACCOUNT }}
+          AZURE_TS_PROFILE: ${{ vars.AZURE_TS_PROFILE }}
+        run: |
+          cargo install trusted-signing-cli --locked --root "$HOME/trusted-signing-cli"
+          echo "$HOME/trusted-signing-cli/bin" >> "$GITHUB_PATH"
+          {
+            echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+            echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+            echo "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
+            echo "TS_ENDPOINT=$AZURE_TS_ENDPOINT"
+            echo "TS_ACCOUNT=$AZURE_TS_ACCOUNT"
+            echo "TS_PROFILE=$AZURE_TS_PROFILE"
+          } >> "$GITHUB_ENV"
+
+      - name: Cache nedlastede programmer (kontrolleres mot SHA-256 likevel)
+        uses: actions/cache@v4
+        with:
+          path: sidecar/build/out/kilder
+          key: jv-windows-kilder-${{ hashFiles('sidecar/build/jvpack/windows/sources.py') }}
+
+      - name: Bygg pakkene
+        working-directory: sidecar/jv
+        run: |
+          7z i | head -n 3
+          uv run --frozen --all-packages --no-sync env PYTHONPATH=../build python -m jvpack windows "${{ steps.ids.outputs.ids }}"
+
+      - name: Sammendrag av bygget
+        if: always()
+        working-directory: sidecar/build/out
+        run: |
+          [ -f bygg-oppsummering-windows.json ] || exit 0
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d = json.load(open("bygg-oppsummering-windows.json", encoding="utf-8"))
+          print("| Verktøy | Arkiv (MB) | Utpakket (MB) | Lengste sti | Signering | Ikke fri lisens | --version | Sekunder |")
+          print("|---|---|---|---|---|---|---|---|")
+          for k, r in d.items():
+              v = r["kontroller"].get("--version", {})
+              print(f"| {k} | {r['arkiv_bytes']/1e6:.1f} | {r['utpakket_bytes']/1e6:.1f} | {r['lengste_sti']} | "
+                    f"{r['signering']} | {', '.join(r['ikke_fri_lisens']) or '–'} | {'OK' if v.get('ok') else 'IKKE OK'} | {r['sekunder']} |")
+          EOF
+
+      - name: Last opp pakkene (artefakt, ikke release)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jv-windows-pakker
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            sidecar/build/out/dist/*.zip
+            sidecar/build/out/bygg-oppsummering-windows.json
+
+      - name: Lisenslister (for THIRD_PARTY_LICENSES.md)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jv-windows-lisenser
+          retention-days: 14
+          if-no-files-found: ignore
+          path: sidecar/build/out/work/x86_64-pc-windows-msvc/*/pakke/Lisenser/Kildekode og versjoner.txt
+
+      - name: Python-testene mot de pakkede binærfilene (uten nett)
+        timeout-minutes: 60
+        run: sidecar/build/test-pakker-windows.sh "${{ steps.ids.outputs.ids }}"
+
+      - name: Testresultat
+        if: always()
+        run: |
+          f=sidecar/build/out/test-oppsummering-windows.txt
+          [ -f "$f" ] && { echo '### Python-tester mot pakkene'; echo '```'; cat "$f"; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Testlogger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jv-windows-testlogger
+          retention-days: 14
+          if-no-files-found: ignore
+          path: sidecar/build/out/test-logger-windows/
+
+  kjede:
+    # Hele kjeden i appens Rust-kode, med pakkene fra jobben over.
+    needs: bygg
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: jv-windows-pakker
+          path: sidecar/build/out/dist
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.11"
+
+      - name: Katalog med TESTNØKKELEN for den lokale testserveren
+        working-directory: sidecar/jv
+        run: |
+          uv sync --frozen --all-packages
+          uv run --frozen --all-packages --no-sync env PYTHONPATH=../build python -m jvpack katalog lag --test-key --base-url http://127.0.0.1:47613
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Frontend (dist/ bygges inn av Tauri)
+        run: |
+          npm ci
+          npm run build
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: libclang
+        shell: pwsh
+        run: '"LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV'
+
+      - name: Cache cargo og bygg
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: app-v1-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: app-v1-${{ runner.os }}-
+
+      - name: full_chain (Windows, åtte verktøy)
+        timeout-minutes: 60
+        working-directory: src-tauri
+        env:
+          JV_IDS: ${{ needs.bygg.outputs.ids }}
+        run: JV_DIST="$(cygpath -w "$GITHUB_WORKSPACE/sidecar/build/out/dist")" cargo test --locked full_chain -- --ignored --nocapture
