@@ -21,7 +21,7 @@ pub struct KeepAwake {
 impl KeepAwake {
     /// Navnet vises i `pmset -g assertions`. Ingen filnavn. Bare ASCII:
     /// pmset viser ikke æøå riktig.
-    pub const REASON: &'static str = "LLAs verktoykasse: transkribering";
+    pub const REASON: &'static str = "SD-Verktoy: transkribering";
 
     /// Prøver å hindre dvale. Feiler det, kjører jobben likevel.
     pub fn start() -> Option<KeepAwake> {

@@ -41,8 +41,8 @@
       "icons/icon.png"
     ],
     "createUpdaterArtifacts": true,
-    "publisher": "Landslaget for lokalaviser",
-    "shortDescription": "Verktøy for medlemmene i LLA",
+    "publisher": "Samarbeidsdesken",
+    "shortDescription": "Verktøy for medlemmer i Samarbeidsdesken",
     "macOS": {
       "minimumSystemVersion": "13.0"
     },

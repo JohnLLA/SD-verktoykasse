@@ -191,8 +191,8 @@ const extra = [
 
 // ---- skriv
 const out = [];
-out.push("TREDJEPARTSLISENSER FOR LLAs VERKTØYKASSE");
-out.push("=".repeat(41));
+out.push("TREDJEPARTSLISENSER FOR SD-VERKTØY");
+out.push("=".repeat(33));
 out.push("");
 out.push("Verktøykassen bygger på åpen kildekode og åpne modeller. Her står hele lisensteksten for hver komponent som følger med appen, og hvem som har skrevet dem. Teksten er laget automatisk fra lisensfilene i komponentene (tools/lag-tredjepartsmelding.mjs).");
 out.push("");
