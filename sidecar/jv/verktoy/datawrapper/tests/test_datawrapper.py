@@ -266,6 +266,6 @@ def test_stderr_has_only_progress_no_cell_content(capsys):
 
 def test_bad_arguments_are_user_errors(capsys):
     code, _, captured = run(capsys, "lag", DATA / "bytt.csv", "--tabell", "en")
-    assert code == 1
+    assert code == 1 and "heltall" in captured.err
     code, _, captured = run(capsys, "finn", DATA / "bytt.csv")
-    assert code == 1
+    assert code == 1 and "Ugyldige argumenter" in captured.err

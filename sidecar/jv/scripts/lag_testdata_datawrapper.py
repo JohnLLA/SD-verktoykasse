@@ -14,6 +14,7 @@ a small BIFF8/OLE2 writer below, so no extra package is needed. No network.
 from __future__ import annotations
 
 import io
+import re
 import struct
 import zipfile
 from datetime import date, datetime
@@ -51,8 +52,6 @@ def save_xlsx(wb: Workbook, name: str) -> None:
             data = src.read(info.filename)
             if info.filename == "docProps/core.xml":
                 # openpyxl always writes «modified» as now.
-                import re
-
                 data = re.sub(
                     rb"<dcterms:modified([^>]*)>[^<]*</dcterms:modified>",
                     rb"<dcterms:modified\1>2026-01-15T10:30:00Z</dcterms:modified>",

@@ -347,7 +347,6 @@ class Result:
     transposed: bool
     generated_header: bool
     removed_columns: list[str]
-    warnings: list[str]
 
 
 def _total_label(text: str) -> bool:
@@ -421,7 +420,6 @@ def build(
     pairs = [(row, t.r0 + i) for i, row in enumerate(grid) if i >= h and any(not is_empty(v) for v in row)]
     data = [row for row, _ in pairs]
     data_r = [r for _, r in pairs]
-    warnings: list[str] = []
 
     # Headers: one per column, parts from top to bottom joined with « – ».
     generated_header = False
@@ -457,7 +455,7 @@ def build(
                     last = row[c]
 
     # Sums.
-    label_cols = range(max(n_labels, 1)) if n_labels else range(0)
+    label_cols = range(n_labels)
     sum_row_flags = [
         any(isinstance(row[c], str) and _total_label(row[c]) for c in label_cols) for row in data
     ]
@@ -580,7 +578,6 @@ def build(
         transposed=transpose,
         generated_header=generated_header,
         removed_columns=removed_names,
-        warnings=warnings,
     )
 
 
