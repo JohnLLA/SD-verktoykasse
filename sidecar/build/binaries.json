@@ -96,24 +96,8 @@
         "homepage": "https://www.freetype.org/",
         "built_as_bottle": true
       },
-      "gawk": {
-        "used_by": [
-          "nynorsk"
-        ],
-        "version": "5.4.1",
-        "license": "GPL-3.0-or-later",
-        "source_url": "https://ftpmirror.gnu.org/gawk/gawk-5.4.1.tar.xz",
-        "source_sha256": "07f6f7342b7febe4313fc2c2542ad93d64fe20ad8717200109f105a826f5fd37",
-        "bottle": {
-          "tag": "arm64_tahoe",
-          "sha256": "73633c61674c5ab754b70403f14eb57d21d750fe8629eecc8023d5e4228f26fe"
-        },
-        "homepage": "https://www.gnu.org/software/gawk/",
-        "built_as_bottle": true
-      },
       "gettext": {
         "used_by": [
-          "nynorsk",
           "redact"
         ],
         "version": "1.0",
@@ -155,21 +139,6 @@
           "sha256": "56145c606a672f7b69845be6e16e8e6f1611052620e4638237116c177fe15c43"
         },
         "homepage": "https://docs.gtk.org/glib/",
-        "built_as_bottle": true
-      },
-      "gmp": {
-        "used_by": [
-          "nynorsk"
-        ],
-        "version": "6.3.0",
-        "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
-        "source_url": "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz",
-        "source_sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898",
-        "bottle": {
-          "tag": "arm64_tahoe",
-          "sha256": "fa46330de5d003bd9294ae042c8f4ae0a51bcb8c57de2c94c073ff4a7ffa10c3"
-        },
-        "homepage": "https://gmplib.org/",
         "built_as_bottle": true
       },
       "gpgme": {
@@ -448,21 +417,6 @@
         "homepage": "https://lz4.github.io/lz4/",
         "built_as_bottle": true
       },
-      "mpfr": {
-        "used_by": [
-          "nynorsk"
-        ],
-        "version": "4.2.2",
-        "license": "LGPL-3.0-or-later",
-        "source_url": "https://ftpmirror.gnu.org/mpfr/mpfr-4.2.2.tar.xz",
-        "source_sha256": "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01",
-        "bottle": {
-          "tag": "arm64_tahoe",
-          "sha256": "495b04c82ef8638368a5cc62141e7ac195377d292503f5b30e5915b1ff478dda"
-        },
-        "homepage": "https://www.mpfr.org/",
-        "built_as_bottle": true
-      },
       "mpg123": {
         "used_by": [
           "keyframes",
@@ -585,21 +539,6 @@
           "sha256": "b18684b27a7892b537548befc7494210779f54007633e611ea1c41b5c3f11f58"
         },
         "homepage": "https://poppler.freedesktop.org/",
-        "built_as_bottle": true
-      },
-      "readline": {
-        "used_by": [
-          "nynorsk"
-        ],
-        "version": "8.3.6",
-        "license": "GPL-3.0-or-later",
-        "source_url": "https://ftpmirror.gnu.org/readline/readline-8.3.tar.gz",
-        "source_sha256": "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc",
-        "bottle": {
-          "tag": "arm64_tahoe",
-          "sha256": "15cdd69af824537192843db389cbfd2459b3797cf4f36c906f8f8ab617d7d59f"
-        },
-        "homepage": "https://tiswww.case.edu/php/chet/readline/rltop.html",
         "built_as_bottle": true
       },
       "svt-av1": {
@@ -826,6 +765,32 @@
         "source_url": "https://poppler.freedesktop.org/poppler-26.09.0.tar.xz (byggeoppskrift: https://github.com/conda-forge/poppler-feedstock)",
         "homepage": "https://github.com/oschwartz10612/poppler-windows",
         "note": "Bare pdftotext.exe og DLL-ene den laster er med (se components.py)."
+      },
+      "apertium": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "name": "Apertium for Windows (apertium-all-dev)",
+        "version": "2026-10-14",
+        "license": "GPL-2.0-or-later AND GPL-3.0-or-later",
+        "download_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/apertium-all-dev-2026-10-14.x86_64.zip",
+        "download_sha256": "c8236ac537be7ba35849cf9ad4222a399646076f9cfa75bf86806e3a614de8a8",
+        "source_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-lttoolbox-ed9b682b9e3e.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-d8dfb942e31d.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-lex-tools-1ccefa6269ad.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-separable-18045e4da12c.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-cg3-0250250fe982.tar.gz",
+        "homepage": "https://apertium.projectjj.com/win32/nightly/",
+        "note": "Speil av https://apertium.projectjj.com/win32/nightly/apertium-all-dev.x86_64.zip (14.10.2026, uendret). Versjoner og commiter: lttoolbox 3.8.4 ed9b682b, apertium 3.9.12 d8dfb942, apertium-lex-tools 0.5.0 1ccefa62, apertium-separable 0.7.1 18045e4d, cg3 1.7.0 0250250f (de samme som i Mac-pakken). GPL-2.0-or-later: lttoolbox og apertium; GPL-3.0-or-later: apertium-lex-tools, apertium-separable og cg3. Bare de 14 programmene modusene bruker og DLL-ene de laster er med."
+      },
+      "apertium-data": {
+        "used_by": [
+          "nynorsk"
+        ],
+        "name": "Apertium-språkdata (apertium-nno-nob)",
+        "version": "1.6.0",
+        "license": "GPL-2.0-or-later",
+        "download_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/jv-nynorsk-v0.1.0/jv-nynorsk-0.1.0-aarch64-apple-darwin.tar.gz",
+        "download_sha256": "4f5f100fc92c5437ef4708c8054a4586fdbd50805c3f93e4b47353baeedccd26",
+        "source_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nob-3d63c61e5520.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nno-2efb61642310.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nno-nob-af921d87acad.tar.gz",
+        "homepage": "https://github.com/apertium/apertium-nno-nob",
+        "note": "Commiter: apertium-nno-nob af921d87, apertium-nob 3d63c61e, apertium-nno 2efb6164. Modusene og datafilene hentes fra Mac-pakken nynorsk 0.1.0 (Resources/apertium), så Windows og Mac oversetter likt. Datafilene er uendret; i mode-filene er bare stiene gjort relative til datamappa."
       }
     },
     "libraries": {
@@ -1079,6 +1044,18 @@
           "source_url": "https://www.bytereef.org/mpdecimal/download.html",
           "free_license": true
         },
+        "lttoolbox": {
+          "name": "lttoolbox (liblttoolbox)",
+          "license": "GPL-2.0-or-later",
+          "source_url": "https://github.com/apertium/lttoolbox",
+          "free_license": true
+        },
+        "cg3": {
+          "name": "VISL CG-3 (libcg3)",
+          "license": "GPL-3.0-or-later",
+          "source_url": "https://github.com/GrammarSoft/cg3",
+          "free_license": true
+        },
         "msvc-runtime": {
           "name": "Microsoft Visual C++ Redistributable (vcruntime140, msvcp140)",
           "license": "LicenseRef-Microsoft-Visual-C-Redistributable",
@@ -1089,8 +1066,6 @@
       }
     },
     "not_free": "Microsofts Visual C++-kjøretid (vcruntime140.dll, vcruntime140_1.dll, msvcp140.dll) har ikke fri lisens. Python for Windows (python-build-standalone) og MSVC-byggene (poppler) trenger den, og PyInstaller legger den alltid med. Den er listet som unntak i binaries.json og må godkjennes av John Inge.",
-    "not_on_windows": {
-      "nynorsk": "Apertium (nob-nno, nno-nob) er ikke pakket for Windows ennå. Apertium-skriptet krever bash, og språkdataene må kompileres med lttoolbox og make. Venter, som spesifikasjonen sier."
-    }
+    "not_on_windows": {}
   }
 }

@@ -1,6 +1,6 @@
 [project]
 name = "jv-nynorsk"
-version = "0.1.0"
+version = "0.2.0"
 description = "Førsteutkast på den andre målformen (bokmål ↔ nynorsk) med Apertium, for txt, md og docx"
 requires-python = ">=3.12,<3.13"
 dependencies = [

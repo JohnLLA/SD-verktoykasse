@@ -331,12 +331,10 @@ def apertium_packages(sources: Path | None = None) -> list[Package]:
             note = "Ordbøkene er kompilert inn i språkdataene til apertium-nno-nob."
         elif repo == "apertium-nno-nob":
             note = ("Bare filene modusene nob-nno og nno-nob bruker, er med. Stiene i "
-                    "mode-filene er skrevet om til ${APERTIUM_DATADIR}/….")
+                    "mode-filene er gjort relative til datamappa.")
         elif repo == "apertium":
-            note = ("Skriptet «apertium» er med. Linjene som setter APERTIUM_PATH og "
-                    "APERTIUM_DATADIR er endret til relative standardverdier (regnet ut fra "
-                    "skriptets egen mappe), og to linjer er lagt til: «_jv_here=…» og "
-                    "«export APERTIUM_PATH APERTIUM_DATADIR». Resten av skriptet er uendret.")
+            note = ("Skriptet «apertium» er ikke med: verktøyet kobler sammen programmene selv, "
+                    "slik skriptet gjør for «-f txt».")
         out.append(Package(repo, version, lic, f"{url} (commit {commit})", "Apertium", texts, note))
     return out
 
@@ -398,8 +396,10 @@ def write(dst: Path, packages: list[Package], tool_id: str, tool_version: str,
     ]
     if any(p.kind == "Apertium" for p in packages):
         lines += [
-            "Apertium er bygget fra kildekoden (commit står under) og kopiert inn på",
-            "samme måte. I skriptet «apertium» og i mode-filene er bare stiene endret.",
+            "Apertium: kilde og commit for programmene og språkdataene står under. På Mac",
+            "er bibliotekstiene skrevet om som for Homebrew-programmene; på Windows er",
+            "programmene kopiert uendret. I mode-filene er bare stiene gjort relative",
+            "til datamappa.",
             "",
         ]
     for kind in KINDS:

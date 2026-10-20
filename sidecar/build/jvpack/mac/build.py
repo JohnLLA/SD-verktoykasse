@@ -241,12 +241,12 @@ def manifest(spec: tools.ToolSpec, version: str, app_name: str, min_os: str, pyi
         path.append(f"{c}/Resources/exiftool")
         env["JV_EXIFTOOL"] = f"{c}/Resources/exiftool/exiftool"
     if "apertium" in spec.extra:
-        # The apertium script reads both variables; the rewritten mode files use
-        # APERTIUM_DATADIR for every data path (apertium.py).
-        path.append(f"{c}/Resources/{apertium.RESOURCE_DIR}/bin")
-        env["JV_APERTIUM"] = f"{c}/Resources/{apertium.RESOURCE_DIR}/bin/apertium"
+        # The tool finds the programs in PATH (Helpers, above) and the modes and
+        # data in APERTIUM_DATADIR (jv_nynorsk.core). JV_LT_PROC and JV_CG_PROC are
+        # for the trial run (`jv --version`).
         env[apertium.DATA_VAR] = f"{c}/Resources/{apertium.RESOURCE_DIR}"
-        env[apertium.PATH_VAR] = f"{c}/{macho.HELPERS_DIR}"
+        for name in tools.APERTIUM_CHECKED:
+            env["JV_" + name.upper().replace("-", "_")] = f"{c}/{macho.HELPERS_DIR}/{name}"
     return {
         "schema": MANIFEST_SCHEMA,
         "id": spec.tool_id,

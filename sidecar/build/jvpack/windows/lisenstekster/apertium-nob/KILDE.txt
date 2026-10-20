@@ -1,0 +1,1 @@
+Fra https://github.com/apertium/apertium-nob, commit 3d63c61e55209cd847c8ef4b863715036cce04bf (COPYING). Samme commit som i pakken.

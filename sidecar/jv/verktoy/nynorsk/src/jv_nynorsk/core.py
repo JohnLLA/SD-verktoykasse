@@ -19,13 +19,17 @@ from __future__ import annotations
 
 import os
 import re
+import shlex
 import subprocess
+import sys
+import tempfile
+import threading
 import zipfile
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from jv_common import UserError, require_binary, safe_output_path
+from jv_common import UserError, safe_output_path
 
 # --to value -> Apertium mode
 MODES = {"nn": "nob-nno", "nb": "nno-nob"}
@@ -44,25 +48,49 @@ SETUP_DOC = "verktoy/nynorsk/OPPSETT.md"
 TIMEOUT_SECONDS = 900
 
 _WORD = re.compile(r"\w+(?:[-'’]\w+)*")
-_MISSING_MODE = re.compile(
-    r"(mode\b.*\b(does not exist|not found|ikke)|no such mode|unknown mode)",
-    re.IGNORECASE,
-)
 
 ProgressFn = Callable[[float], None]
 
 
 # --------------------------------------------------------------------------
-# Apertium wrapper
+# Apertium: the mode pipeline, run directly (no shell, no apertium script)
 # --------------------------------------------------------------------------
+#
+# ``apertium -f txt <mode>`` is a bash script that runs
+#
+#     apertium-destxt | <mode file, rewritten by apertium-wblank-mode> | apertium-retxt
+#
+# with ``$1`` = ``-g`` (keep the *, # and @ marks) and ``$2`` empty, plus two
+# gawk filters for AP_SETVAR, which is empty here and then passes the text on
+# unchanged. The tool does the same itself: it reads the mode file, starts the
+# programs with subprocess and connects them with pipes. That needs neither
+# bash nor gawk, so it works the same on macOS and Windows, and the output is
+# byte for byte what the script gives.
+#
+# Safety: a stage may only start one of the Apertium programs below, and a
+# file argument must be a relative path inside the data folder. The programs
+# run with the data folder as working directory and get only those relative
+# ASCII paths, so a user name with æøå in the path cannot break them (on
+# Windows they open files with the ANSI code page). The text goes on stdin.
+
+PIPELINE_PROGRAMS = frozenset({
+    "apertium-destxt", "apertium-retxt", "apertium-wblank-attach", "apertium-wblank-detach",
+    "lt-proc", "lt-merge", "cg-proc", "apertium-tagger", "lsx-proc", "apertium-pretransfer",
+    "lrx-proc", "apertium-transfer", "apertium-interchunk", "apertium-postchunk",
+})
+_OPTION = re.compile(r"--?[A-Za-z0-9][A-Za-z0-9-]*")
+_REL_DATA = re.compile(r"[A-Za-z0-9._+-]+(?:/[A-Za-z0-9._+-]+)*")
+# Values of the mode's positional parameters for ``apertium -f txt``.
+_PARAMS = {"$1": "-g", "$2": None}
 
 
 def _missing_apertium_message() -> str:
     return (
         "Apertium er ikke installert eller ikke i PATH. Verktøyet trenger "
-        "programmet «apertium» og språkparet apertium-nno-nob (modusene "
+        "Apertium-programmene (lttoolbox, apertium, apertium-lex-tools, "
+        "apertium-separable og cg3) og språkparet apertium-nno-nob (modusene "
         "nob-nno og nno-nob). Installer begge og prøv igjen; se "
-        f"{SETUP_DOC} for fremgangsmåte på macOS (Homebrew eller bygging fra kilde)."
+        f"{SETUP_DOC} for fremgangsmåte på macOS (bygging fra kilde)."
     )
 
 
@@ -74,65 +102,240 @@ def _missing_mode_message(mode: str) -> str:
     )
 
 
-class Apertium:
-    """Thin wrapper around the ``apertium`` command for one mode."""
+class PipelineError(RuntimeError):
+    """The installation is not what the tool expects (internal error, code 2)."""
 
-    def __init__(self, mode: str, binary: str | None = None) -> None:
-        if binary is None:
-            try:
-                binary = require_binary("apertium")
-            except UserError:
-                raise UserError(_missing_apertium_message()) from None
-        self.binary = binary
-        self.mode = mode
 
-    def available_modes(self) -> list[str] | None:
-        """Modes reported by ``apertium -l``, or None if that is not supported."""
+def _program_argv(name: str) -> list[str] | None:
+    """Command for an Apertium program, found in PATH (never the working directory).
+
+    The packages put their own program folder first in PATH (jv-package.json).
+    """
+    exts = [""]
+    if os.name == "nt":
+        exts = [e.lower() for e in os.environ.get("PATHEXT", ".EXE").split(os.pathsep) if e]
+    for folder in os.environ.get("PATH", "").split(os.pathsep):
+        if not folder or not os.path.isabs(folder):
+            continue
+        for ext in exts:
+            candidate = os.path.join(folder, name + ext)
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                return [candidate]
+    return None
+
+
+def find_datadir() -> Path | None:
+    """Apertium's data folder (with modes/): APERTIUM_DATADIR, else next to the programs.
+
+    The packages set APERTIUM_DATADIR. A local install from source
+    (<prefix>/bin and <prefix>/share/apertium, see OPPSETT.md) is found from
+    where apertium-destxt is.
+    """
+    value = os.environ.get("APERTIUM_DATADIR")
+    if value:
+        path = Path(value)
+        return path if path.is_absolute() and (path / "modes").is_dir() else None
+    found = _program_argv("apertium-destxt")
+    if not found:
+        return None
+    guess = Path(found[-1]).resolve().parent.parent / "share" / "apertium"
+    return guess if (guess / "modes").is_dir() else None
+
+
+def _wblank(stages: list[str]) -> list[str]:
+    """What apertium-wblank-mode does to a mode (Apertium 3.9.12, wblank-mode.cc)."""
+    joined = " | ".join(stages)
+    if "apertium-wblank-" in joined:
+        return stages
+    restore_caps = "apertium-restore-caps" in joined
+    out: list[str] = []
+    for stage in stages:
+        if "automorf.bin" in stage or "automorf.hfst" in stage:
+            out += [stage, "apertium-wblank-attach"]
+        elif not restore_caps and ("autogen.bin" in stage or "autogen.hfst" in stage):
+            out += ["apertium-wblank-detach", stage]
+        else:
+            out.append(stage)
+    return out
+
+
+def read_mode(datadir: Path, mode: str) -> list[list[str]]:
+    """The stages of a mode as argument lists, with data paths relative to datadir.
+
+    Raises PipelineError if the mode file asks for anything outside the rules.
+    """
+    text = (datadir / "modes" / f"{mode}.mode").read_text(encoding="utf-8")
+    text = " ".join(text.splitlines())
+    stages = [s.strip() for s in text.split("|")]
+    if not all(stages):
+        raise PipelineError("tomt steg i modusfila")
+    root = datadir.resolve()
+    out: list[list[str]] = [["apertium-destxt"]]
+    for stage in _wblank(stages):
+        words = shlex.split(stage, posix=True)
+        name, args = words[0], []
+        if name not in PIPELINE_PROGRAMS:
+            raise PipelineError(f"modusfila bruker et program som ikke er tillatt ({name!r})")
+        for word in words[1:]:
+            if word in _PARAMS:
+                if _PARAMS[word] is not None:
+                    args.append(_PARAMS[word])
+            elif _OPTION.fullmatch(word):
+                args.append(word)
+            else:
+                args.append(_data_path(word, root))
+        out.append([name, *args])
+    out.append(["apertium-retxt"])
+    return out
+
+
+def _data_path(word: str, root: Path) -> str:
+    path = Path(word)
+    if path.is_absolute():
         try:
-            proc = subprocess.run(
-                [self.binary, "-l"],
-                capture_output=True,
-                check=False,
-                timeout=60,
-            )
-        except (OSError, subprocess.TimeoutExpired):
-            return None
-        if proc.returncode != 0:
-            return None
-        modes = proc.stdout.decode("utf-8", errors="replace").split()
-        return modes or None
+            rel = path.resolve().relative_to(root).as_posix()
+        except ValueError:
+            raise PipelineError("modusfila peker utenfor datamappa") from None
+    else:
+        rel = word
+    if not _REL_DATA.fullmatch(rel) or ".." in rel.split("/"):
+        raise PipelineError("uventet filsti i modusfila")
+    if not (root / rel).is_file():
+        raise FileNotFoundError(rel)
+    return rel
+
+
+def _child_env() -> dict[str, str]:
+    env = dict(os.environ)
+    if os.name != "nt":
+        # The apertium script always sets a UTF-8 LC_CTYPE (locale_utf8).
+        env["LC_CTYPE"] = "C.UTF-8" if sys.platform.startswith("linux") else "en_US.UTF-8"
+    return env
+
+
+class Apertium:
+    """One Apertium mode (nob-nno or nno-nob), run as a pipeline of programs."""
+
+    def __init__(self, mode: str, datadir: str | os.PathLike[str] | None = None) -> None:
+        found = Path(datadir) if datadir is not None else find_datadir()
+        if found is None or _program_argv("lt-proc") is None:
+            raise UserError(_missing_apertium_message())
+        self.datadir = found
+        self.mode = mode
+        self._stages: list[list[str]] | None = None
+        self._commands: list[list[str]] | None = None
+
+    def available_modes(self) -> list[str]:
+        """Modes in <datadir>/modes (what ``apertium -l`` lists)."""
+        folder = self.datadir / "modes"
+        return sorted(p.stem for p in folder.glob("*.mode")) if folder.is_dir() else []
 
     def check_mode(self) -> None:
-        modes = self.available_modes()
-        if modes is not None and self.mode not in modes:
+        """Fail early: the mode, its data files and its programs must be there."""
+        if self.mode not in self.available_modes():
             raise UserError(_missing_mode_message(self.mode))
+        try:
+            stages = read_mode(self.datadir, self.mode)
+        except FileNotFoundError:
+            raise UserError(_missing_mode_message(self.mode)) from None
+        commands = []
+        for name, *args in stages:
+            argv = _program_argv(name)
+            if argv is None:
+                raise UserError(_missing_apertium_message())
+            commands.append([*argv, *args])
+        self._stages, self._commands = stages, commands
 
     def run(self, text: str) -> str:
-        """Translate text; problem words come back with *, # or @ marks."""
-        args = [self.binary, "-f", "txt", self.mode]
-        try:
-            proc = subprocess.run(
-                args,
-                input=text.encode("utf-8"),
-                capture_output=True,
-                check=False,
-                timeout=TIMEOUT_SECONDS,
-            )
-        except subprocess.TimeoutExpired:
-            raise UserError(
-                f"Apertium brukte mer enn {TIMEOUT_SECONDS} sekunder og ble stoppet."
-            ) from None
-        except OSError as exc:
-            raise UserError(f"Klarte ikke å starte Apertium: {exc}") from None
-        stderr = proc.stderr.decode("utf-8", errors="replace").strip()
-        if proc.returncode != 0:
-            if _MISSING_MODE.search(stderr):
-                raise UserError(_missing_mode_message(self.mode))
-            detail = stderr.splitlines()[-1] if stderr else "ingen feilmelding"
-            raise UserError(
-                f"Apertium feilet med kode {proc.returncode}: {detail}"
-            )
-        return proc.stdout.decode("utf-8", errors="replace")
+        """Translate text; problem words come back with *, # and @ marks."""
+        if self._commands is None:
+            self.check_mode()
+        data = text.encode("utf-8")
+        out, failures = _run_pipeline(self._commands, data, self.datadir)
+        if failures:
+            code, stderr = failures[-1]
+            detail = stderr.strip().splitlines()[-1] if stderr.strip() else "ingen feilmelding"
+            raise UserError(f"Apertium feilet med kode {code}: {detail}")
+        if os.name == "nt" and b"\r" not in data:
+            # MinGW programs may write \r\n for \n on Windows (stdout in text mode).
+            out = out.replace(b"\r\n", b"\n")
+        return out.decode("utf-8", errors="replace")
+
+
+def _run_pipeline(commands: list[list[str]], data: bytes, cwd: Path) -> tuple[bytes, list[tuple[int, str]]]:
+    """Run the commands connected by pipes. Returns (stdout, [(code, stderr)] of failed stages).
+
+    stderr of each stage goes to its own temporary file, so no pipe can fill
+    up and block. On timeout every stage is stopped.
+    """
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
+    env = _child_env()
+    procs: list[subprocess.Popen] = []
+    errs = []
+    timed_out = threading.Event()
+
+    def stop_all() -> None:
+        timed_out.set()
+        for p in procs:
+            if p.poll() is None:
+                p.kill()
+
+    try:
+        for i, argv in enumerate(commands):
+            err = tempfile.TemporaryFile()
+            errs.append(err)
+            try:
+                proc = subprocess.Popen(
+                    argv,
+                    stdin=subprocess.PIPE if i == 0 else procs[-1].stdout,
+                    stdout=subprocess.PIPE,
+                    stderr=err,
+                    cwd=str(cwd),
+                    env=env,
+                    creationflags=flags,
+                )
+            except OSError as exc:
+                raise UserError(f"Klarte ikke å starte Apertium: {exc.strerror or exc}") from None
+            if i > 0:
+                procs[-1].stdout.close()  # only the next stage holds the read end
+            procs.append(proc)
+
+        def feed() -> None:
+            try:
+                procs[0].stdin.write(data)
+            except (BrokenPipeError, OSError):
+                pass
+            finally:
+                try:
+                    procs[0].stdin.close()
+                except OSError:
+                    pass
+
+        timer = threading.Timer(TIMEOUT_SECONDS, stop_all)
+        timer.daemon = True
+        timer.start()
+        writer = threading.Thread(target=feed, daemon=True)
+        writer.start()
+        out = procs[-1].stdout.read()
+        procs[-1].stdout.close()
+        writer.join()
+        codes = [p.wait() for p in procs]
+        timer.cancel()
+        if timed_out.is_set():
+            raise UserError(f"Apertium brukte mer enn {TIMEOUT_SECONDS} sekunder og ble stoppet.")
+        failures = []
+        for code, err in zip(codes, errs):
+            if code != 0:
+                err.seek(0)
+                failures.append((code, err.read().decode("utf-8", errors="replace")))
+        return out, failures
+    finally:
+        for p in procs:
+            if p.poll() is None:
+                p.kill()
+                p.wait()
+        for err in errs:
+            err.close()
 
 
 # --------------------------------------------------------------------------
@@ -543,10 +746,10 @@ def validate_input(path: Path) -> Path:
     return path
 
 
-def make_engine(to: str, binary: str | None = None) -> Apertium:
+def make_engine(to: str, datadir: str | os.PathLike[str] | None = None) -> Apertium:
     if to not in MODES:
         raise UserError("Retningen må være «nn» (til nynorsk) eller «nb» (til bokmål).")
-    engine = Apertium(MODES[to], binary)
+    engine = Apertium(MODES[to], datadir)
     engine.check_mode()
     return engine
 
@@ -570,7 +773,10 @@ def translate_file(
             raise UserError(f"«{src.name}» inneholder ingen tekst å oversette.")
         result = translate_text(engine, text)
         dst = safe_output_path(src, out_dir, f"-{to}{suffix}")
-        dst.write_text(result.text, encoding="utf-8")
+        # newline="": the draft keeps the line endings of the original (LF or
+        # CRLF). Text mode on Windows would turn the \r\n already in the text
+        # into \r\r\n.
+        dst.write_text(result.text, encoding="utf-8", newline="")
         marks, warnings = result.marks, result.warnings
         paragraphs = len([b for b in re.split(r"\n\s*\n", text) if b.strip()])
     return FileResult(src, dst, engine.mode, paragraphs, marks, warnings)
@@ -581,14 +787,14 @@ def translate_files(
     paths: Iterable[str | os.PathLike[str]],
     out_dir: str | os.PathLike[str],
     progress: ProgressFn | None = None,
-    binary: str | None = None,
+    datadir: str | os.PathLike[str] | None = None,
 ) -> list[FileResult]:
     paths = [Path(p) for p in paths]
     for p in paths:
         validate_input(p)  # all inputs are checked before any work starts
         if p.suffix.lower() == ".docx":
             _open_docx(p)  # a bad file is reported before Apertium is checked
-    engine = make_engine(to, binary)
+    engine = make_engine(to, datadir)
     results: list[FileResult] = []
     for n, p in enumerate(paths):
         def part(fraction: float, n: int = n) -> None:

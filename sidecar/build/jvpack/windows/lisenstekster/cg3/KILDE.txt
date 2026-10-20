@@ -1,0 +1,1 @@
+Fra https://github.com/GrammarSoft/cg3, commit 0250250fe98241d681fd8081f2b6495c52729d5b (COPYING license.icu.txt). Samme commit som i pakken.

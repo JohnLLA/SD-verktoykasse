@@ -1,10 +1,13 @@
-"""Tests for jv-nynorsk with a fake apertium (see fake_apertium.py)."""
+"""Tests for jv-nynorsk with fake Apertium programs (see fake_apertium.py)."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import shutil
+import subprocess
+import sys
+from pathlib import Path
 
 import docx
 import pytest
@@ -60,11 +63,11 @@ def test_parse_marks_leaves_no_raw_marks():
 
 def test_hash_is_not_removed_by_u_in_fake(fake_apertium, tmp_path):
     # the fake behaves like the real program: -u strips only *
-    import subprocess
+    fake = Path(__file__).with_name("fake_apertium.py")
     out = subprocess.run(
-        [str(fake_apertium.bin_dir / "apertium"), "-u", "-f", "txt", "nob-nno"],
+        [sys.executable, str(fake), "lt-proc", "-u", "-b", "apertium-nno-nob/nob-nno.autobil.bin"],
         input="svibrent xqztvik pådrage friluftsliv".encode(),
-        capture_output=True, check=False,
+        capture_output=True, check=False, cwd=fake_apertium.datadir,
     ).stdout.decode()
     assert out == "#svibrent xqztvik på#drage @friluftsliv"
 
@@ -213,9 +216,8 @@ def test_apertium_called_with_argument_lists(fake_apertium, testdata, tmp_path, 
     )
     assert code == 0, err
     calls = fake_apertium.calls()
-    assert ["-l"] in calls
-    assert ["-f", "txt", "nob-nno"] in calls
-    assert all("-u" not in c for c in calls)
+    # $1 in the mode file is -g (keep the marks), $2 is dropped, the data path is relative
+    assert calls and all(c == ["-g", "-b", "apertium-nno-nob/nob-nno.autobil.bin"] for c in calls)
 
 
 def test_direction_nb_uses_nno_nob(fake_apertium, testdata, tmp_path, capsys):
@@ -228,7 +230,7 @@ def test_direction_nb_uses_nno_nob(fake_apertium, testdata, tmp_path, capsys):
     assert "fra neste måned" in text
     assert report["outputs"][0]["direction"] == "nno-nob"
     assert "bokmål" in report["summary"]
-    assert ["-f", "txt", "nno-nob"] in fake_apertium.calls()
+    assert ["-g", "-b", "apertium-nno-nob/nno-nob.autobil.bin"] in fake_apertium.calls()
 
 
 def test_markdown_asterisks_are_not_unknown_words(fake_apertium, tmp_path, capsys):
@@ -408,14 +410,14 @@ def test_missing_apertium(no_apertium, testdata, tmp_path, capsys):
 
 
 def test_missing_language_pair_from_list(fake_apertium, testdata, tmp_path, capsys, monkeypatch):
-    monkeypatch.setenv("FAKE_APERTIUM_MODES", "nob-nno")
+    fake_apertium.remove_mode("nno-nob")
     code, _, err = run(capsys, testdata / "avsnitt_nn.txt", "--to", "nb", "--out", tmp_path)
     _assert_user_error(code, err, "«nno-nob» finnes ikke", "OPPSETT.md")
 
 
-def test_missing_language_pair_without_list(fake_apertium, testdata, tmp_path, capsys, monkeypatch):
-    monkeypatch.setenv("FAKE_APERTIUM_NO_LIST", "1")
-    monkeypatch.setenv("FAKE_APERTIUM_MODES", "eng-spa")
+def test_missing_language_data(fake_apertium, testdata, tmp_path, capsys, monkeypatch):
+    # the mode file is there, but a data file it names is not
+    (fake_apertium.datadir / "apertium-nno-nob" / "nob-nno.autobil.bin").unlink()
     code, _, err = run(capsys, testdata / "avsnitt_nb.txt", "--to", "nn", "--out", tmp_path)
     _assert_user_error(code, err, "«nob-nno» finnes ikke")
 
@@ -516,3 +518,96 @@ def test_help_is_norwegian(capsys):
         cli._build_parser().parse_args(["--help"])
     out = capsys.readouterr().out
     assert "målform" in out and "Originalfilen endres aldri" in out
+
+
+# --------------------------------------------------------------------------
+# The mode pipeline (core.read_mode): only Apertium programs, only data paths
+# --------------------------------------------------------------------------
+
+
+def _mode(tmp_path, text, files=("apertium-nno-nob/a.automorf.bin", "apertium-nno-nob/b.autogen.bin", "apertium-nno-nob/c.bin")):
+    datadir = tmp_path / "data"
+    (datadir / "modes").mkdir(parents=True, exist_ok=True)
+    for rel in files:
+        (datadir / rel).parent.mkdir(parents=True, exist_ok=True)
+        (datadir / rel).write_bytes(b"")
+    (datadir / "modes" / "x-y.mode").write_text(text, encoding="utf-8")
+    return datadir
+
+
+def test_read_mode_like_apertium_script(tmp_path):
+    datadir = _mode(tmp_path, (
+        "lt-proc -w -e '{d}/apertium-nno-nob/a.automorf.bin' | apertium-tagger -g $2 'apertium-nno-nob/c.bin' "
+        "| lt-proc $1 -b '{d}/apertium-nno-nob/b.autogen.bin' | lt-merge --unmerge\n"
+    ).format(d=tmp_path / "data"))
+    assert core.read_mode(datadir, "x-y") == [
+        ["apertium-destxt"],
+        ["lt-proc", "-w", "-e", "apertium-nno-nob/a.automorf.bin"],
+        ["apertium-wblank-attach"],
+        ["apertium-tagger", "-g", "apertium-nno-nob/c.bin"],
+        ["apertium-wblank-detach"],
+        ["lt-proc", "-g", "-b", "apertium-nno-nob/b.autogen.bin"],
+        ["lt-merge", "--unmerge"],
+        ["apertium-retxt"],
+    ]
+
+
+@pytest.mark.parametrize("text", [
+    "bash -c 'echo hei'",
+    "lt-proc 'apertium-nno-nob/c.bin' | sh",
+    "lt-proc '/etc/passwd'",
+    "lt-proc '../data/apertium-nno-nob/c.bin'",
+    "lt-proc 'apertium-nno-nob/../apertium-nno-nob/c.bin'",
+    "lt-proc $3 'apertium-nno-nob/c.bin'",
+    "lt-proc 'apertium-nno-nob/c.bin' |  | lt-merge",
+    "/usr/bin/lt-proc 'apertium-nno-nob/c.bin'",
+])
+def test_read_mode_refuses_anything_else(tmp_path, text):
+    datadir = _mode(tmp_path, text)
+    with pytest.raises(core.PipelineError):
+        core.read_mode(datadir, "x-y")
+
+
+def test_read_mode_missing_data_file(tmp_path):
+    datadir = _mode(tmp_path, "lt-proc 'apertium-nno-nob/finnes-ikke.bin'")
+    with pytest.raises(FileNotFoundError):
+        core.read_mode(datadir, "x-y")
+
+
+def test_pipeline_in_folder_with_spaces_and_norwegian_letters(fake_apertium, tmp_path, capsys, monkeypatch):
+    # the programs run in the data folder and only see relative paths
+    moved = tmp_path / "Bjørn Ærlig Åsen" / "data"
+    shutil.copytree(fake_apertium.datadir, moved)
+    monkeypatch.setenv("APERTIUM_DATADIR", str(moved))
+    src = tmp_path / "Bjørn Ærlig Åsen" / "tekst.txt"
+    src.write_text("Skole og barn.\n", encoding="utf-8")
+    code, report, err = run(capsys, src, "--to", "nn", "--out", tmp_path / "ut")
+    assert code == 0, err
+    assert (tmp_path / "ut" / "tekst-nn.txt").read_text("utf-8") == "Skule og born.\n"
+
+
+def test_pipeline_stage_crash_in_the_middle_is_reported(fake_apertium, tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_APERTIUM_FAIL", "1")
+    engine = core.Apertium("nob-nno")
+    with pytest.raises(core.UserError, match="kode 3"):
+        engine.run("Skole og barn.")
+
+
+def test_pipeline_large_text_does_not_block(fake_apertium):
+    # more than any pipe buffer, in and out
+    engine = core.Apertium("nob-nno")
+    text = "Skole og barn fra neste måned.\n" * 20000
+    out = engine.run(text)
+    assert out.count("\n") == 20000 - 1
+    assert out.startswith("Skule og born frå neste månad.")
+
+
+def test_crlf_original_keeps_crlf(fake_apertium, tmp_path, capsys):
+    # a .txt saved on Windows: the draft has the same line endings, never \r\r\n
+    src = tmp_path / "windows.txt"
+    src.write_bytes("Skole og barn.\r\n\r\nFra neste måned.\r\n".encode("utf-8"))
+    code, report, err = run(capsys, src, "--to", "nn", "--out", tmp_path / "ut")
+    assert code == 0, err
+    out = (tmp_path / "ut" / "windows-nn.txt").read_bytes()
+    assert out == "Skule og born.\r\n\r\nFrå neste månad.\r\n".encode("utf-8")
+    assert report["outputs"][0]["paragraphs"] == 2

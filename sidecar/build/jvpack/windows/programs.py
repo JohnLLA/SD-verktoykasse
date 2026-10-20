@@ -8,10 +8,12 @@ the program's own folder first).
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
+import tarfile
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from ..mac.macho import BuildError
 from . import components, fetch, licenses, pe
@@ -128,6 +130,72 @@ def _poppler(root: Path, rel: str, added: Added) -> None:
     added.sources.append(src)
 
 
+# Where the Apertium modes and data are inside the Mac package (apertium-data).
+MAC_APERTIUM_DIR = "jv-nynorsk.app/Contents/Resources/apertium/"
+_MAC_MODE_PATH = re.compile(r'"\$\{APERTIUM_DATADIR\}/([A-Za-z0-9._+/-]+)"')
+
+
+def _apertium_data(dest: Path) -> list[str]:
+    """Modes and data files from the Mac package nynorsk 0.1.0, byte for byte.
+
+    Its mode files point at "${APERTIUM_DATADIR}/<file>" (for the bash script);
+    here they get the relative form the tool reads ('<file>'), exactly what the
+    Mac build writes from 0.2.0 on. Returns the files written (relative).
+    """
+    archive = fetch.download(SOURCES["apertium-data"])
+    written: list[str] = []
+    dest.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(archive, "r:gz") as tar:
+        for m in tar.getmembers():
+            name = m.name.removeprefix("./")
+            if not name.startswith(MAC_APERTIUM_DIR) or m.isdir():
+                continue
+            rel = name[len(MAC_APERTIUM_DIR):]
+            parts = PurePosixPath(rel).parts
+            if not m.isfile() or ".." in parts or not rel or rel.startswith("/"):
+                raise BuildError(f"uventet oppføring i Mac-pakken: {name}")
+            if parts[0] == "bin":
+                continue  # the apertium bash script of 0.1.0: not used any more
+            data = tar.extractfile(m).read()
+            if parts[0] == "modes":
+                text = _MAC_MODE_PATH.sub(lambda mm: f"'{mm.group(1)}'", data.decode("utf-8"))
+                if "${" in text or "\"" in text:
+                    raise BuildError(f"{rel}: stier som ikke kunne gjøres relative")
+                data = text.encode("utf-8")
+            target = dest / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+            written.append(rel)
+    if not any(w.startswith("modes/") for w in written):
+        raise BuildError("fant ingen moduser i Mac-pakken")
+    return written
+
+
+def _apertium(root: Path, rel: str, data_rel: str, added: Added) -> None:
+    from jv_nynorsk.core import MODES, PIPELINE_PROGRAMS, read_mode
+
+    src = SOURCES["apertium"]
+    unpacked = fetch.single_child(fetch.unpack(src))
+    licenses.UNPACKED[src.key] = unpacked
+    bindir = unpacked / "bin"
+    exes = [bindir / f"{name}.exe" for name in sorted(PIPELINE_PROGRAMS)]
+    missing = [e.name for e in exes if not e.is_file()]
+    if missing:
+        raise BuildError(f"Apertium-bygget mangler {', '.join(missing)}")
+    _copy_with_dlls(src.key, exes, bindir, root / rel, added)
+    datadir = root / data_rel
+    _apertium_data(datadir)
+    for mode in MODES.values():
+        for name, *_args in read_mode(datadir, mode):  # same rules as the tool; data files must exist
+            if name not in PIPELINE_PROGRAMS:
+                raise BuildError(f"{mode}: {name} er ikke med")
+    added.sources += [src, SOURCES["apertium-data"]]
+    added.path.append(rel)
+    added.env["APERTIUM_DATADIR"] = data_rel
+    added.env["JV_LT_PROC"] = f"{rel}/lt-proc.exe"
+    added.env["JV_CG_PROC"] = f"{rel}/cg-proc.exe"
+
+
 def add(tool_id: str, stage: Path, app_dir: str) -> Added:
     """Put the programs `tool_id` needs into stage/<app_dir>/programmer/."""
     added = Added()
@@ -141,6 +209,8 @@ def add(tool_id: str, stage: Path, app_dir: str) -> Added:
         _tesseract(stage, f"{p}/tesseract", f"{app_dir}/data/tessdata", added)
     if "poppler" in keys:
         _poppler(stage, f"{p}/poppler", added)
+    if "apertium" in keys:
+        _apertium(stage, f"{p}/apertium", f"{app_dir}/data/apertium", added)
     if added.unknown:
         raise BuildError(
             "Disse DLL-ene har ukjent lisens og er ikke lagt med. Sjekk lisensen og legg dem inn i "

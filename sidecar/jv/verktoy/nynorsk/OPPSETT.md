@@ -2,7 +2,7 @@
 
 `jv nynorsk` trenger to ting som **ikke** følger med Python-pakken:
 
-1. Programmet **`apertium`** (med `lttoolbox`, `apertium-lex-tools`, `apertium-separable` og `cg3`, som språkparet bruker).
+1. Programmene fra **`apertium`**, `lttoolbox`, `apertium-lex-tools`, `apertium-separable` og `cg3`, som språkparet bruker. Verktøyet bruker ikke selve skriptet `apertium` (fra 0.2.0), men skriptet er greit å ha for å prøve språkparet for hånd.
 2. Språkparet **`apertium-nno-nob`**, som gir de to modusene verktøyet bruker:
    - `nob-nno` (bokmål → nynorsk, `--to nn`)
    - `nno-nob` (nynorsk → bokmål, `--to nb`)
@@ -51,7 +51,7 @@ Det som betyr noe:
 - ICU finnes med `ICU_ROOT` og `CMAKE_PREFIX_PATH=/opt/homebrew/opt/icu4c@78`.
 - GNU-`libtool` (`libexec/gnubin`) står først i `PATH`.
 - Endre `icu4c@78` hvis Homebrew har en annen versjon.
-- Verktøyet trenger bare at `~/.local/bin` står i `PATH` når det kjører: `PATH=$HOME/.local/bin:$PATH uv run jv nynorsk …`
+- Verktøyet trenger bare at `~/.local/bin` står i `PATH` når det kjører: `PATH=$HOME/.local/bin:$PATH uv run jv nynorsk …`. Datamappa finner det selv (`~/.local/share/apertium`, ved siden av programmene), eller i `APERTIUM_DATADIR`.
 
 ## Steg 4: Bygg fra kilde
 
@@ -105,7 +105,7 @@ PATH=$HOME/.local/bin:$PATH uv run --all-packages pytest verktoy/nynorsk -rs
 
 ## Slik tolker verktøyet utdata fra Apertium
 
-Verktøyet kaller `apertium -f txt <modus>` med teksten på stdin i UTF-8, og leser merkene Apertium selv setter:
+Verktøyet gjør det samme som `apertium -f txt <modus>`, med teksten på stdin i UTF-8: det leser modusfila og kjører `apertium-destxt | <modus> | apertium-retxt` selv, uten bash og gawk. Det leser merkene Apertium selv setter:
 
 - `*ord`: ukjent ord (type `unknown`). Merk at et ord som «fjordglimring» **ikke** gir `*`: Apertium deler det opp som et sammensatt ord og oversetter delene.
 - `#ord` eller `på#drage`: grunnformen er kjent, men bøyningen kan ikke lages (type `generation`). Utdata viser da grunnformen, ikke den bøyde formen. `#` står vanligvis foran ordet, men kan også stå inne i det.

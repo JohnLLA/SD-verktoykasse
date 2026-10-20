@@ -248,3 +248,216 @@ Funn:
   lokale filer, og testene ble kjørt med sperret nett.
 - Pakkene er usignert. Appen sjekker ikke Authenticode, fordi spesifikasjonen ikke sier hvordan.
 - Hva Defender gjør med pakkene, er ikke prøvd. Det krever en ekte PC (sjekklisten).
+
+## nynorsk på Windows (fase 1, 20.10.2026)
+
+Gren `jv-nynorsk-windows`. Bare undersøkelse: ingenting er bygget, og Python er ikke endret.
+Prøvene er kjørt på John Inges Mac med filer lastet ned til en midlertidig mappe utenfor repoet.
+
+### Kort
+
+- **Det finnes ferdige, vedlikeholdte Windows-bygg (x64)** av alle fem programmene, laget av Apertium
+  selv (Tino Didriksen, som også lager Apertiums Debian- og Mac-pakker). De er bygget med MinGW-w64 og
+  oppdateres hver natt. **De har nøyaktig de samme commitene som Mac-pakken.**
+- **Ulempen:** nattbyggene har ingen fast URL. Hver fil blir liggende bare til neste bygg, og gamle
+  versjoner slettes. Arkivene må derfor speiles til en fast release (se beslutninger).
+- **Verken MSYS2 eller conda-forge** har pakker for apertium, lttoolbox eller cg3 (søkt 20.10.2026).
+- **De kompilerte språkdataene er ikke knyttet til plattformen.** Apertiums egen Debian-pakke for
+  `apertium-nno-nob` er `Architecture: all`, og Apertiums Windows-side viser brukerne til de samme
+  Debian-pakkene. Prøve på Mac: Linux-bygde data kjørt med Mac-bygde programmer virker. Windows må
+  bekreftes i CI.
+- **Den foreslåtte arkitekturen virker.** Hvis Python leser modusfila og kobler programmene sammen med
+  `subprocess` uten skall, blir utdataene **byte for byte like** dem fra `apertium -f txt` på Mac. Det
+  er prøvd i begge retninger på fem tekster, med 65 B til 18,7 kB tekst. Da trengs verken bash, gawk
+  eller `apertium`-skriptet, heller ikke på Mac.
+- Cygwin og de gamle SourceForge-installasjonsfilene er vurdert og **forkastet**. De krever installasjon
+  hos brukeren, får problemer med stier som har æøå, og er ikke vedlikeholdt.
+
+### Ferdige bygg: Apertiums nattbygg for Windows
+
+Kilde: `https://apertium.projectjj.com/win32/nightly/`. Mappenavnet sier `win32`, men filene er x86_64.
+
+| Del | Fil i nattbygget (14.10.2026) | Commit (Windows = Mac) | SHA-256 | Lisens |
+|---|---|---|---|---|
+| lttoolbox 3.8.4 | `lttoolbox-3.8.4+g660~ed9b682b.x86_64.zip` (18,0 MB) | `ed9b682b` = `ed9b682b9e3e…` | `e3d8e4c74a928ed8a37c7db83cb26f0bb5154ab3f46d3c9b06b8673f3fa0b915` | GPL-2.0-or-later |
+| apertium 3.9.12 | `apertium-3.9.12+g944~d8dfb942.x86_64.zip` (21,5 MB) | `d8dfb942` = `d8dfb942e31d…` | `6d7b82987bde12837b1c08ebc730ef34c4ef69ef2348e810ca129a3edfa271c5` | GPL-2.0-or-later |
+| apertium-lex-tools 0.5.0 | `apertium-lex-tools-0.5.0+g551~1ccefa62.x86_64.zip` (17,9 MB) | `1ccefa62` = `1ccefa6269ad…` | `89e730e51df6a5334a67fe6d87e34497ed5b90f4400f985228fd0c25a8fd99a2` | GPL-3.0-or-later |
+| apertium-separable 0.7.1 | `apertium-separable-0.7.1+g279~18045e4d.x86_64.zip` (17,7 MB) | `18045e4d` = `18045e4da12c…` | `63dc4942493d94f7ac334d35cb05d5456301aa2ee2989f43223247395a13368d` | GPL-3.0-or-later |
+| cg3 1.7.0 | `cg3-1.7.0+g2354~0250250f.x86_64.zip` (17,4 MB) | `0250250f` = `0250250fe982…` | `349586731701ceeeeabfbf28e3a34c0679d9d8caac7e4e3427dd746d21ecf357` | GPL-3.0-or-later |
+| alle fem samlet | `apertium-all-dev.x86_64.zip` (44,3 MB, uten versjon i navnet) | samme natt | `c8236ac537be7ba35849cf9ad4222a399646076f9cfa75bf86806e3a614de8a8` | som over |
+
+Funn:
+
+- Programmene er `PE32+ console x86-64` fra MinGW-w64 (`libstdc++-6.dll`, `libgcc_s_seh-1.dll`,
+  `libwinpthread-1.dll`). De trenger ikke MSYS2, Cygwin eller bash, og de er ikke signert.
+- Hvert komponentarkiv har sine egne kopier av ICU, libstdc++ og libxml2, og byggene er ikke
+  reproduserbare (samme DLL har forskjellig SHA-256 i hvert arkiv). Vi bør derfor bruke **ett** sett:
+  enten `apertium-all-dev` (alt bygget sammen) eller programmene fra hvert komponentarkiv med de felles
+  DLL-ene fra ett av dem. Jeg anbefaler `apertium-all-dev`, og at versjonen kontrolleres i CI med
+  `--version` på hvert program.
+- Pakken trenger 15 programmer (`apertium-destxt`, `apertium-retxt`, `apertium-wblank-attach`,
+  `apertium-wblank-detach`, `lt-proc`, `lt-merge`, `cg-proc`, `apertium-tagger`, `lsx-proc`,
+  `apertium-pretransfer`, `lrx-proc`, `apertium-transfer`, `apertium-interchunk`, `apertium-postchunk`,
+  og `apertium-wblank-mode` hvis vi ikke gjør den jobben i Python). Med `jvpack/windows/pe.py` får de
+  13 DLL-er: ICU 78 (`icudt78` er 33 MB), `libcg3`, `liblttoolbox`, `libstdc++`, `libgcc_s_seh`,
+  `libwinpthread`, `libiconv`, `libxml2`, `libsqlite3` og `zlib1`. Det blir **48,5 MB** utpakket. Alle
+  DLL-ene unntatt `liblttoolbox` og `libcg3` har allerede lisens og lisenstekst i
+  `jvpack/windows/components.py`. For de to nye finnes lisenstekstene i kildene, og de står allerede i
+  Mac-pakken.
+- **Ingen ufrie deler.** Microsofts Visual C++-kjøretid trengs ikke for Apertium, fordi MinGW bruker
+  Windows' egen C-kjøretid.
+- Hvor lenge en fil ligger i nattbygget, er ukjent. Mappa viser bare siste bygg for hver del.
+- Det finnes ingen faste Windows-utgaver. `win32/apertium-all-dev.zip` er fra 2022 og passer ikke med
+  Mac-versjonene. GitHub-utgavene til Apertium har bare kildekode, og lttoolbox 3.8.4 og cg3 1.7.0 er
+  ikke utgitt der ennå: Mac-pakken er bygget fra `main`.
+
+### Bygge selv med MSYS2 (reserveløsning)
+
+Det går an å bygge på `windows-latest` med MSYS2 (MinGW-w64, `mingw-w64-x86_64-*`):
+
+- **Det trengs:** `cmake`, `autotools`, `libtool`, `pkgconf`, `icu`, `libxml2`, `utf8cpp`, `boost`
+  (headere for cg3) og `rapidjson` (apertium-separable). Kildene hentes som GitHub-arkiv per commit
+  (`github.com/apertium/<repo>/archive/<commit>.tar.gz`) med SHA-256.
+- **Rekkefølgen er som på Mac:** lttoolbox og cg3 bygges med cmake, apertium, lex-tools og separable
+  med autotools.
+- **Risiko:** autotools-byggene til Apertium er ikke laget for MSYS2. Apertium bygger selv for Windows
+  ved å krysskompilere fra Linux, så det kan trenges lapper. MSYS2-pakkene har heller ingen helt fast
+  URL over tid. Byggetid i CI er anslått til 20–30 minutter uten hurtiglager.
+- **Fordel:** hele kjeden går fra kildekode med commit og SHA-256, uten speiling.
+- **Anslag:** 2–3 dager mer enn vei A, og utfallet er usikkert.
+
+### Språkdataene
+
+- Pakken trenger 40 datafiler fra `apertium-nno-nob` (.bin, .rlx.bin, .prob, .t1x–.t3x) og de to
+  modusfilene. Det er omtrent 28 MB, som i Mac-pakken (`Resources/apertium`).
+- **Prøve 1:** Debian-pakken `apertium-nno-nob 1.6.0+g9188~af921d87` (bygget på Linux, samme commit
+  som Mac) ble kjørt med Mac-programmene. Den gir samme oversettelse som Mac-dataene på 9 av 10
+  prøver. Den siste prøven skiller seg i noen få ord («ms» → «ss» i nno-nob). Det er forskjell i
+  ordboka, ikke i filformatet: 17 av 43 datafiler er ulike byte for byte, så Debian-bygget brukte andre
+  kilder for de enspråklige pakkene. **Konklusjon:** filformatet kan flyttes, men innholdet må komme fra
+  samme bygg.
+- **Anbefaling:** Windows-pakken bruker **nøyaktig de samme datafilene som Mac-pakken av samme
+  versjon**. Byggeskriptet kan hente dem fra Mac-arkivet, som allerede har en fast URL og SHA-256 i
+  katalogen. Da gir begge plattformene samme oversettelse.
+- **Filene leses binært** (`fopen(…, "rb")` i lttoolbox), så linjeskift på Windows ødelegger dem ikke.
+  Programmene åpner filer med smale tegn (ANSI-tegntabell), så en sti med tegn utenfor tabellen kan
+  feile. **Løsning:** Python starter programmene med arbeidsmappe lik datamappa i pakken og gir dem
+  bare relative stier med ASCII-tegn (`apertium-nno-nob/nob-nno.automorf.bin`). Da betyr det ikke noe
+  om brukernavnet eller appdatamappa har æøå. Teksten går alltid på stdin og aldri som argument.
+
+### Arkitekturen: Python kobler sammen programmene uten skall
+
+`apertium -f txt nob-nno` gjør dette (lest i skriptet, Apertium 3.9.12):
+
+```
+apertium-destxt  |  <modus, gjort om av apertium-wblank-mode>  |  apertium-retxt
+```
+
+- `$1` i modusfila blir `-g`, fordi `-f txt` uten `-u` gir merkene `*`, `#` og `@`.
+- `$2` blir tom, fordi `-a` ikke brukes.
+- `apertium-wblank-mode` legger `apertium-wblank-attach` etter steget som bruker `automorf.bin`, og
+  `apertium-wblank-detach` foran steget som bruker `autogen.bin`. Regelen er på omtrent ti linjer C++.
+- gawk brukes bare til `AP_SETVAR`, som er tom for oss, og da sender den teksten uendret videre.
+  `apply_invert_setvars` trengs heller ikke.
+
+**Prototype** (utenfor repoet, ikke i verktøyet):
+
+- Python leser utdataene fra `apertium-wblank-mode <modus>` og deler dem ved `|` og med `shlex`.
+- Den bytter ut `$1`/`$2` og starter 25 (`nob-nno`) eller 15 (`nno-nob`) prosesser med `Popen`, koblet
+  med rør og uten skall.
+- Den skriver stdin fra en egen tråd.
+
+Resultat mot `apertium -f txt` på Mac: **likt byte for byte** for `testdata/nynorsk/avsnitt_nb.txt` og
+`avsnitt_nn.txt`, for to korte prøver med `xqztvik`/`svibrent`/tomme linjer og for fire lengre
+markdown-tekster (6–19 kB). Tiden var den samme som før (2–5 s for 6–19 kB, mest oppstart av
+cg-proc og lt-proc).
+
+Forslag til løsning i fase 2 (må gjennom kontraktvokter):
+
+- **Modusfilen:** `Apertium.run` leser `<datamappe>/modes/<modus>.mode`, legger på wblank-regelen og
+  deler den i steg.
+- **Kontroll av stegene:** hvert programnavn må stå på en fast liste over de 15 programmene. Hvert
+  filargument må være en relativ sti inne i datamappa, uten `..`. Ellers stopper verktøyet med en
+  intern feil. Modusfila kan dermed ikke starte noe annet enn Apertium-programmene.
+- **Datamappen og programmene:** de finnes med `JV_APERTIUM_DATADIR` og `JV_APERTIUM_BIN`, som
+  `jv-package.json` setter. Utviklere uten pakke bruker `~/.local` som i dag.
+- **Feil og stderr:** stderr fra alle stegene samles. Er en kode ulik 0, brukes de samme norske
+  feilmeldingene som før. Advarselen om 500 kohorter fra cg-proc er ikke en feil, som før.
+- **Moduser:** `apertium -l` erstattes av en liste over filene i `modes/`.
+- **Linjeskift på Windows:** lttoolbox og cg3 setter ikke stdin og stdout i binærmodus. MinGW-programmer
+  kan derfor gjøre `\n` om til `\r\n` på Windows. Mellom stegene oppheves det, men det endelige
+  resultatet kan få `\r\n`. Det må måles i CI. Gjelder det, gjør Python `\r\n` om til `\n` i utdataene
+  på Windows. På Mac skjer ingenting.
+- **Avbryt:** `jv_cancel` dreper allerede hele prosesstreet (`taskkill /T` på Windows, prosessgruppe på
+  Mac). Rust må ikke endres.
+- **Tester:** `fake_apertium.py` brukes i dag som programmet `apertium` i `PATH`. Den må gjøres om til
+  et falskt steg i en falsk modusfil. Selve sjekkene i testene skal ikke endres. Integrasjonstestene
+  kjøres mot den ekte pakken på begge plattformene.
+- **Mac-pakken** får samme kode og mister `apertium`-skriptet, gawk og bash-avhengigheten. Prototypen
+  viser samme resultat byte for byte. Modusfilene får relative stier i stedet for `${APERTIUM_DATADIR}`.
+  Mac-pakken må bygges, signeres og notariseres på nytt, og den får ny versjon sammen med Windows-pakken.
+
+**Kontroll på tvers av plattformene i CI (fase 2):** de samme tekstene oversettes på Windows og på
+Mac, og resultatene skal være like byte for byte, eventuelt etter at `\r\n` er gjort om. Det viser at
+dataene og programmene virker likt.
+
+### Anslag
+
+| Del | Vei A (nattbygg, speilet) | Vei B (MSYS2 fra kilde) |
+|---|---|---|
+| Python: rørkobling, kontroll av steg, tester, kontraktvokter | 1 dag | 1 dag |
+| Mac-pakken uten skript og gawk, nytt bygg og notarisering | ½ dag | ½ dag |
+| Windows-bygget: kilder, programgruppe, data fra Mac-pakken, lisenser | 1 dag | 1 dag |
+| Bygge Apertium selv | – | 2–3 dager (usikkert) |
+| CI: Python-tester mot pakken, sammenligning med Mac, `full_chain` | ½–1 dag | ½–1 dag |
+| **Til sammen** | **3–3½ dager** | **5–6½ dager** |
+
+Størrelse på Windows-pakken: Python-delen omtrent som `compare` (43 MB arkiv), pluss Apertium-programmene og
+DLL-ene (48,5 MB utpakket, med ICU-dataene som største del) og språkdataene (28 MB). Anslag:
+**65–80 MB arkiv og 160–180 MB utpakket.** Mac-pakken er 47 MB.
+
+### Beslutninger for John Inge (nynorsk på Windows)
+
+1. **Vei:** A, Apertiums egne nattbygg for Windows, med samme commiter som Mac (anbefales), eller B,
+   bygg fra kilde med MSYS2 i CI.
+2. **Fast URL for nattbyggene (vei A):** du speiler arkivet eller arkivene (og kildearkivene for de
+   samme commitene, for GPL) som vedlegg i en fast release, for eksempel taggen `kilder-apertium-windows`
+   i `sd-verktoy-releases` (tidligere `lla-verktoykasse-releases`). Byggeskriptet henter dem bare derfra og sjekker SHA-256. Agentene
+   laster ikke opp (regel 11). Kildene i `binaries.json` er da den opprinnelige URL-en og speilet.
+3. **Hvilket arkiv:** `apertium-all-dev` (ett sammenhengende sett, 44 MB) eller de fem
+   komponentarkivene (versjon i filnavnet, men fem ulike kopier av ICU og libstdc++). Jeg anbefaler
+   `apertium-all-dev`.
+4. **Arkitekturen:** Python kobler sammen programmene selv (anbefales). Det endrer verktøylogikken i
+   `jv_nynorsk` og testoppsettet, og det må gjennom kontraktvokter.
+5. **Ny versjon for nynorsk på begge plattformene** (for eksempel 0.2.0). Mac-pakken bygges på nytt
+   uten bash-skriptet og gawk.
+6. **Språkdata:** Windows-pakken bruker datafilene fra Mac-pakken av samme versjon (anbefales), eller
+   dataene kompileres i CI på Linux fra de samme commitene.
+
+### Avgjort av John Inge 20.10.2026, og fase 2
+
+John Inge bestemte dette:
+- Vi bruker vei A med `apertium-all-dev`, speilet i taggen `kilder-apertium-windows` i `JohnLLA/sd-verktoy-releases`, sammen med kildearkivene.
+- Python kobler programmene sammen selv.
+- nynorsk får versjon 0.2.0 på begge plattformene.
+- Begge plattformene bruker språkdataene fra Mac-pakken 0.1.0.
+
+Dette er gjort i fase 2:
+
+- **`jv_nynorsk`** (`core.py`) leser modusfila og kjører `apertium-destxt | <modus> | apertium-retxt` med `subprocess`, uten skall.
+  - `$1` blir `-g`, og `$2` faller bort.
+  - wblank-regelen er lagt inn.
+  - Det er en fast liste med 14 programmer, og stiene er relative i datamappa.
+  - stderr fra hvert steg går til en egen fil. Det er tidsgrense, og `CREATE_NO_WINDOW` brukes på Windows.
+  - Linjeskift gjøres om fra `\r\n` til `\n` på Windows hvis inndataene ikke har `\r`.
+- **Testene:**
+  - Den falske `apertium` er erstattet med falske programmer og en falsk modusfil.
+  - Det er lagt til nye tester for reglene i modusfila, mapper med æøå og mellomrom, krasj midt i kjeden og store tekster.
+  - Det er lagt til fasiter i `sidecar/jv/testdata/nynorsk/referanse/`, laget med `apertium -f txt` (bash-skriptet) på Mac. Integrasjonstestene krever samme bytes på Mac og Windows.
+- **Mac-pakken 0.2.0:**
+  - Den har ikke lenger bash-skriptet, gawk, gmp, mpfr eller readline, og har 14 programmer i `Helpers`.
+  - De 40 datafilene er identiske med 0.1.0.
+  - Oversettelsen fra 0.1.0- og 0.2.0-pakken er byte for byte lik for 18 kjøringer: 9 filer (txt, md og docx, 0,4–36 kB) i begge retninger.
+- **Windows-pakken:**
+  - `jvpack/windows/programs.py` kopierer de 14 programmene og DLL-ene de laster fra speilet.
+  - Modusene og datafilene kommer fra Mac-pakken 0.1.0. Modusene får relative stier og blir da identiske med Mac 0.2.0.

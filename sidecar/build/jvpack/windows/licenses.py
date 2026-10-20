@@ -19,7 +19,8 @@ INTRO = [
     "Programmene for Windows er offisielle eller kjente bygg, lastet ned med fast",
     "adresse og kontrollert mot SHA-256 (sidecar/build/binaries.json). De er kopiert",
     "uendret; bare filene programmet trenger er med. exiftool(-k).exe er gitt nytt",
-    "navn til exiftool.exe, slik ExifTool-pakken selv sier.",
+    "navn til exiftool.exe, slik ExifTool-pakken selv sier. Apertium-arkivet er et",
+    "speil av Apertiums eget nattbygg (adressen står under).",
     "",
 ]
 
@@ -101,6 +102,8 @@ SOURCE_TEXTS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "tessdata-eng": ((), ("tessdata_fast",)),
     "tessdata-osd": ((), ("tessdata_fast",)),
     "poppler": ((), ("poppler",)),
+    "apertium": ((), ("lttoolbox", "apertium", "apertium-lex-tools", "apertium-separable", "cg3")),
+    "apertium-data": ((), ("apertium-nno-nob", "apertium-nob", "apertium-nno")),
 }
 
 # Set by programs.py when a source is unpacked: key -> unpacked folder.

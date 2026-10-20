@@ -1,0 +1,1 @@
+Fra https://github.com/apertium/apertium, commit d8dfb942e31d740e938967fb18b017734b339f0d (COPYING COPYING.hunalign). Samme commit som i pakken.

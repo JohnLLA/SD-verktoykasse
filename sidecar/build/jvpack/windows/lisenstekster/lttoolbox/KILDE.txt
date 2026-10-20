@@ -1,0 +1,1 @@
+Fra https://github.com/apertium/lttoolbox, commit ed9b682b9e3e90d4207882be2caf54845619a255 (COPYING). Samme commit som i pakken.
