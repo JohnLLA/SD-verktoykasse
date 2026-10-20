@@ -41,8 +41,8 @@ jvpack lisenser                                           # THIRD_PARTY_LICENSES
   Appen stoler på den bare når den bygges med den offentlige nøkkelen i miljøet:
   `JV_CATALOG_PUBLIC_KEY=<RW…> npm run tauri build` (eller `cargo build`). Den offentlige nøkkelen
   skrives ut av `katalog nokkel lag` og `katalog nokkel --key-file <fil>`.
-- **Den ekte nøkkelen** lager John Inge selv med `minisign -G`. Den offentlige linjen settes inn i
-  `PUBLIC_KEY` i `src-tauri/src/tools/jv/catalog.rs` (plassholderen er tom; da avviser appen alle
+- **Den ekte nøkkelen** (id FD360273935858EB) har John Inge laget med `minisign -G`. Den offentlige linjen står i
+  `PUBLIC_KEY` i `src-tauri/src/tools/jv/catalog.rs` (er den tom, avviser appen alle
   kataloger). Katalogen signeres da med `minisign -S -m tools.json` (samme format som Python-signeringen).
 
 ### Hele kjeden i Rust (alle ni)

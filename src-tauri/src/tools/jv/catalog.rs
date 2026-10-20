@@ -21,20 +21,19 @@ pub const CURRENT_TARGET: &str = TARGET_MAC;
 pub const CURRENT_TARGET: &str = TARGET_WINDOWS;
 
 // =====================================================================
-// KATALOGNØKKELEN – PLASSHOLDER. John Inge setter inn den offentlige nøkkelen.
+// KATALOGNØKKELEN – den ekte offentlige nøkkelen (minisign-id FD360273935858EB).
 //
-// 1. Lag nøkkelparet (én gang, på egen maskin):   minisign -G -p katalog.pub -s katalog.key
-// 2. Sikkerhetskopier katalog.key og passordet. Mistes nøkkelen, kan appene
-//    ikke få nye verktøy før appen er oppdatert med en ny nøkkel.
-// 3. Lim inn den andre linjen i katalog.pub (begynner med «RW…») mellom
-//    anførselstegnene i PUBLIC_KEY under, og bygg appen på nytt.
+// Den hemmelige delen (katalog.key) har John Inge, utenfor repoet. Katalogen
+// signeres med:   minisign -S -s katalog.key -m tools.json
+// Mistes nøkkelen, kan appene ikke få nye verktøy før appen er oppdatert med
+// en ny nøkkel.
 //
-// Den skal være en annen nøkkel enn oppdateringsnøkkelen i tauri.conf.json.
-// Så lenge PUBLIC_KEY er tom, avviser appen alle kataloger (CatalogKeyMissing),
-// med mindre appen er bygget med JV_CATALOG_PUBLIC_KEY=<nøkkel> (lokal beta,
-// se sidecar/build/README.md).
+// Den er en annen nøkkel enn oppdateringsnøkkelen i tauri.conf.json.
+// Er appen bygget med JV_CATALOG_PUBLIC_KEY=<nøkkel> (lokal beta, se
+// sidecar/build/README.md), brukes den i stedet. Er begge tomme, avviser appen
+// alle kataloger (CatalogKeyMissing).
 // =====================================================================
-pub const PUBLIC_KEY: &str = "";
+pub const PUBLIC_KEY: &str = "RWTrWFiTcwI2/e2iLoLVgSHGrNE3jai91+WO8Pp3J4ihtZDIXngeCFuD";
 
 /// Den offentlige nøkkelen appen stoler på: `JV_CATALOG_PUBLIC_KEY` ved bygging
 /// (lokal beta) eller [`PUBLIC_KEY`]. `None` hvis ingen er satt.

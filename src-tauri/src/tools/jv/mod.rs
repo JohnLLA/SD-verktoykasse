@@ -6,8 +6,8 @@
 //! Verktøyet er en egen Tauri-plugin (`jv`) med kommandoene i `commands`.
 //!
 //! - `catalog`: `tools.json` med minisign-signatur. Signaturen sjekkes før
-//!   noe i katalogen leses. Den offentlige nøkkelen er en plassholder som
-//!   John Inge fyller inn (se `catalog::PUBLIC_KEY`).
+//!   noe i katalogen leses. Den offentlige nøkkelen står i
+//!   `catalog::PUBLIC_KEY`.
 //! - `net`: henting av katalogen (bare https, bare vertene i release-repoet).
 //! - `archive`: trygg utpakking. Systemets `tar` (bsdtar, finnes på macOS og
 //!   Windows 10+) gjør arkivet om til en ukomprimert tar-strøm; all kontroll av
