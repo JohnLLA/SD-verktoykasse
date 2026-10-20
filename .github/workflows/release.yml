@@ -1,5 +1,5 @@
 # Bygger installasjonsfilene og (når John Inge ber om det) legger dem som UTKAST i
-# det offentlige releases-repoet JohnLLA/lla-verktoykasse-releases.
+# det offentlige releases-repoet JohnLLA/sd-verktoy-releases.
 #
 # Når kjører den?
 # - Tagg `v*` pushes (John Inge): bygger, signerer og laster opp et release-UTKAST.
@@ -47,7 +47,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASES_REPO: JohnLLA/lla-verktoykasse-releases
+  RELEASES_REPO: JohnLLA/sd-verktoy-releases
 
 jobs:
   # ------------------------------------------------------------------ plan

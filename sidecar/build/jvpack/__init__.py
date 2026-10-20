@@ -27,7 +27,7 @@ DIST = OUT / "dist"
 
 MANIFEST = "jv-package.json"
 MANIFEST_SCHEMA = 1
-APP_IDENTIFIER = "no.lla.verktoykasse"
+APP_IDENTIFIER = "no.samarbeidsdesken.verktoy"
 
 TARGET_MAC = "aarch64-apple-darwin"
 TARGET_WINDOWS = "x86_64-pc-windows-msvc"

@@ -142,7 +142,7 @@ Lydrett har et eget, slakkere mål fordi verbatim-modellene er omtrent fire gang
 - Verktøykassen har en offentlig nedlastingsside på **lla.no** med Mac- og Windows-knapp, systemkrav, personvernavsnitt og installasjonsveiledning. Siden er `site/lla-no/verktoy.html`; John Inge eier den og legger den ut selv.
 - LLA-logoen står øverst på siden (`site/lla-logo.png`, samme fil som i LLAs andre verktøy).
 - Siden leser siste versjon fra GitHub Releases i nettleseren, så knappene alltid peker på nyeste bygg uten at siden må endres.
-- **Installasjonsfilene ligger på GitHub Releases** i det offentlige repoet `JohnLLA/lla-verktoykasse-releases`, mens koden er privat. Den samme adressen brukes av oppdateringsfunksjonen i appen.
+- **Installasjonsfilene ligger på GitHub Releases** i det offentlige repoet `JohnLLA/sd-verktoy-releases`, mens koden er privat. Den samme adressen brukes av oppdateringsfunksjonen i appen.
 
 ### Hvem gjør hva
 

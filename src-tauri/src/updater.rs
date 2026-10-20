@@ -31,7 +31,7 @@ const SETTINGS_FILE: &str = "settings.json";
 
 /// Eneste sted en oppdateringspakke kan lastes ned fra (sti med små bokstaver).
 const ALLOWED_DOWNLOAD_HOST: &str = "github.com";
-const ALLOWED_DOWNLOAD_PATH_PREFIX: &str = "/johnlla/lla-verktoykasse-releases/releases/download/";
+const ALLOWED_DOWNLOAD_PATH_PREFIX: &str = "/johnlla/sd-verktoy-releases/releases/download/";
 
 /// Funnet, men ikke installert oppdatering.
 #[derive(Default)]
@@ -141,14 +141,14 @@ mod tests {
 
     #[test]
     fn allows_only_our_release_downloads() {
-        assert!(ok("https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/v0.2.0/SD-Verktoy_0.2.0_x64.msi"));
+        assert!(ok("https://github.com/JohnLLA/sd-verktoy-releases/releases/download/v0.2.0/SD-Verktoy_0.2.0_x64.msi"));
         assert!(!ok("https://github.com/JohnLLA/lla-verktoykasse/releases/download/v0.2.0/x.msi"));
-        assert!(!ok("https://github.com/Annen/lla-verktoykasse-releases/releases/download/v1/x.msi"));
-        assert!(!ok("http://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x.msi"));
-        assert!(!ok("https://evil.example/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x.msi"));
-        assert!(!ok("https://github.com.evil.example/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x"));
-        assert!(!ok("https://github.com@evil.example/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x"));
-        assert!(!ok("https://github.com:8443/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x"));
+        assert!(!ok("https://github.com/Annen/sd-verktoy-releases/releases/download/v1/x.msi"));
+        assert!(!ok("http://github.com/JohnLLA/sd-verktoy-releases/releases/download/v1/x.msi"));
+        assert!(!ok("https://evil.example/JohnLLA/sd-verktoy-releases/releases/download/v1/x.msi"));
+        assert!(!ok("https://github.com.evil.example/JohnLLA/sd-verktoy-releases/releases/download/v1/x"));
+        assert!(!ok("https://github.com@evil.example/JohnLLA/sd-verktoy-releases/releases/download/v1/x"));
+        assert!(!ok("https://github.com:8443/JohnLLA/sd-verktoy-releases/releases/download/v1/x"));
     }
 
     #[test]

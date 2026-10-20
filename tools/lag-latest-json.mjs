@@ -3,7 +3,7 @@
 // Bare Node sin standardbibliotek.
 //
 //   node tools/lag-latest-json.mjs --version 0.2.0 --dir release-filer \
-//        [--notes-file notater.md] [--repo JohnLLA/lla-verktoykasse-releases] [--out latest.json]
+//        [--notes-file notater.md] [--repo JohnLLA/sd-verktoy-releases] [--out latest.json]
 //
 // Filnavnene er en avtale med nedlastingssiden (site/lla-no/verktoy.html, som
 // velger fil på endelsen .dmg, og .msi eller setup.exe for Windows) og med release-arbeidsflyten:
@@ -15,7 +15,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-export const DEFAULT_REPO = "JohnLLA/lla-verktoykasse-releases";
+export const DEFAULT_REPO = "JohnLLA/sd-verktoy-releases";
 
 export function assetNames(version) {
   const base = `SD-Verktoy_${version}`;

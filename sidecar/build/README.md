@@ -192,7 +192,7 @@ Kjør på Macen, i repoet. `jvpack` er
 3. **Last opp** hver zip som et ekstra vedlegg til den eksisterende pre-releasen for verktøyet
    (samme tagg som Mac-pakken, så URL-ene i katalogen stemmer):
    ```zsh
-   REPO=JohnLLA/lla-verktoykasse-releases
+   REPO=JohnLLA/sd-verktoy-releases
    for f in $W/dist/*.zip; do
      id=$(basename $f | sed -E 's/^jv-(.+)-[0-9.]+-x86_64-pc-windows-msvc\.zip$/\1/')
      v=$(basename $f | sed -E 's/^jv-.+-([0-9.]+)-x86_64-pc-windows-msvc\.zip$/\1/')

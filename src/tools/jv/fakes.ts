@@ -27,7 +27,7 @@ export function entry(id: string, over: Partial<CatalogEntry> = {}): CatalogEntr
     name: id,
     version: "1.0.0",
     target: "aarch64-apple-darwin",
-    url: "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/x/y.tar.gz",
+    url: "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/x/y.tar.gz",
     bytes: 120_000_000,
     sha256: "0".repeat(64),
     min_app_version: "0.1.0",

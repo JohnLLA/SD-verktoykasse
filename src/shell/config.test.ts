@@ -34,7 +34,7 @@ describe("oppdatering", () => {
   const u = tauriConf.plugins.updater;
   it("henter bare latest.json fra releases-repoet", () => {
     expect(u.endpoints).toEqual([
-      "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/latest/download/latest.json",
+      "https://github.com/JohnLLA/sd-verktoy-releases/releases/latest/download/latest.json",
     ]);
   });
   it("lager oppdateringspakker", () => {
