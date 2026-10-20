@@ -7,9 +7,9 @@
 //
 // Filnavnene er en avtale med nedlastingssiden (site/lla-no/verktoy.html, som
 // velger fil på endelsen .dmg, og .msi eller setup.exe for Windows) og med release-arbeidsflyten:
-//   LLAs-verktoykasse_<versjon>_aarch64.dmg           Mac, til nedlasting
-//   LLAs-verktoykasse_<versjon>_aarch64.app.tar.gz    Mac, til updater (+ .sig)
-//   LLAs-verktoykasse_<versjon>_x64-setup.exe         Windows (NSIS, per bruker uten administrator), til nedlasting og updater (+ .sig)
+//   SD-Verktoy_<versjon>_aarch64.dmg           Mac, til nedlasting
+//   SD-Verktoy_<versjon>_aarch64.app.tar.gz    Mac, til updater (+ .sig)
+//   SD-Verktoy_<versjon>_x64-setup.exe         Windows (NSIS, per bruker uten administrator), til nedlasting og updater (+ .sig)
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -18,7 +18,7 @@ import { pathToFileURL } from "node:url";
 export const DEFAULT_REPO = "JohnLLA/lla-verktoykasse-releases";
 
 export function assetNames(version) {
-  const base = `LLAs-verktoykasse_${version}`;
+  const base = `SD-Verktoy_${version}`;
   return {
     dmg: `${base}_aarch64.dmg`,
     macUpdate: `${base}_aarch64.app.tar.gz`,

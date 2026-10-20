@@ -14,8 +14,8 @@
 #
 # Filnavnene er en avtale med nedlastingssiden (site/lla-no/verktoy.html velger
 # fil på endelsen .dmg, og .msi eller setup.exe for Windows) og med oppdateringsfilen latest.json:
-#   LLAs-verktoykasse_<versjon>_aarch64.dmg
-#   LLAs-verktoykasse_<versjon>_x64-setup.exe   (NSIS, installeres per bruker uten administrator)
+#   SD-Verktoy_<versjon>_aarch64.dmg
+#   SD-Verktoy_<versjon>_x64-setup.exe   (NSIS, installeres per bruker uten administrator)
 # (+ .app.tar.gz og .sig-filer til appens oppdatering)
 name: release
 on:
@@ -458,15 +458,15 @@ jobs:
           B=src-tauri/target/release/bundle
           mkdir -p release-filer
           if [ "$RUNNER_OS" = macOS ]; then
-            cp "$(ls $B/dmg/*.dmg | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.dmg"
+            cp "$(ls $B/dmg/*.dmg | head -n 1)" "release-filer/SD-Verktoy_${VERSION}_aarch64.dmg"
             if [ "$UPDATER_SIGN" = true ]; then
-              cp "$(ls $B/macos/*.app.tar.gz | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.app.tar.gz"
-              cp "$(ls $B/macos/*.app.tar.gz.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_aarch64.app.tar.gz.sig"
+              cp "$(ls $B/macos/*.app.tar.gz | head -n 1)" "release-filer/SD-Verktoy_${VERSION}_aarch64.app.tar.gz"
+              cp "$(ls $B/macos/*.app.tar.gz.sig | head -n 1)" "release-filer/SD-Verktoy_${VERSION}_aarch64.app.tar.gz.sig"
             fi
           else
-            cp "$(ls $B/nsis/*-setup.exe | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64-setup.exe"
+            cp "$(ls $B/nsis/*-setup.exe | head -n 1)" "release-filer/SD-Verktoy_${VERSION}_x64-setup.exe"
             if [ "$UPDATER_SIGN" = true ]; then
-              cp "$(ls $B/nsis/*-setup.exe.sig | head -n 1)" "release-filer/LLAs-verktoykasse_${VERSION}_x64-setup.exe.sig"
+              cp "$(ls $B/nsis/*-setup.exe.sig | head -n 1)" "release-filer/SD-Verktoy_${VERSION}_x64-setup.exe.sig"
             fi
           fi
           ls -l release-filer
