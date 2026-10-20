@@ -68,6 +68,8 @@ def _table_summary(n: int, t: Table, r: Result, suggested: bool) -> dict:
 
 def _format_info(wb: Workbook) -> dict:
     info: dict = {"format": wb.kind, "hidden_sheets": wb.hidden_sheets}
+    if wb.xml_parser is not None:
+        info["xml_parser"] = wb.xml_parser
     if wb.kind == "csv":
         info["encoding"] = wb.encoding
         info["delimiter"] = _DELIMITER_NAMES.get(wb.delimiter or "", wb.delimiter)

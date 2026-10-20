@@ -159,3 +159,60 @@ def test_excel_percent_is_multiplied_and_header_marked():
     s2 = _sheet([["Kommune", "Andel i %"], ["a", 0.5], ["b", 0.25]])
     s2.percent = {(1, 1), (2, 1)}
     assert build(find_tables(s2)[0]).header == ["Kommune", "Andel i %"]
+
+
+@pytest.mark.parametrize(
+    "data, ok",
+    [
+        (b'<?xml version="1.0"?><a/>', True),
+        (b"\xef\xbb\xbf  <!-- c --><?pi x?><a/>", True),
+        ('<?xml version="1.0"?><a/>'.encode("utf-16-le"), True),
+        ("﻿<a/>".encode("utf-16-be"), True),
+        (b"\x89PNG\r\n\x1a\n\x00\x00", True),  # not XML
+        (b"<!DOCTYPE a><a/>", False),
+        (b"<!--<a--><!DOCTYPE a><a/>", False),
+        (b"<?pi <a ?><!DOCTYPE a><a/>", False),
+        (b"<!-- never closed <a/>", False),
+        (b"<?pi never closed <a/>", False),
+        (b"<![CDATA[x]]><a/>", False),
+        (b"<!DOCTYPE a>".decode().encode("utf-16-le"), False),
+        (b"   ", True),  # no «<»: not XML
+        (b"<", False),  # root never starts
+        (b"\xff\xfe<\x00!\x00D\x00", False),
+    ],
+)
+def test_prolog_parser(data, ok):
+    from jv_datawrapper.reading import prolog_ok
+
+    assert prolog_ok(data) is ok
+
+
+def test_sheet_xml_size_limit(tmp_path, monkeypatch):
+    import zipfile
+
+    from jv_common import UserError
+    from jv_datawrapper import reading
+
+    f = tmp_path / "a.xlsx"
+    with zipfile.ZipFile(f, "w", zipfile.ZIP_STORED) as z:
+        z.writestr("xl/worksheets/sheet1.xml", b"<a/>" + b" " * 4096)
+        z.writestr("xl/styles.xml", b"<a/>" + b" " * 8192)
+    reading.check_zip(f)
+    monkeypatch.setattr(reading, "MAX_SHEET_XML_BYTES", 4000)
+    with pytest.raises(UserError, match="pakker seg ut"):
+        reading.check_zip(f)
+    monkeypatch.setattr(reading, "MAX_SHEET_XML_BYTES", 4500)
+    reading.check_zip(f)  # styles.xml is not a sheet
+
+
+def test_xls_cell_limit(monkeypatch):
+    from pathlib import Path
+
+    from jv_common import UserError
+    from jv_datawrapper import reading
+
+    xls = Path(__file__).resolve().parents[3] / "testdata" / "datawrapper" / "omsetning.xls"
+    assert reading.read_file(str(xls)).kind == "xls"
+    monkeypatch.setattr(reading, "MAX_CELLS", 20)  # the sheet is 9 x 5
+    with pytest.raises(UserError, match="for stort"):
+        reading.read_file(str(xls))

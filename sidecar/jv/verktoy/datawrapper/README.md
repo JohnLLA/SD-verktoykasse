@@ -48,8 +48,9 @@ Celler med feilverdi fra Excel (#DIV/0! og lignende) blir tomme, med advarsel. T
 prosent i Excel, ganges med 100 (0,125 blir 12.5), og overskriften får « (%)» hvis den ikke sier prosent fra før.
 
 **Fiendtlige filer:** høyst 5 millioner celler per ark (regnet fra cellene med innhold, før rutenettet lages),
-en `.xlsx` sjekkes mot zip-katalogen før utpakking (høyst 500 MB utpakket, høyst 100:1 for deler over 1 MB),
-og ingen XML-del kan ha DTD eller entiteter. Feilmeldingene nevner ikke fil-, ark- eller mappenavn.
+en `.xlsx` sjekkes mot zip-katalogen før utpakking (høyst 500 MB utpakket, 200 MB per ark-XML og 100:1 for
+deler over 1 MB), og ingen XML-del kan ha DTD eller entiteter (prologen leses ordentlig, roten innen 256 kB).
+openpyxl leser all XML med defusedxml uten lxml (`OPENPYXL_LXML=False`, satt i `jv_datawrapper/__init__.py`). Feilmeldingene nevner ikke fil-, ark- eller mappenavn.
 
 Ingenting fra cellene skrives til stderr eller logger. stderr har bare fremdriftslinjer og feilmeldingen.
 

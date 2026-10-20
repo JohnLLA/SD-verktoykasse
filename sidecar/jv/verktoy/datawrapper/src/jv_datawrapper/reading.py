@@ -12,7 +12,6 @@ import codecs
 import csv
 import io
 import os
-import re
 import warnings
 import zipfile
 from dataclasses import dataclass, field
@@ -27,6 +26,7 @@ MAX_CELLS = 5_000_000
 MAX_UNZIPPED_BYTES = 500 * 1024 * 1024
 MAX_RATIO = 100  # per part, for parts larger than RATIO_MIN_BYTES
 RATIO_MIN_BYTES = 1024 * 1024
+MAX_SHEET_XML_BYTES = 200 * 1024 * 1024  # one unpacked sheet
 
 EXCEL_SUFFIXES = (".xlsx", ".xlsm")
 XLS_SUFFIXES = (".xls",)
@@ -75,6 +75,7 @@ class Workbook:
     hidden_sheets: int = 0
     encoding: str | None = None  # csv only
     delimiter: str | None = None  # csv only
+    xml_parser: dict | None = None  # xlsx only: how openpyxl parsed the XML
 
 
 def col_letter(index: int) -> str:
@@ -163,24 +164,90 @@ def check_zip(path: Path) -> None:
         raise _broken() from exc
 
 
-# A DTD (and with it entity declarations) is never part of OOXML. openpyxl reads
-# the sheets with defusedxml, but other parts with lxml, which expands internal
-# entities. So any part with a DTD is refused before openpyxl sees it.
-_DTD_MARKS = tuple(m.encode(enc) for m in ("<!DOCTYPE", "<!ENTITY") for enc in ("utf-8", "utf-16-le", "utf-16-be"))
-_PROLOG_BYTES = 64 * 1024
-_ROOT_START = re.compile(rb"<[A-Za-z_]|<\x00[A-Za-z_]\x00|\x00<\x00[A-Za-z_]")
+# A DTD (and with it entity declarations) is never part of OOXML. Every part
+# that is XML is checked before openpyxl sees it: the prolog is parsed (XML
+# declaration, processing instructions and comments are skipped as whole
+# units), any other «<!» is refused, and the root element must start within
+# the first PROLOG_CHARS characters. Encodings: UTF-8 and UTF-16, with or
+# without BOM. Parts that do not start with «<» are not XML (images and the
+# like) and cannot be parsed as XML either.
+PROLOG_BYTES = 256 * 1024
+
+
+def _decode_head(head: bytes) -> str:
+    if head.startswith(codecs.BOM_UTF8):
+        enc, head = "utf-8", head[3:]
+    elif head.startswith(codecs.BOM_UTF16_LE):
+        enc, head = "utf-16-le", head[2:]
+    elif head.startswith(codecs.BOM_UTF16_BE):
+        enc, head = "utf-16-be", head[2:]
+    elif head[:2] == b"<\x00" or head[:2] in (b" \x00", b"\t\x00", b"\n\x00", b"\r\x00"):
+        enc = "utf-16-le"
+    elif head[:2] == b"\x00<" or head[:2] in (b"\x00 ", b"\x00\t", b"\x00\n", b"\x00\r"):
+        enc = "utf-16-be"
+    else:
+        enc = "utf-8"
+    if enc.startswith("utf-16"):
+        head = head[: len(head) - len(head) % 2]
+    # A character cut at the end of the head is dropped; nothing else may be invalid.
+    return codecs.getincrementaldecoder(enc)(errors="strict").decode(head, final=False)
+
+
+def _looks_like_xml(head: bytes) -> bool:
+    """The first character after a BOM and white space is «<» (UTF-8 or UTF-16)."""
+    for bom in (codecs.BOM_UTF8, codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE):
+        if head.startswith(bom):
+            head = head[len(bom) :]
+            break
+    stripped = head.replace(b"\x00", b"").lstrip(b" \t\r\n")
+    return stripped.startswith(b"<")
+
+
+def prolog_ok(head: bytes) -> bool:
+    """True if the XML in `head` reaches its root element without a DTD.
+
+    Returns True for data that is not XML at all (does not start with «<»).
+    """
+    if not _looks_like_xml(head):
+        return True  # not XML: no XML parser reads it
+    try:
+        text = _decode_head(head)
+    except UnicodeDecodeError:
+        return False
+    if text.startswith("\ufeff"):
+        text = text[1:]
+    pos = 0
+    n = len(text)
+    while True:
+        while pos < n and text[pos] in " \t\r\n":
+            pos += 1
+        if pos >= n:
+            return False  # no root within the limit
+        if text.startswith("<?", pos):
+            end = text.find("?>", pos + 2)
+            if end < 0:
+                return False
+            pos = end + 2
+        elif text.startswith("<!--", pos):
+            end = text.find("-->", pos + 4)
+            if end < 0:
+                return False
+            pos = end + 3
+        elif text.startswith("<!", pos):
+            return False  # DOCTYPE, ENTITY or anything else
+        elif text.startswith("<", pos) and pos + 1 < n and (text[pos + 1].isalpha() or text[pos + 1] in "_:"):
+            return True  # the root element
+        else:
+            return False
 
 
 def _check_no_dtd(zf: zipfile.ZipFile, infos: list[zipfile.ZipInfo]) -> None:
     for info in infos:
-        if not info.filename.lower().endswith((".xml", ".rels", ".vml")):
+        if info.is_dir():
             continue
         with zf.open(info) as fh:
-            head = fh.read(_PROLOG_BYTES)
-        # The DTD can only come before the root element; the root must start in the
-        # bytes read, so a long comment cannot push a DTD out of sight.
-        no_root = len(head) == _PROLOG_BYTES and not _ROOT_START.search(head)
-        if no_root or any(m in head for m in _DTD_MARKS):
+            head = fh.read(PROLOG_BYTES)
+        if not prolog_ok(head):
             raise UserError(
                 "Filen inneholder XML som Excel ikke bruker (DTD eller entiteter), og blir ikke åpnet. "
                 "Åpne den i Excel og lagre den på nytt som .xlsx."
@@ -192,7 +259,10 @@ def _check_sizes(infos: list[zipfile.ZipInfo]) -> None:
     packed_ratio = any(
         i.file_size > RATIO_MIN_BYTES and i.file_size > MAX_RATIO * max(i.compress_size, 1) for i in infos
     )
-    if total > MAX_UNZIPPED_BYTES or packed_ratio:
+    big_sheet = any(
+        i.filename.lower().startswith("xl/worksheets/") and i.file_size > MAX_SHEET_XML_BYTES for i in infos
+    )
+    if total > MAX_UNZIPPED_BYTES or packed_ratio or big_sheet:
         raise UserError(
             "Filen pakker seg ut til mye mer enn den tar på disken, og blir ikke åpnet. "
             "Åpne den i Excel og lagre den på nytt som .xlsx, eller kopier tabellen til en ny fil."
@@ -211,10 +281,10 @@ def _read_xlsx(path: Path) -> Workbook:
     from openpyxl import load_workbook
     from openpyxl.utils.exceptions import InvalidFileException
 
-    # openpyxl parses the XML with defusedxml when it is installed (no entity
-    # expansion, no external entities). Never read without it.
-    if not openpyxl.DEFUSEDXML:
-        raise RuntimeError("defusedxml mangler; regnearket leses ikke")
+    # Defence in depth (jv_datawrapper/__init__.py): openpyxl must parse all XML
+    # with defusedxml, never with lxml. Never read otherwise.
+    if openpyxl.LXML or not openpyxl.DEFUSEDXML:
+        raise RuntimeError("openpyxl er ikke satt opp med defusedxml uten lxml; regnearket leses ikke")
     check_zip(path)
     try:
         with warnings.catch_warnings():
@@ -256,7 +326,7 @@ def _read_xlsx(path: Path) -> Workbook:
             (m.min_row - 1, m.min_col - 1, m.max_row - 1, m.max_col - 1) for m in ws.merged_cells.ranges
         ]
         sheets.append(_build_sheet(ws.title, cells, hidden_rows, hidden_cols, merges, percent))
-    return Workbook("xlsx", sheets, hidden)
+    return Workbook("xlsx", sheets, hidden, xml_parser={"lxml": openpyxl.LXML, "defusedxml": openpyxl.DEFUSEDXML})
 
 
 # ---------------------------------------------------------------- xls

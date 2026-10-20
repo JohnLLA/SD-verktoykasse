@@ -397,3 +397,55 @@ def test_messages_do_not_name_files_sheets_or_folders(capsys, tmp_path):
     assert code == 1 and "Kildens" not in captured.err
     code, _, captured = run(capsys, "analyser", tmp_path / "Kildens navn.ods")
     assert code == 1 and "Kildens" not in captured.err
+
+
+LONG = b"x" * 70000
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        b"<!--<a-->" + b"<!--" + LONG + b"-->",  # «<a» inside a comment is not the root
+        b"<?pi <a ?>" + b"<!--" + LONG + b"-->",  # nor inside a processing instruction
+        b"<!--<a " + LONG + b"-->",
+    ],
+    ids=["kommentar", "pi", "lang-kommentar"],
+)
+def test_dtd_hidden_after_fake_roots_is_refused(capsys, tmp_path, prefix):
+    good = _xlsx(tmp_path / "god.xlsx")
+
+    def core(data):
+        return b'<?xml version="1.0"?>' + prefix + BILLION_LAUGHS.split(b"?>", 1)[1] + _body(data)
+
+    f = _rewrite(good, tmp_path / "skjult-dtd.xlsx", {"docProps/core.xml": core})
+    code, _, captured = run(capsys, "analyser", f)
+    assert code == 1 and "DTD" in captured.err
+
+
+def test_part_without_root_within_the_limit_is_refused(capsys, tmp_path):
+    good = _xlsx(tmp_path / "god.xlsx")
+    f = _rewrite(
+        good,
+        tmp_path / "uten-rot.xlsx",
+        {"docProps/app.xml": b'<?xml version="1.0"?>' + b"<!--" + b"x" * (300 * 1024) + b"--><a/>"},
+    )
+    code, _, captured = run(capsys, "analyser", f)
+    assert code == 1 and "DTD" in captured.err
+
+
+def test_utf16_dtd_is_refused(capsys, tmp_path):
+    good = _xlsx(tmp_path / "god.xlsx")
+    xml = '<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE a [<!ENTITY e "x">]><a>&e;</a>'
+    for name, data in (
+        ("med-bom", "﻿".encode("utf-16-le") + xml.encode("utf-16-le")),
+        ("uten-bom", xml.encode("utf-16-be")),
+    ):
+        f = _rewrite(good, tmp_path / f"utf16-{name}.xlsx", {"docProps/custom.xml": data})
+        code, _, captured = run(capsys, "analyser", f)
+        assert code == 1 and "DTD" in captured.err, name
+
+
+def test_packed_binary_parses_xml_with_defusedxml_without_lxml(capsys):
+    code, report, _ = run(capsys, "analyser", DATA / "sumrader.xlsx")
+    assert code == 0
+    assert report["datawrapper"]["xml_parser"] == {"lxml": False, "defusedxml": True}
