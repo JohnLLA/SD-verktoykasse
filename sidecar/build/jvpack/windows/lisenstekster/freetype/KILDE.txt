@@ -1,0 +1,3 @@
+LICENSE.TXT fra Homebrews freetype; FTL.TXT og GPLv2.TXT fra kildekoden (lenke under).
+Hentet fra https://raw.githubusercontent.com/freetype/freetype/VER-2-13-3/docs/FTL.TXT
+Hentet fra https://raw.githubusercontent.com/freetype/freetype/VER-2-13-3/docs/GPLv2.TXT

@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/rockdaboot/libpsl/0.21.5/COPYING

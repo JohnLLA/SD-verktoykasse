@@ -1,0 +1,1 @@
+Hentet fra lisensmerknaden i include/leptonica/allheaders.h i Homebrews leptonica (samme som i Mac-pakkene).

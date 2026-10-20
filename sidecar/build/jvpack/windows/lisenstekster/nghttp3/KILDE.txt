@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/ngtcp2/nghttp3/v1.11.0/COPYING

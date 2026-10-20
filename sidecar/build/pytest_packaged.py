@@ -14,6 +14,11 @@ rules as the Rust module) and inside `sandbox-exec` with
   - no reads from /opt/homebrew, /usr/local or ~/.local, so a Homebrew
     program can never stand in for a missing bundled one.
 
+On Windows there is no sandbox-exec. The workflow (jv-windows-pakker.yml)
+blocks outbound traffic in Windows Firewall for every .exe in the unpacked
+package before the tests run, and checks that the block works; this plugin
+then runs the binary directly. JV_NETTSPERRE names the method in the summary.
+
 The report on stdout and the progress lines on stderr are written to the test's
 own sys.stdout/sys.stderr, so capsys sees exactly what the app would see.
 
@@ -67,7 +72,9 @@ def pytest_configure(config):
 
 
 def _run_packed(argv) -> int:
-    cmd = ["/usr/bin/sandbox-exec", "-p", SANDBOX, pack.entry(_ROOT, _DATA), _DATA["id"], *map(str, argv)]
+    cmd = [pack.entry(_ROOT, _DATA), _DATA["id"], *map(str, argv)]
+    if sys.platform == "darwin":
+        cmd = ["/usr/bin/sandbox-exec", "-p", SANDBOX, *cmd]
     proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
                           env=pack.package_env(_ROOT, _DATA), timeout=900)
     sys.stdout.write(proc.stdout)
@@ -134,8 +141,14 @@ def _packaged_binary(request):
         mp.undo()
 
 
+def _isolation() -> str:
+    if sys.platform == "darwin":
+        return "sandbox uten nett"
+    return os.environ.get("JV_NETTSPERRE") or "UTEN nettsperre"
+
+
 def pytest_terminal_summary(terminalreporter):
     terminalreporter.write_line(
         f"jv-pakke {_DATA.get('id')} {_DATA.get('version')}: {_COUNTS['pakket']} kjøringer av den pakkede "
-        f"binærfila (sandbox uten nett), {_COUNTS['i_prosess_monkeypatch']} tester i prosess (monkeypatch)."
+        f"binærfila ({_isolation()}), {_COUNTS['i_prosess_monkeypatch']} tester i prosess (monkeypatch)."
     )

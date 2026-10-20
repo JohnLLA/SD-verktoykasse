@@ -4,7 +4,9 @@
     python -m jvpack lisenser
 
 Read from «Kildekode og versjoner.txt» in every built package
-(out/work/<target>/<id>/pakke/Lisenser). The Rust and npm parts of the app
+(out/work/<target>/<id>/pakke/Lisenser). For Windows, download the artefact
+«jv-windows-lisenser» from the jv-windows-pakker workflow into
+out/work/x86_64-pc-windows-msvc/ first. The Rust and npm parts of the app
 are listed in src/assets/tredjepart.txt (tools/lag-tredjepartsmelding.mjs);
 merging the two lists is byggmester's step (docs/brief-jv-distribusjon.md).
 """
@@ -54,12 +56,14 @@ def main() -> int:
         "Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). "
         "De to listene slås sammen av byggmester (docs/brief-jv-distribusjon.md).",
         "",
-        "| Del | Versjon | Lisens | Type | Brukt i | Kilde |",
-        "|---|---|---|---|---|---|",
+        "| Del | Versjon | Lisens | Type | Plattform | Brukt i | Kilde |",
+        "|---|---|---|---|---|---|---|",
     ]
+    platform = {"aarch64-apple-darwin": "Mac", "x86_64-pc-windows-msvc": "Windows"}
     for (name, version), r in sorted(rows.items(), key=lambda kv: (kv[1]["kind"], kv[0][0].lower())):
         src = r["source"].replace("|", "\\|")
-        out.append(f"| {name} | {version} | {r['license'].replace('|', '/')} | {r['kind']} | "
+        targets = ", ".join(sorted(platform.get(t, t) for t in r["targets"]))
+        out.append(f"| {name} | {version} | {r['license'].replace('|', '/')} | {r['kind']} | {targets} | "
                    f"{', '.join(sorted(r['tools']))} | {src} |")
     OUT.write_text("\n".join(out) + "\n", encoding="utf-8")
     print(OUT, len(rows))

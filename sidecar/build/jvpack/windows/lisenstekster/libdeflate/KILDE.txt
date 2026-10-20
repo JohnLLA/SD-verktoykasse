@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/ebiggers/libdeflate/v1.24/COPYING

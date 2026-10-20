@@ -1,0 +1,1 @@
+Fra Homebrews poppler 26.10.0 (COPYING, COPYING3). Samme lisens for poppler 26.09.0.

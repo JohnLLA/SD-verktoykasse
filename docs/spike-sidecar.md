@@ -210,3 +210,41 @@ eller ufri lisens. Verdt å merke seg:
 6. CI signerer katalogen med `minisign`. John Inge lager nøkkelen og legger den i `TOOLS_MINISIGN_KEY`.
 7. App-bunt (`jv-<id>.app`) godkjennes.
 8. `scripts/lag_testdata.py` flyttes inn sammen med testdataene i 6.2.
+
+## Runde B: Windows (20.10.2026)
+
+Gren `steg-6-runde-b-windows`. Byggeoppsettet står i `sidecar/build/README.md` («Windows»), og
+kildene står i `sidecar/build/binaries.json`.
+
+- **Åtte av ni pakker er bygget** på `windows-latest` (`jv-windows-pakker.yml`). Hver er prøvekjørt
+  med `jv.exe --version`. `nynorsk` er ikke med, fordi Apertium krever bash og kompilerte språkdata.
+- **Python-testene mot de pakkede binærfilene består** for alle åtte. Utgående trafikk var sperret i
+  Windows-brannmuren for hver `.exe` i pakken, og sperren er prøvd med en sperret `curl.exe`.
+  Åtte tester er valgt bort på Windows (`sidecar/build/windows-ikke-portable-tester.txt`):
+  - seks bruker filnavn med «:» eller «<>», som ikke er lov på Windows;
+  - to antar Mac i selve sjekken (exiftool-utdata som UTF-8 og `file:/…`).
+- **`full_chain` i Rust består på Windows** for alle åtte. Kjeden går fra signert katalog via nedlasting
+  med brudd og gjenopptak, SHA-256, utpakking med `tar.exe` og prøvekjøring, til kjøring på testfil.
+
+| Verktøy | Arkiv | Utpakket | Installasjon* | `--version` | Kjøring på testfil |
+|---|---|---|---|---|---|
+| compare | 43,5 MB | 90,0 MB | 1,6 s | 0,10–0,13 s | 0,2 s |
+| metadata | 35,6 MB | 86,5 MB | 1,1 s | 0,27–0,34 s | 1,3 s |
+| keyframes | 94,9 MB | 247,1 MB | 2,4 s | 0,16–0,17 s | 0,4 s |
+| loudness | 87,0 MB | 232,2 MB | 2,1 s | 0,15–0,19 s | 0,8 s |
+| subtitles | 9,3 MB | 21,5 MB | 0,4 s | 0,10–0,13 s | 0,2 s |
+| pdf-tables | 43,6 MB | 89,2 MB | 0,7 s | 0,10–0,13 s | 1,0 s |
+| ocr | 98,3 MB | 209,4 MB | 3,6 s | 0,27–0,33 s | 4,2 s |
+| redact | 63,9 MB | 145,7 MB | 1,7 s | 0,13–0,15 s | 0,3 s |
+
+\* SHA-256, utpakking og prøvekjøring. Målt på en GitHub-maskin, ikke på en redaksjons-PC.
+
+Funn:
+- `keyframes` og `loudness` er store fordi ffmpeg-bygget er statisk: `ffmpeg.exe` og `ffprobe.exe` er
+  på omtrent 105 MB hver.
+- Microsofts Visual C++-kjøretid (`vcruntime140*.dll`, `msvcp140*.dll`) ligger i alle pakkene. Den har
+  ikke fri lisens (se `binaries.json`, `not_free`).
+- ffmpeg, poppler (libcurl) og Tesseract (libcurl) har nettstøtte bygget inn. Verktøyene gir dem bare
+  lokale filer, og testene ble kjørt med sperret nett.
+- Pakkene er usignert. Appen sjekker ikke Authenticode, fordi spesifikasjonen ikke sier hvordan.
+- Hva Defender gjør med pakkene, er ikke prøvd. Det krever en ekte PC (sjekklisten).

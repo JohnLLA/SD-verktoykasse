@@ -58,7 +58,8 @@ pub struct Manifest {
     pub min_os: Option<String>,
 }
 
-/// Variabler en pakke aldri får sette selv.
+/// Variabler en pakke aldri får sette selv. Sammenlignes uten hensyn til store
+/// og små bokstaver, siden Windows ikke skiller (`SYSTEMROOT` = `SystemRoot`).
 const FORBIDDEN_ENV_PREFIXES: &[&str] = &["DYLD_", "LD_", "PYTHON", "PERL5", "_MEI", "PYI_"];
 const FORBIDDEN_ENV: &[&str] = &[
     "PATH",
@@ -67,7 +68,13 @@ const FORBIDDEN_ENV: &[&str] = &[
     "TEMP",
     "TMP",
     "SystemRoot",
+    "windir",
     "ComSpec",
+    "PATHEXT",
+    "USERPROFILE",
+    "LOCALAPPDATA",
+    "APPDATA",
+    "__COMPAT_LAYER",
 ];
 
 fn rel_ok(rel: &str) -> bool {
@@ -108,7 +115,7 @@ pub fn read_manifest(root: &Path) -> JvResult<Manifest> {
                 .bytes()
                 .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_');
         if !valid
-            || FORBIDDEN_ENV.contains(&name.as_str())
+            || FORBIDDEN_ENV.iter().any(|f| f.eq_ignore_ascii_case(name))
             || FORBIDDEN_ENV_PREFIXES.iter().any(|p| name.starts_with(p))
         {
             return Err(JvError::ManifestInvalid { reason: "env" });
@@ -222,8 +229,12 @@ pub fn verify_codesign(root: &Path, m: &Manifest, check: SignatureCheck) -> JvRe
     Ok(())
 }
 
-/// Windows: pakkene er usignert til LLA har sertifikat (spesifikasjonen).
-/// Authenticode-sjekk kommer i runde B.
+/// Windows: ingen kontroll ennå. Pakkene er usignert til LLA har sertifikat
+/// («Windows: binærfilene signeres når LLA har sertifikat. Til da er de
+/// usignert», spesifikasjonen). Spesifikasjonen sier ikke hvordan appen skal
+/// kontrollere Authenticode, og det finnes ingen godkjent crate for det
+/// (WinVerifyTrust). `jv-package.json` for Windows har derfor `codesign: []`.
+/// Integriteten hviler på signert katalog og SHA-256 på pakken, som på Mac.
 #[cfg(not(target_os = "macos"))]
 pub fn verify_codesign(_root: &Path, _m: &Manifest, _check: SignatureCheck) -> JvResult<()> {
     Ok(())

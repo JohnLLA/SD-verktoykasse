@@ -1,0 +1,1 @@
+Standardteksten fra LICENSE i bzip2 1.0.8 (samme som i Mac-pakkene).

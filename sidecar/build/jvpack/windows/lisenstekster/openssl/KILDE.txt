@@ -1,0 +1,1 @@
+Fra Homebrews openssl@3 (LICENSE.txt, Apache-2.0).

@@ -1,0 +1,1 @@
+Hentet fra https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0/LICENSE

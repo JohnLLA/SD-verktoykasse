@@ -1,0 +1,1 @@
+Fra Homebrews tesseract 5.5.3 (LICENSE, Apache-2.0).

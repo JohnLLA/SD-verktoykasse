@@ -102,6 +102,7 @@ Spesifikasjon v1 tillater to nettkall: nedlasting av språkmodeller og sjekk ett
 
 - **Kildekoden er offentlig.** Repoet `JohnLLA/lla-verktoykasse` gjøres offentlig, sammen med journalistverktøyene i `sidecar/jv/`.
 - **Bare kode med åpen lisens.** Hver del som brukes eller legges med (crates, npm-pakker, Python-pakker, systemprogrammer, modeller, skrifter, ikoner) skal ha en lisens godkjent av OSI eller en tilsvarende fri lisens: MIT, BSD, Apache 2.0, MPL, LGPL, GPL, AGPL, Artistic, CC0 eller CC BY for data. Ingen kommersielle lisenser, ingen «gratis for ikke-kommersiell bruk» og ingen deler uten lisens.
+  - **Unntak (godkjent av John Inge 20.10.2026):** Microsofts Visual C++-kjøretid (`vcruntime140*.dll`, `msvcp140*.dll`) i Windows-pakkene. Den har ikke fri lisens, men Microsoft tillater at den deles med programmer, og PyInstaller, Python for Windows og MSVC-byggene av systemprogrammene krever den. Den står som `not_free` i `sidecar/build/binaries.json` og i `THIRD_PARTY_LICENSES.md`.
 - **Lisens for verktøykassen: AGPL-3.0-or-later** (bestemt av John Inge 19.10.2026). Den gjelder hele repoet, også `sidecar/jv/`. Den er forenlig med PyMuPDF (AGPL), Apertium og poppler (GPL) og ffmpeg (LGPL/GPL). Lisensteksten ligger i `LICENSE`.
   - `Cargo.toml` og `package.json` får `license = "AGPL-3.0-or-later"`, og pakkene i `sidecar/jv/` får det samme i `pyproject.toml`.
   - Kildefiler får en kort SPDX-linje øverst: `SPDX-License-Identifier: AGPL-3.0-or-later`.

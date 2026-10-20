@@ -1,0 +1,2 @@
+Hentet fra https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.1.0/COPYING3
+Hentet fra https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.1.0/COPYING.RUNTIME

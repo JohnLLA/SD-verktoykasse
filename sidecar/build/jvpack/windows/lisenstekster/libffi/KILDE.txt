@@ -1,0 +1,1 @@
+Fra lisensmerknaden i ffi.h (samme som i Mac-pakkene). MIT.

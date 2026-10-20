@@ -5,7 +5,10 @@
 //!   siste kopi brukes uten nett, «Kommer for Windows».
 //! - Pakke: feil SHA-256, prøvekjøring som feiler, god pakke erstatter gammel,
 //!   avbrutt og gjenopptatt nedlasting, avbryt under installasjon.
-//! - Kjøring med en falsk pakke: rapport, feilmelding og avbryt.
+//! - Kjøring med en falsk pakke: rapport, feilmelding og avbryt. Den falske
+//!   pakken er et sh-skript på Mac og et cmd-skript i en .zip på Windows, så
+//!   testene går på begge plattformene.
+//! - Miljøet en pakke kjøres med (`command_env`), også for Windows.
 //! - `full_chain` (ignorert som standard; krever pakkene fra
 //!   `sidecar/build/bygg-mac.sh` og en katalog laget for testserveren):
 //!   katalog fra en lokal testserver → signatur → nedlasting med brudd og
@@ -249,7 +252,7 @@ fn serve(
         "HTTP/1.1 206 Partial Content\r\nContent-Range: bytes {start}-{end}/{len}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
         body.len()
     )?;
-    let should_cut = name.ends_with(".tar.gz")
+    let should_cut = (name.ends_with(".tar.gz") || name.ends_with(".zip"))
         && cut.is_some()
         && cut_done.lock().unwrap().insert(name.to_string());
     if should_cut {
@@ -428,33 +431,70 @@ fn install_needs_a_checked_catalog_and_the_right_platform() {
 
 // ------------------------------------------------------------- falsk pakke
 
-/// En falsk pakke: et skallskript som `entry`, pakket med systemets tar.
-/// `body` er skriptet som kjører når argumentet ikke er `--version`.
+/// Skriptet den falske pakken kjører når argumentet ikke er `--version`:
+/// `sh` på Mac, `cmd` på Windows.
+struct Body<'a> {
+    #[cfg_attr(windows, allow(dead_code))]
+    sh: &'a str,
+    #[cfg_attr(not(windows), allow(dead_code))]
+    cmd: &'a str,
+}
+
+/// `entry` i den falske pakken.
 #[cfg(unix)]
+const FAKE_ENTRY: &str = "bin/jv";
+#[cfg(windows)]
+const FAKE_ENTRY: &str = "bin/jv.cmd";
+
+/// En falsk pakke: et skript som `entry`, pakket med systemets tar
+/// (`.tar.gz` på Mac, `.zip` med tar.exe på Windows, som de ekte pakkene).
 fn fake_package_with(
     id: &str,
     version_output: &str,
-    body: &str,
+    body: Body,
 ) -> (PathBuf, catalog::CatalogEntry) {
-    use std::os::unix::fs::PermissionsExt;
     let src = tmp("falsk-src");
     std::fs::create_dir_all(src.join("bin")).unwrap();
-    let script = format!(
-        "#!/bin/sh\nif [ \"$1\" = --version ]; then echo '{version_output}'; exit 0; fi\n{body}\n"
-    );
-    std::fs::write(src.join("bin/jv"), script).unwrap();
-    std::fs::set_permissions(src.join("bin/jv"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    let script_path = src.join(FAKE_ENTRY);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let script = format!(
+            "#!/bin/sh\nif [ \"$1\" = --version ]; then echo '{version_output}'; exit 0; fi\n{}\n",
+            body.sh
+        );
+        std::fs::write(&script_path, script).unwrap();
+        std::fs::set_permissions(&script_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    #[cfg(windows)]
+    {
+        let script = format!(
+            "@echo off\r\nif \"%~1\"==\"--version\" (\r\n  echo {version_output}\r\n  exit /b 0\r\n)\r\n{}\r\n",
+            body.cmd.replace('\n', "\r\n")
+        );
+        std::fs::write(&script_path, script).unwrap();
+    }
     std::fs::write(
         src.join(package::MANIFEST),
         format!(
-            r#"{{"schema":1,"id":"{id}","name":"Falsk","version":"1.0.0","target":"{CURRENT_TARGET}","entry":"bin/jv","path":["bin"],"env":{{"JV_FALSK":"bin/jv"}},"codesign":["bin/jv"]}}"#
+            r#"{{"schema":1,"id":"{id}","name":"Falsk","version":"1.0.0","target":"{CURRENT_TARGET}","entry":"{FAKE_ENTRY}","path":["bin"],"env":{{"JV_FALSK":"{FAKE_ENTRY}"}},"codesign":["{FAKE_ENTRY}"]}}"#
         ),
     )
     .unwrap();
-    let arch = tmp("falsk-arkiv").join(format!("jv-{id}-1.0.0-{CURRENT_TARGET}.tar.gz"));
-    assert!(std::process::Command::new("tar")
-        .env("COPYFILE_DISABLE", "1")
-        .arg("-czf")
+    let suffix = if cfg!(windows) { "zip" } else { "tar.gz" };
+    let arch = tmp("falsk-arkiv").join(format!("jv-{id}-1.0.0-{CURRENT_TARGET}.{suffix}"));
+    let mut tar = if cfg!(windows) {
+        let root = std::env::var_os("SystemRoot").unwrap_or_else(|| "C:\\Windows".into());
+        let mut c =
+            std::process::Command::new(PathBuf::from(root).join("System32").join("tar.exe"));
+        c.arg("-a").arg("-cf");
+        c
+    } else {
+        let mut c = std::process::Command::new("tar");
+        c.env("COPYFILE_DISABLE", "1").arg("-czf");
+        c
+    };
+    assert!(tar
         .arg(&arch)
         .arg("-C")
         .arg(&src)
@@ -468,7 +508,7 @@ fn fake_package_with(
         name: "Falsk".into(),
         version: "1.0.0".into(),
         target: CURRENT_TARGET.into(),
-        url: "https://example.invalid/falsk.tar.gz".into(),
+        url: format!("https://example.invalid/falsk.{suffix}"),
         bytes,
         sha256: sha,
         min_app_version: "0.1.0".into(),
@@ -478,16 +518,21 @@ fn fake_package_with(
     (arch, entry)
 }
 
-#[cfg(unix)]
 fn fake_package(version_output: &str) -> (PathBuf, catalog::CatalogEntry) {
-    fake_package_with("falsk", version_output, "exit 3")
+    fake_package_with(
+        "falsk",
+        version_output,
+        Body {
+            sh: "exit 3",
+            cmd: "exit /b 3",
+        },
+    )
 }
 
 fn never() -> AtomicBool {
     AtomicBool::new(false)
 }
 
-#[cfg(unix)]
 #[test]
 fn package_with_wrong_sha256_is_rejected_and_deleted() {
     let (arch, mut entry) = fake_package(r#"{"id":"falsk","version":"1.0.0"}"#);
@@ -508,7 +553,6 @@ fn package_with_wrong_sha256_is_rejected_and_deleted() {
     assert!(!tools.join("falsk").join("1.0.0").exists());
 }
 
-#[cfg(unix)]
 #[test]
 fn failing_trial_run_keeps_old_version() {
     // --version svarer med feil id: prøvekjøringen skal feile.
@@ -546,7 +590,6 @@ fn failing_trial_run_keeps_old_version() {
     assert!(old.exists());
 }
 
-#[cfg(unix)]
 #[test]
 fn cancel_during_install_leaves_nothing_half_installed() {
     let (arch, entry) = fake_package(r#"{"id":"falsk","version":"1.0.0"}"#);
@@ -560,7 +603,6 @@ fn cancel_during_install_leaves_nothing_half_installed() {
     assert!(!tools.join("falsk").join(".ny-1.0.0").exists());
 }
 
-#[cfg(unix)]
 #[test]
 fn good_fake_package_replaces_old_version() {
     let (arch, entry) = fake_package(r#"{"id":"falsk","version":"1.0.0"}"#);
@@ -584,7 +626,10 @@ fn good_fake_package_replaces_old_version() {
     let m = package::read_manifest(&root).unwrap();
     let env = package::command_env(&root, &m);
     let jv = env.iter().find(|(k, _)| k == "JV_FALSK").unwrap();
-    assert_eq!(std::path::PathBuf::from(&jv.1), root.join("bin").join("jv"));
+    assert_eq!(
+        std::path::PathBuf::from(&jv.1),
+        package::join_rel(&root, FAKE_ENTRY)
+    );
     let path = env.iter().find(|(k, _)| k == "PATH").unwrap();
     assert!(path
         .1
@@ -623,6 +668,13 @@ fn manifest_cannot_point_outside_or_set_dangerous_env() {
         r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"DYLD_INSERT_LIBRARIES":"a"}}"#,
         r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"PATH":"a"}}"#,
         r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","path":["C:/Windows"]}"#,
+        r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv\\jv.exe"}"#,
+        // Windows skiller ikke på store og små bokstaver i variabelnavn.
+        r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"SYSTEMROOT":"a"}}"#,
+        r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"COMSPEC":"a"}}"#,
+        r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"USERPROFILE":"a"}}"#,
+        r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"PATHEXT":"a"}}"#,
+        r#"{"schema":1,"id":"x","version":"1","target":"t","entry":"jv","env":{"Path":"a"}}"#,
     ] {
         std::fs::write(d.join(package::MANIFEST), bad).unwrap();
         assert!(
@@ -635,9 +687,94 @@ fn manifest_cannot_point_outside_or_set_dangerous_env() {
     }
 }
 
+/// Miljøet en pakke kjøres med: bare systemets minimum og pakkens egne
+/// variabler, med stier inn i pakken. Samme regler som `jvpack.pack.package_env`.
+#[test]
+fn command_env_is_clean_and_points_into_the_package() {
+    let root = tmp("miljo");
+    std::fs::write(
+        root.join(package::MANIFEST),
+        r#"{"schema":1,"id":"ocr","version":"1.0.0","target":"t","entry":"jv-ocr/jv.exe",
+            "path":["jv-ocr/programmer/tesseract"],
+            "env":{"JV_TESSERACT":"jv-ocr/programmer/tesseract/tesseract.exe",
+                   "TESSDATA_PREFIX":"jv-ocr/data/tessdata",
+                   "JV_TO":["a/b","c"]}}"#,
+    )
+    .unwrap();
+    let m = package::read_manifest(&root).unwrap();
+    let env = package::command_env(&root, &m);
+    let get = |k: &str| {
+        env.iter()
+            .find(|(n, _)| n == k)
+            .map(|(_, v)| PathBuf::from(v))
+    };
+    let allowed = [
+        "PATH",
+        "HOME",
+        "TMPDIR",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "USERPROFILE",
+        "LOCALAPPDATA",
+        "APPDATA",
+        "JV_TESSERACT",
+        "TESSDATA_PREFIX",
+        "JV_TO",
+    ];
+    for (k, _) in &env {
+        assert!(allowed.contains(&k.as_str()), "uventet variabel {k}");
+    }
+    // Ingen variabel to ganger (Windows skiller ikke på store og små bokstaver).
+    let mut names: Vec<String> = env.iter().map(|(k, _)| k.to_ascii_uppercase()).collect();
+    names.sort();
+    names.dedup();
+    assert_eq!(names.len(), env.len());
+    assert_eq!(
+        get("JV_TESSERACT").unwrap(),
+        root.join("jv-ocr")
+            .join("programmer")
+            .join("tesseract")
+            .join("tesseract.exe")
+    );
+    assert_eq!(
+        get("TESSDATA_PREFIX").unwrap(),
+        root.join("jv-ocr").join("data").join("tessdata")
+    );
+    let to: Vec<PathBuf> = std::env::split_paths(&get("JV_TO").unwrap().into_os_string()).collect();
+    assert_eq!(to, vec![root.join("a").join("b"), root.join("c")]);
+    let path: Vec<PathBuf> =
+        std::env::split_paths(&get("PATH").unwrap().into_os_string()).collect();
+    assert_eq!(
+        path[0],
+        root.join("jv-ocr").join("programmer").join("tesseract")
+    );
+    #[cfg(windows)]
+    {
+        // Systemmappene og det Windows-programmer trenger for å starte, ikke mer.
+        let sys =
+            PathBuf::from(std::env::var_os("SystemRoot").unwrap_or_else(|| "C:\\Windows".into()));
+        assert_eq!(path[1..], [sys.join("System32"), sys.clone()]);
+        assert_eq!(get("SystemRoot").unwrap(), sys);
+        assert!(
+            get("TEMP").is_some(),
+            "TEMP trengs av Python og PyInstaller"
+        );
+        assert!(get("HOME").is_none() && get("TMPDIR").is_none());
+    }
+    #[cfg(not(windows))]
+    {
+        let system: Vec<PathBuf> = ["/usr/bin", "/bin", "/usr/sbin", "/sbin"]
+            .iter()
+            .map(PathBuf::from)
+            .collect();
+        assert_eq!(path[1..], system[..]);
+        assert!(get("SystemRoot").is_none() && get("USERPROFILE").is_none());
+    }
+}
+
 // ------------------------------------------------------------- nedlasting
 
-#[cfg(unix)]
 #[test]
 fn interrupted_and_cancelled_download_resumes_and_installs_nothing_half() {
     // En «pakke» på 3 MB fra testserveren. Første forespørsel brytes etter 1 MB.
@@ -694,7 +831,6 @@ fn interrupted_and_cancelled_download_resumes_and_installs_nothing_half() {
     assert!(log.iter().all(|l| l.starts_with(&format!("/{name} "))));
 }
 
-#[cfg(unix)]
 #[test]
 fn download_with_wrong_sha256_is_deleted() {
     let dir = tmp("pakkeserver");
@@ -722,8 +858,7 @@ fn download_with_wrong_sha256_is_deleted() {
 
 // ------------------------------------------------------------- kjøring
 
-#[cfg(unix)]
-fn installed_fake(body: &str) -> (Jv, PathBuf) {
+fn installed_fake(body: Body) -> (Jv, PathBuf) {
     let (arch, entry) =
         fake_package_with("subtitles", r#"{"id":"subtitles","version":"1.0.0"}"#, body);
     let data = tmp("appdata");
@@ -742,7 +877,6 @@ fn installed_fake(body: &str) -> (Jv, PathBuf) {
     (jv, work)
 }
 
-#[cfg(unix)]
 fn subtitles_request(work: &Path) -> RunRequest {
     serde_json::from_value(json!({
         "inputs": [work.join("intervju.json")],
@@ -752,13 +886,22 @@ fn subtitles_request(work: &Path) -> RunRequest {
     .unwrap()
 }
 
-#[cfg(unix)]
 #[test]
 fn run_reads_report_and_progress_from_fake_package() {
     // Skriptet sjekker at argumentene kom som forventet og svarer som et verktøy.
-    let body = r#"[ "$1" = subtitles ] && [ "$3" = --max-chars ] && [ "$4" = 40 ] && [ "$5" = --out ] || exit 9
+    let body = Body {
+        sh: r#"[ "$1" = subtitles ] && [ "$3" = --max-chars ] && [ "$4" = 40 ] && [ "$5" = --out ] || exit 9
 echo '{"progress": 0.5}' >&2
-echo "{\"tool\":\"subtitles\",\"summary\":\"1 fil\",\"outputs\":[],\"warnings\":[],\"env\":\"$JV_FALSK\"}""#;
+echo "{\"tool\":\"subtitles\",\"summary\":\"1 fil\",\"outputs\":[],\"warnings\":[],\"env\":\"$JV_FALSK\"}""#,
+        // Windows: stien får «/» så den kan stå i JSON uten escape.
+        cmd: r#"if not "%~1"=="subtitles" exit /b 9
+if not "%~3"=="--max-chars" exit /b 9
+if not "%~4"=="40" exit /b 9
+if not "%~5"=="--out" exit /b 9
+1>&2 echo {"progress": 0.5}
+set "E=%JV_FALSK:\=/%"
+echo {"tool":"subtitles","summary":"1 fil","outputs":[],"warnings":[],"env":"%E%"}"#,
+    };
     let (jv, work) = installed_fake(body);
     let installed = jv.installed();
     assert_eq!(installed.len(), 1);
@@ -770,17 +913,19 @@ echo "{\"tool\":\"subtitles\",\"summary\":\"1 fil\",\"outputs\":[],\"warnings\":
     match runner::run_job(cmd, &never(), None, &mut |p| seen.push(p)).unwrap() {
         Finished::Report(r) => {
             assert_eq!(r["summary"], "1 fil");
-            assert!(r["env"].as_str().unwrap().ends_with("bin/jv"));
+            assert!(r["env"].as_str().unwrap().ends_with(FAKE_ENTRY));
         }
         other => panic!("{other:?}"),
     }
     assert_eq!(seen, vec![0.5]);
 }
 
-#[cfg(unix)]
 #[test]
 fn run_can_be_cancelled_and_one_job_per_tool() {
-    let (jv, work) = installed_fake("echo '{\"progress\": 0.1}' >&2; sleep 30");
+    let (jv, work) = installed_fake(Body {
+        sh: "echo '{\"progress\": 0.1}' >&2; sleep 30",
+        cmd: "1>&2 echo {\"progress\": 0.1}\nping -n 31 127.0.0.1 >nul",
+    });
     let (job, cancel) = jv.begin("subtitles").unwrap();
     assert_eq!(jv.begin("subtitles").unwrap_err(), JvError::Busy);
     assert_eq!(jv.remove("subtitles").unwrap_err(), JvError::Busy);
@@ -811,10 +956,12 @@ fn run_can_be_cancelled_and_one_job_per_tool() {
     );
 }
 
-#[cfg(unix)]
 #[test]
 fn run_rejects_arguments_outside_the_whitelist() {
-    let (jv, work) = installed_fake("exit 0");
+    let (jv, work) = installed_fake(Body {
+        sh: "exit 0",
+        cmd: "exit /b 0",
+    });
     let mut req = subtitles_request(&work);
     req.options.insert("--shell".into(), json!("rm -rf /"));
     assert_eq!(
@@ -828,7 +975,10 @@ fn run_rejects_arguments_outside_the_whitelist() {
 #[cfg(target_os = "macos")]
 #[test]
 fn package_with_broken_signature_is_not_run() {
-    let (jv, work) = installed_fake("exit 0");
+    let (jv, work) = installed_fake(Body {
+        sh: "exit 0",
+        cmd: "exit /b 0",
+    });
     let inst = package::installed(jv.tools_dir(), "subtitles").unwrap();
     assert_eq!(
         package::verify_codesign(

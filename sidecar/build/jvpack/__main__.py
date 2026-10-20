@@ -1,6 +1,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """python -m jvpack mac <id>[,<id>...]|alle [--notariser [profil]]
         build packages for aarch64-apple-darwin (optionally notarised)
+python -m jvpack windows <id>[,<id>...]|alle
+        build packages for x86_64-pc-windows-msvc (on Windows; «alle» = the eight
+        that can be packed, not nynorsk)
+python -m jvpack windows kilder [--sjekk]
+        write (or check) the Windows section of binaries.json
 python -m jvpack katalog ...               tools.json and tools.json.sig (see catalog.py)
 python -m jvpack lisenser                  write THIRD_PARTY_LICENSES.md
 """
@@ -53,7 +58,53 @@ def cmd_mac(ids: list[str], notary_profile: str | None) -> int:
     return 1 if failed else 0
 
 
+def cmd_windows(ids: list[str]) -> int:
+    from .windows.build import build
+    from .windows import sign
+    from .mac.macho import BuildError
+
+    failed = 0
+    summary = {}
+    for tool_id in ids:
+        try:
+            r = build(tool_id)
+        except BuildError as exc:
+            print(f"[{tool_id}] FEIL: {exc}", file=sys.stderr)
+            failed += 1
+            continue
+        ok = all(v[0] for v in r.checks.values())
+        failed += 0 if ok else 1
+        summary[tool_id] = {
+            "ok": ok, "versjon": r.version, "arkiv": r.archive.name, "arkiv_bytes": r.archive_bytes,
+            "utpakket_bytes": r.unpacked_bytes, "sha256": r.sha256, "signering": r.signing,
+            "signerte_filer": r.signed_files, "lengste_sti": r.longest_path, "deler_bytes": r.sizes,
+            "ikke_fri_lisens": r.not_free, "manglende_lisenstekster": r.missing_licenses,
+            "sekunder": round(r.seconds),
+            "kontroller": {k: {"ok": v[0], "utdata": v[1][-400:]} for k, v in r.checks.items()},
+        }
+        print(f"[{tool_id}] ferdig: {r.archive.name} ({r.archive_bytes / 1e6:.1f} MB, utpakket "
+              f"{r.unpacked_bytes / 1e6:.1f} MB), {r.signing}, {r.seconds:.0f} s")
+        for k, (good, out) in r.checks.items():
+            print(f"    {k}: {'OK' if good else 'IKKE OK'}  {out.splitlines()[-1] if out else ''}")
+    if sign.mode() == "none":
+        print(sign.UNSIGNED_NOTE)
+    OUT.mkdir(exist_ok=True)
+    path = OUT / "bygg-oppsummering-windows.json"
+    old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    old.update(summary)
+    path.write_text(json.dumps(old, indent=2, ensure_ascii=False), encoding="utf-8")
+    return 1 if failed else 0
+
+
 def main(argv: list[str]) -> int:
+    if len(argv) >= 2 and argv[:2] == ["windows", "kilder"]:
+        from .windows.binaries import main as binaries_main
+
+        return binaries_main(argv[2:])
+    if len(argv) >= 2 and argv[0] == "windows":
+        from . import TARGET_WINDOWS
+
+        return cmd_windows(tools.parse_ids(argv[1], TARGET_WINDOWS))
     if len(argv) >= 2 and argv[0] == "mac":
         from .mac.notarize import DEFAULT_PROFILE
 
