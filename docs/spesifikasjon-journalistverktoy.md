@@ -18,7 +18,7 @@ Medlemmene laster ned én app per plattform fra det offentlige release-repoet `J
 | `pdf-tables` | Tabeller fra PDF | – |
 | `ocr` | Søkbare PDF-er (OCR) | tesseract (`nor`, `eng`, `osd`) |
 | `redact` | Sladding av PDF | pdftotext (valgfri, se under) |
-| `nynorsk` | Bokmål ↔ nynorsk | apertium + `nob-nno`/`nno-nob` |
+| `nynorsk` | Bokmål ↔ nynorsk | Apertium-programmene + `nob-nno`/`nno-nob` (uten bash-skriptet `apertium`) |
 
 Logikken og testene i Python er godkjent og skal ikke skrives om. Kontrakten er den samme som før: `jv <id> <inngang…> --out <mappe> [valg]` gir én JSON-rapport på stdout, fremdrift som JSON-linjer på stderr, kode 1 ved brukerfeil og kode 2 ved intern feil.
 
@@ -82,7 +82,7 @@ src/tools/<id>/                Én liten modul per verktøy: registeroppføring,
 - **`redact` har to steg.** «Finn» gir en liste med avkrysning, der forkastede kandidater er tydelig merket. «Sladd» bruker den redigerte planen.
 - **Innstillinger** får seksjonen «Verktøy». Den viser hvert verktøy med versjon og plass det tar, og har knappene «Se etter oppdateringer», «Oppdater» og «Fjern». En oppdatering lastes aldri ned uten at brukeren trykker.
 - **Om-vinduet** lister installerte verktøy med versjon og lisens.
-- Verktøy som ikke finnes for plattformen, for eksempel `nynorsk` på Windows, vises med «Kommer for Windows» og har ingen knapp.
+- Verktøy som ikke finnes for plattformen (katalogen har ingen linje for den), vises med «Kommer for Windows» eller «Kommer for Mac» og har ingen knapp.
 
 ### Nettverk
 
@@ -94,7 +94,12 @@ Spesifikasjon v1 tillater to nettkall: nedlasting av språkmodeller og sjekk ett
 ## Plattformer
 
 - Mac (Apple Silicon, macOS 13+) og Windows 10/11 x64, som resten av appen.
-- **nynorsk:** Apertium er krevende å pakke, særlig på Windows. Mac først, som John Inge bestemte 19.10.2026. Uten pakke for en plattform viser appen «Kommer for Windows», og `verktoy.html` viser det samme.
+- **nynorsk:** Mac først (John Inge 19.10.2026), Windows fra versjon 0.2.0 (John Inge 20.10.2026).
+  - `jv_nynorsk` leser modusfila og kobler Apertium-programmene sammen selv, uten skall. Det gjelder på begge plattformene, og verken bash eller gawk trengs.
+  - Windows bruker Apertiums eget Windows-bygg (`apertium-all-dev`, MinGW-w64) med de samme commitene som Mac. Det er speilet i taggen `kilder-apertium-windows` i release-repoet, sammen med kildekoden.
+  - Begge plattformene bruker de samme språkdataene.
+  - Detaljer står i `docs/spike-sidecar.md`, under «nynorsk på Windows».
+  - Uten pakke for en plattform viser appen «Kommer for Windows», og `verktoy.html` viser det samme.
 - **Windows-pakkene** bygges i CI (`windows-latest`) med fritt lisensierte bygg av ffmpeg, exiftool, Tesseract og poppler, som står med versjon og SHA-256 i `binaries.json`.
 - **pdftotext** (poppler) er en ekstra kontroll i `redact`. Pakkes det ikke med, går etterkontrollen bare med PyMuPDF og gir en advarsel, slik verktøyet gjør i dag.
 
@@ -181,5 +186,5 @@ Alt bygges likevel slik at Windows passer inn: Rust-koden, katalogformatet og gr
    - ffmpeg, exiftool, Tesseract og poppler med fri lisens
    - PyInstaller på `windows-latest`
    - hva Defender gjør med pakkene
-2. **Windows-pakker for de åtte verktøyene** som lar seg pakke. `nynorsk` venter til Apertium lar seg pakke.
+2. **Windows-pakker for de åtte verktøyene** som lar seg pakke. `nynorsk` fulgte i 0.2.0 (Apertiums Windows-bygg, se over).
 3. **Kontroll, release** og **sjekkliste på en ren redaksjons-PC med Windows**.
