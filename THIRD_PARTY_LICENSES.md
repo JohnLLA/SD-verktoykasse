@@ -63,20 +63,20 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | zstd | 1.5.7_1 | (BSD-3-Clause OR GPL-2.0-only) AND BSD-2-Clause AND MIT | Homebrew | Mac | ocr, redact | https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz |
 | bzip2 | ukjent | bzip2-1.0.6 | Kjøretid | Mac, Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://sourceware.org/bzip2/downloads.html |
 | expat | 2.8.4 | MIT | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
-| Expat | 2.7.1 | MIT | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
+| Expat | 2.7.1 | MIT | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libexpat/libexpat/releases |
 | libffi | ukjent | MIT | Kjøretid | Mac, Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/libffi/libffi/releases |
-| Microsoft Visual C++ Redistributable (vcruntime140, msvcp140) | 14.x | LicenseRef-Microsoft-Visual-C-Redistributable | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files |
+| Microsoft Visual C++ Redistributable (vcruntime140, msvcp140) | 14.x | LicenseRef-Microsoft-Visual-C-Redistributable | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files |
 | mpdecimal | 4.0.0 | BSD-2-Clause | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
-| mpdecimal | 2.5.1 | BSD-2-Clause | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
+| mpdecimal | 2.5.1 | BSD-2-Clause | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
 | OpenSSL | 3.5.8 | Apache-2.0 | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases/tag/openssl-3.5.8 |
-| OpenSSL | 3.0.16 | Apache-2.0 | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases |
+| OpenSSL | 3.0.16 | Apache-2.0 | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases |
 | PyInstaller (bootloader) | 6.6.0 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.6.0 |
-| PyInstaller (bootloader) | 6.22.3 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.22.3 |
+| PyInstaller (bootloader) | 6.22.3 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.22.3 |
 | Python | 3.12.14 | PSF-2.0 | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.14/Python-3.12.14.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
-| Python | 3.12.10 | PSF-2.0 | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
+| Python | 3.12.10 | PSF-2.0 | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
 | SQLite | 3.53.1 | blessing (public domain) | Kjøretid | Mac | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.sqlite.org/download.html |
 | xz (liblzma) | ukjent | 0BSD | Kjøretid | Mac, Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/tukaani-project/xz/releases |
-| zlib | ukjent | Zlib | Kjøretid | Windows | compare, keyframes, loudness, metadata, ocr, pdf-tables, redact, subtitles | https://zlib.net/ |
+| zlib | ukjent | Zlib | Kjøretid | Windows | compare, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://zlib.net/ |
 | altgraph | 0.17.5 | MIT | Python-pakke | Windows | ocr | https://pypi.org/project/altgraph/0.17.5/#files (kildekodearkiv: https://github.com/ronaldoussoren/altgraph) |
 | annotated-types | 0.8.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/annotated-types/0.8.0/#files (kildekodearkiv: https://github.com/annotated-types/annotated-types) |
 | attrs | 26.1.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/attrs/26.1.0/#files (kildekodearkiv: https://github.com/python-attrs/attrs) |
@@ -120,11 +120,11 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | Brotli | ukjent | MIT | Windows-bibliotek | Windows | ocr | https://github.com/google/brotli/releases |
 | Expat | ukjent | MIT | Windows-bibliotek | Windows | ocr | https://github.com/libexpat/libexpat/releases |
 | FreeType | ukjent | FTL OR GPL-2.0-or-later | Windows-bibliotek | Windows | redact | https://download.savannah.gnu.org/releases/freetype/ |
-| GCC-kjøretid (libgcc, libstdc++, libgomp) | ukjent | GPL-3.0-or-later WITH GCC-exception-3.1 | Windows-bibliotek | Windows | ocr | https://gcc.gnu.org/ |
+| GCC-kjøretid (libgcc, libstdc++, libgomp) | ukjent | GPL-3.0-or-later WITH GCC-exception-3.1 | Windows-bibliotek | Windows | nynorsk, ocr | https://gcc.gnu.org/ |
 | gettext (libintl) | ukjent | LGPL-2.1-or-later | Windows-bibliotek | Windows | ocr | https://ftp.gnu.org/gnu/gettext/ |
 | giflib | ukjent | MIT | Windows-bibliotek | Windows | ocr | https://sourceforge.net/projects/giflib/files/ |
-| GNU libiconv | ukjent | LGPL-2.1-or-later | Windows-bibliotek | Windows | ocr | https://ftp.gnu.org/gnu/libiconv/ |
-| ICU | ukjent | Unicode-3.0 | Windows-bibliotek | Windows | redact | https://github.com/unicode-org/icu/releases |
+| GNU libiconv | ukjent | LGPL-2.1-or-later | Windows-bibliotek | Windows | nynorsk, ocr | https://ftp.gnu.org/gnu/libiconv/ |
+| ICU | ukjent | Unicode-3.0 | Windows-bibliotek | Windows | nynorsk, redact | https://github.com/unicode-org/icu/releases |
 | JBIG-KIT | ukjent | GPL-2.0-or-later | Windows-bibliotek | Windows | ocr | https://www.cl.cam.ac.uk/~mgk25/jbigkit/ |
 | Leptonica | ukjent | BSD-2-Clause | Windows-bibliotek | Windows | ocr | https://github.com/DanBloomberg/leptonica/releases |
 | LERC | ukjent | Apache-2.0 | Windows-bibliotek | Windows | ocr, redact | https://github.com/Esri/lerc/releases |
@@ -140,13 +140,19 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | libtiff | ukjent | libtiff | Windows-bibliotek | Windows | ocr, redact | https://download.osgeo.org/libtiff/ |
 | libunistring | ukjent | LGPL-3.0-or-later OR GPL-2.0-or-later | Windows-bibliotek | Windows | ocr | https://ftp.gnu.org/gnu/libunistring/ |
 | libwebp | ukjent | BSD-3-Clause | Windows-bibliotek | Windows | ocr | https://github.com/webmproject/libwebp/releases |
+| libxml2 | ukjent | MIT | Windows-bibliotek | Windows | nynorsk | https://gitlab.gnome.org/GNOME/libxml2/-/releases |
 | Little CMS | ukjent | MIT | Windows-bibliotek | Windows | redact | https://github.com/mm2/Little-CMS/releases |
+| lttoolbox (liblttoolbox) | ukjent | GPL-2.0-or-later | Windows-bibliotek | Windows | nynorsk | https://github.com/apertium/lttoolbox |
 | LZ4 | ukjent | BSD-2-Clause | Windows-bibliotek | Windows | ocr | https://github.com/lz4/lz4/releases |
 | Microsoft Visual C++ Redistributable (vcruntime140, msvcp140) | ukjent | LicenseRef-Microsoft-Visual-C-Redistributable | Windows-bibliotek | Windows | redact | https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files |
 | OpenJPEG | ukjent | BSD-2-Clause | Windows-bibliotek | Windows | ocr, redact | https://github.com/uclouvain/openjpeg/releases |
 | OpenSSL | ukjent | Apache-2.0 | Windows-bibliotek | Windows | redact | https://github.com/openssl/openssl/releases |
-| winpthreads (mingw-w64) | ukjent | MIT AND BSD-3-Clause | Windows-bibliotek | Windows | ocr | https://github.com/mingw-w64/mingw-w64 |
+| SQLite | ukjent | blessing (public domain) | Windows-bibliotek | Windows | nynorsk | https://www.sqlite.org/download.html |
+| VISL CG-3 (libcg3) | ukjent | GPL-3.0-or-later | Windows-bibliotek | Windows | nynorsk | https://github.com/GrammarSoft/cg3 |
+| winpthreads (mingw-w64) | ukjent | MIT AND BSD-3-Clause | Windows-bibliotek | Windows | nynorsk, ocr | https://github.com/mingw-w64/mingw-w64 |
 | Zstandard | ukjent | BSD-3-Clause OR GPL-2.0-only | Windows-bibliotek | Windows | ocr, redact | https://github.com/facebook/zstd/releases |
+| Apertium for Windows (apertium-all-dev) | 2026-10-14 | GPL-2.0-or-later AND GPL-3.0-or-later | Windows-program | Windows | nynorsk | https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-lttoolbox-ed9b682b9e3e.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-d8dfb942e31d.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-lex-tools-1ccefa6269ad.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-separable-18045e4da12c.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-cg3-0250250fe982.tar.gz |
+| Apertium-språkdata (apertium-nno-nob) | 1.6.0 | GPL-2.0-or-later | Windows-program | Windows | nynorsk | https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nob-3d63c61e5520.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nno-2efb61642310.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nno-nob-af921d87acad.tar.gz |
 | ExifTool (Windows-pakke) | 13.59 | Artistic-1.0-Perl OR GPL-1.0-or-later | Windows-program | Windows | metadata | https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-13.59.tar.gz (Strawberry Perl: https://strawberryperl.com/releases.html) |
 | FFmpeg (gyan.dev essentials) | 9.0.2 | GPL-3.0-or-later | Windows-program | Windows | keyframes, loudness | https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz (commit 946fcce07b; bibliotekene og versjonene står i README.txt) |
 | poppler (poppler-windows, conda-forge) | 26.09.0-0 | GPL-2.0-only OR GPL-3.0-only | Windows-program | Windows | redact | https://poppler.freedesktop.org/poppler-26.09.0.tar.xz (byggeoppskrift: https://github.com/conda-forge/poppler-feedstock) |
