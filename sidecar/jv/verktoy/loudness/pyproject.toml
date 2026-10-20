@@ -1,0 +1,16 @@
+[project]
+name = "jv-loudness"
+version = "0.1.0"
+description = "Normaliserer lydnivået (LUFS/true peak) i lyd og video med ffmpeg loudnorm"
+requires-python = ">=3.12,<3.13"
+dependencies = ["jv-common"]
+
+[project.entry-points."jv.tools"]
+loudness = "jv_loudness.cli:main"
+
+[tool.uv.sources]
+jv-common = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13"]
+build-backend = "uv_build"

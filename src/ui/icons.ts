@@ -24,6 +24,24 @@ const PATHS: Record<string, string> = {
   close: '<path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>',
   trash:
     '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/>',
+  compare:
+    '<path d="M4 5h6v14H4zM14 5h6v14h-6z M6.5 9h1M6.5 12h1M16.5 9h1M16.5 12h1" stroke-linecap="round" stroke-linejoin="round"/>',
+  metadata:
+    '<path d="M3 12V4h8l9 9-8 8z" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.2"/>',
+  keyframes:
+    '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z" stroke-linejoin="round"/>',
+  loudness:
+    '<path d="M4 9v6h3.5L12 19V5L7.5 9zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke-linecap="round" stroke-linejoin="round"/>',
+  subtitles:
+    '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 11h4M13 11h4M7 15h2M11 15h6" stroke-linecap="round"/>',
+  table:
+    '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 10h18M3 14.5h18M9 5v14M15 5v14"/>',
+  ocr: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10" stroke-linecap="round" stroke-linejoin="round"/>',
+  redact:
+    '<path d="M6 3h8l4 4v14H6z M14 3v4h4" stroke-linejoin="round"/><path d="M9 12h6M9 16h6" stroke-width="3.2" stroke-linecap="butt"/>',
+  language:
+    '<path d="M4 6h9M8.5 4v2M6 6c.5 3 3 6 6 7M12 6c-.7 3.5-3.5 6.5-7 8M12.5 20l4-9 4 9M13.9 17h5.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  swap: '<path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" stroke-linecap="round" stroke-linejoin="round"/>',
 };
 
 /** Et ikon som `<span>`, i tekstfargen, skjult for skjermlesere. */

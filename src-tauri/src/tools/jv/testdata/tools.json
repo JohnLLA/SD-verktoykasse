@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "targets": [
+    "aarch64-apple-darwin",
+    "x86_64-pc-windows-msvc"
+  ],
+  "tools": [
+    {
+      "id": "ocr",
+      "name": "Søkbare PDF-er (OCR)",
+      "version": "0.1.0",
+      "target": "aarch64-apple-darwin",
+      "url": "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/jv-ocr-v0.1.0/jv-ocr-0.1.0-aarch64-apple-darwin.tar.gz",
+      "bytes": 100000000,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "min_app_version": "0.1.0",
+      "min_os": "14.0",
+      "notes": "Testkatalog."
+    },
+    {
+      "id": "subtitles",
+      "name": "Teksting",
+      "version": "0.1.0",
+      "target": "aarch64-apple-darwin",
+      "url": "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/jv-subtitles-v0.1.0/jv-subtitles-0.1.0-aarch64-apple-darwin.tar.gz",
+      "bytes": 10000000,
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "min_app_version": "0.1.0",
+      "min_os": "11.0",
+      "notes": "Testkatalog."
+    }
+  ]
+}

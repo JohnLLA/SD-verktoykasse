@@ -11,6 +11,7 @@
 //   cpu      = nei: prosessoren mangler AVX2
 //   nedlasting = feil: nedlasting stopper med «ingen nett» midt i
 //   os       = windows | mac
+// Journalistverktøyene har egne parametere, se `mock-jv.ts`.
 // `window.__mock.drop(["/mappe/fil.mp3"])` etterligner at filer slippes i vinduet.
 
 import catalog from "../../models.json";
@@ -29,7 +30,9 @@ import type {
   SystemInfo,
   TranscribeRequest,
 } from "../tools/transkribering/api";
+import { setJvBackend } from "../tools/jv/backend";
 import { setBackend } from "../tools/transkribering/backend";
+import { createMockJv } from "./mock-jv";
 import { MemorySettings } from "../lib/settings";
 import type { Platform } from "../platform/types";
 import type { Os } from "../lib/platform-info";
@@ -286,15 +289,22 @@ function mockOs(): Os {
 
 export async function installMock(): Promise<Platform> {
   setBackend(new MockBackend());
+  setJvBackend(createMockJv());
   const settings = new MemorySettings();
-  let dropHandlers: { onFiles(p: string[]): void; onHover(o: boolean): void } | null = null;
+  const dropHandlers = new Set<{ onFiles(p: string[]): void; onHover(o: boolean): void }>();
   let url: string | null = null;
 
   const platform: Platform = {
     os: mockOs(),
     settings,
-    async pickFiles() {
-      return ["/Users/kari/Intervjuer/Ordfører og ny skole.mp3"];
+    async pickFiles(opts) {
+      const ext = opts?.extensions?.[0] ?? "mp3";
+      if (ext === "mp3") return ["/Users/kari/Intervjuer/Ordfører og ny skole.mp3"];
+      // Journalistverktøyene: en passende fil (to for sammenligning).
+      if (opts.extensions.includes("docx") && opts.extensions.includes("pdf")) {
+        return ["/Users/kari/Saker/Vedtak utkast 1.docx", "/Users/kari/Saker/Vedtak utkast 2.docx"];
+      }
+      return [`/Users/kari/Saker/Innsyn bygdebok.${ext}`];
     },
     async pickFolder() {
       return "/Volumes/Redaksjonen/Delte modeller";
@@ -303,9 +313,9 @@ export async function installMock(): Promise<Platform> {
       return o.defaultPath;
     },
     async onDrop(h) {
-      dropHandlers = h;
+      dropHandlers.add(h);
       return () => {
-        dropHandlers = null;
+        dropHandlers.delete(h);
       };
     },
     async playbackUrl() {
@@ -343,8 +353,8 @@ export async function installMock(): Promise<Platform> {
   };
 
   (window as unknown as { __mock: unknown }).__mock = {
-    drop: (paths: string[]) => dropHandlers?.onFiles(paths),
-    hover: (over: boolean) => dropHandlers?.onHover(over),
+    drop: (paths: string[]) => dropHandlers.forEach((h) => h.onFiles(paths)),
+    hover: (over: boolean) => dropHandlers.forEach((h) => h.onHover(over)),
   };
   return platform;
 }

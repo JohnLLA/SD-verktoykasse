@@ -1,0 +1,577 @@
+{
+ "table1": [
+  {
+   "post": "Skatt på inntekt og formue",
+   "regnskap_2025": 1234567.5,
+   "budsjett_2026": 1301000.0,
+   "endring": 66432.5,
+   "tekst": [
+    "1 234 567,50",
+    "1 301 000,00",
+    "66 432,50"
+   ]
+  },
+  {
+   "post": "Rammetilskudd",
+   "regnskap_2025": 2450000.0,
+   "budsjett_2026": 2398500.25,
+   "endring": -51499.75,
+   "tekst": [
+    "2 450 000,00",
+    "2 398 500,25",
+    "(51 499,75)"
+   ]
+  },
+  {
+   "post": "Brukerbetalinger",
+   "regnskap_2025": 312400.75,
+   "budsjett_2026": 298000.0,
+   "endring": -14400.75,
+   "tekst": [
+    "312 400,75",
+    "298 000,00",
+    "(14 400,75)"
+   ]
+  },
+  {
+   "post": "Salgsinntekter",
+   "regnskap_2025": 87650.0,
+   "budsjett_2026": 91200.0,
+   "endring": 3550.0,
+   "tekst": [
+    "87 650,00",
+    "91 200,00",
+    "3 550,00"
+   ]
+  },
+  {
+   "post": "Renteutgifter",
+   "regnskap_2025": -145320.4,
+   "budsjett_2026": -162000.0,
+   "endring": -16679.6,
+   "tekst": [
+    "−145 320,40",
+    "−162 000,00",
+    "−16 679,60"
+   ]
+  },
+  {
+   "post": "Avdrag på lån",
+   "regnskap_2025": -410000.0,
+   "budsjett_2026": -398250.6,
+   "endring": 11749.4,
+   "tekst": [
+    "-410 000,00",
+    "-398 250,60",
+    "11 749,40"
+   ]
+  }
+ ],
+ "table2": [
+  {
+   "ansvar": "1000",
+   "rammeomrade": "Oppvekst",
+   "budsjett_2026": 250000.0,
+   "endring": -24690.0,
+   "tekst": [
+    "250 000,00",
+    "(24 690,00)"
+   ]
+  },
+  {
+   "ansvar": "1010",
+   "rammeomrade": "Helse og omsorg",
+   "budsjett_2026": 287123.45,
+   "endring": -17283.0,
+   "tekst": [
+    "287 123,45",
+    "−17 283,00"
+   ]
+  },
+  {
+   "ansvar": "1020",
+   "rammeomrade": "Kultur",
+   "budsjett_2026": 324246.9,
+   "endring": -9876.0,
+   "tekst": [
+    "324 246,90",
+    "−9 876,00"
+   ]
+  },
+  {
+   "ansvar": "1030",
+   "rammeomrade": "Teknisk drift",
+   "budsjett_2026": 361370.35,
+   "endring": -2469.0,
+   "tekst": [
+    "361 370,35",
+    "(2 469,00)"
+   ]
+  },
+  {
+   "ansvar": "1040",
+   "rammeomrade": "Sentraladministrasjon",
+   "budsjett_2026": 398493.8,
+   "endring": 4938.0,
+   "tekst": [
+    "398 493,80",
+    "4 938,00"
+   ]
+  },
+  {
+   "ansvar": "1050",
+   "rammeomrade": "Næring",
+   "budsjett_2026": 435617.25,
+   "endring": 12345.0,
+   "tekst": [
+    "435 617,25",
+    "12 345,00"
+   ]
+  },
+  {
+   "ansvar": "1060",
+   "rammeomrade": "Barnevern",
+   "budsjett_2026": 472740.7,
+   "endring": 19752.0,
+   "tekst": [
+    "472 740,70",
+    "19 752,00"
+   ]
+  },
+  {
+   "ansvar": "1070",
+   "rammeomrade": "NAV",
+   "budsjett_2026": 509864.15,
+   "endring": -23455.5,
+   "tekst": [
+    "509 864,15",
+    "−23 455,50"
+   ]
+  },
+  {
+   "ansvar": "1080",
+   "rammeomrade": "Brann og redning",
+   "budsjett_2026": 546987.6,
+   "endring": -16048.5,
+   "tekst": [
+    "546 987,60",
+    "−16 048,50"
+   ]
+  },
+  {
+   "ansvar": "1090",
+   "rammeomrade": "Havn",
+   "budsjett_2026": 584111.05,
+   "endring": -8641.5,
+   "tekst": [
+    "584 111,05",
+    "(8 641,50)"
+   ]
+  },
+  {
+   "ansvar": "1100",
+   "rammeomrade": "Oppvekst",
+   "budsjett_2026": 621234.5,
+   "endring": -1234.5,
+   "tekst": [
+    "621 234,50",
+    "−1 234,50"
+   ]
+  },
+  {
+   "ansvar": "1110",
+   "rammeomrade": "Helse og omsorg",
+   "budsjett_2026": 658357.95,
+   "endring": 6172.5,
+   "tekst": [
+    "658 357,95",
+    "6 172,50"
+   ]
+  },
+  {
+   "ansvar": "1120",
+   "rammeomrade": "Kultur",
+   "budsjett_2026": 695481.4,
+   "endring": 13579.5,
+   "tekst": [
+    "695 481,40",
+    "13 579,50"
+   ]
+  },
+  {
+   "ansvar": "1130",
+   "rammeomrade": "Teknisk drift",
+   "budsjett_2026": 732604.85,
+   "endring": 20986.5,
+   "tekst": [
+    "732 604,85",
+    "20 986,50"
+   ]
+  },
+  {
+   "ansvar": "1140",
+   "rammeomrade": "Sentraladministrasjon",
+   "budsjett_2026": 769728.3,
+   "endring": -22221.0,
+   "tekst": [
+    "769 728,30",
+    "−22 221,00"
+   ]
+  },
+  {
+   "ansvar": "1150",
+   "rammeomrade": "Næring",
+   "budsjett_2026": 806851.75,
+   "endring": -14814.0,
+   "tekst": [
+    "806 851,75",
+    "(14 814,00)"
+   ]
+  },
+  {
+   "ansvar": "1160",
+   "rammeomrade": "Barnevern",
+   "budsjett_2026": 843975.2,
+   "endring": -7407.0,
+   "tekst": [
+    "843 975,20",
+    "−7 407,00"
+   ]
+  },
+  {
+   "ansvar": "1170",
+   "rammeomrade": "NAV",
+   "budsjett_2026": 881098.65,
+   "endring": 0.0,
+   "tekst": [
+    "881 098,65",
+    "0,00"
+   ]
+  },
+  {
+   "ansvar": "1180",
+   "rammeomrade": "Brann og redning",
+   "budsjett_2026": 918222.1,
+   "endring": 7407.0,
+   "tekst": [
+    "918 222,10",
+    "7 407,00"
+   ]
+  },
+  {
+   "ansvar": "1190",
+   "rammeomrade": "Havn",
+   "budsjett_2026": 955345.55,
+   "endring": 14814.0,
+   "tekst": [
+    "955 345,55",
+    "14 814,00"
+   ]
+  },
+  {
+   "ansvar": "1200",
+   "rammeomrade": "Oppvekst",
+   "budsjett_2026": 992469.0,
+   "endring": 22221.0,
+   "tekst": [
+    "992 469,00",
+    "22 221,00"
+   ]
+  },
+  {
+   "ansvar": "1210",
+   "rammeomrade": "Helse og omsorg",
+   "budsjett_2026": 1029592.45,
+   "endring": -20986.5,
+   "tekst": [
+    "1 029 592,45",
+    "(20 986,50)"
+   ]
+  },
+  {
+   "ansvar": "1220",
+   "rammeomrade": "Kultur",
+   "budsjett_2026": 1066715.9,
+   "endring": -13579.5,
+   "tekst": [
+    "1 066 715,90",
+    "−13 579,50"
+   ]
+  },
+  {
+   "ansvar": "1230",
+   "rammeomrade": "Teknisk drift",
+   "budsjett_2026": 1103839.35,
+   "endring": -6172.5,
+   "tekst": [
+    "1 103 839,35",
+    "−6 172,50"
+   ]
+  },
+  {
+   "ansvar": "1240",
+   "rammeomrade": "Sentraladministrasjon",
+   "budsjett_2026": 1140962.8,
+   "endring": 1234.5,
+   "tekst": [
+    "1 140 962,80",
+    "1 234,50"
+   ]
+  },
+  {
+   "ansvar": "1250",
+   "rammeomrade": "Næring",
+   "budsjett_2026": 1178086.25,
+   "endring": 8641.5,
+   "tekst": [
+    "1 178 086,25",
+    "8 641,50"
+   ]
+  },
+  {
+   "ansvar": "1260",
+   "rammeomrade": "Barnevern",
+   "budsjett_2026": 1215209.7,
+   "endring": 16048.5,
+   "tekst": [
+    "1 215 209,70",
+    "16 048,50"
+   ]
+  },
+  {
+   "ansvar": "1270",
+   "rammeomrade": "NAV",
+   "budsjett_2026": 1252333.15,
+   "endring": 23455.5,
+   "tekst": [
+    "1 252 333,15",
+    "23 455,50"
+   ]
+  },
+  {
+   "ansvar": "1280",
+   "rammeomrade": "Brann og redning",
+   "budsjett_2026": 1289456.6,
+   "endring": -19752.0,
+   "tekst": [
+    "1 289 456,60",
+    "−19 752,00"
+   ]
+  },
+  {
+   "ansvar": "1290",
+   "rammeomrade": "Havn",
+   "budsjett_2026": 1326580.05,
+   "endring": -12345.0,
+   "tekst": [
+    "1 326 580,05",
+    "−12 345,00"
+   ]
+  },
+  {
+   "ansvar": "1300",
+   "rammeomrade": "Oppvekst",
+   "budsjett_2026": 1363703.5,
+   "endring": -4938.0,
+   "tekst": [
+    "1 363 703,50",
+    "(4 938,00)"
+   ]
+  },
+  {
+   "ansvar": "1310",
+   "rammeomrade": "Helse og omsorg",
+   "budsjett_2026": 1400826.95,
+   "endring": 2469.0,
+   "tekst": [
+    "1 400 826,95",
+    "2 469,00"
+   ]
+  },
+  {
+   "ansvar": "1320",
+   "rammeomrade": "Kultur",
+   "budsjett_2026": 1437950.4,
+   "endring": 9876.0,
+   "tekst": [
+    "1 437 950,40",
+    "9 876,00"
+   ]
+  },
+  {
+   "ansvar": "1330",
+   "rammeomrade": "Teknisk drift",
+   "budsjett_2026": 1475073.85,
+   "endring": 17283.0,
+   "tekst": [
+    "1 475 073,85",
+    "17 283,00"
+   ]
+  },
+  {
+   "ansvar": "1340",
+   "rammeomrade": "Sentraladministrasjon",
+   "budsjett_2026": 1512197.3,
+   "endring": 24690.0,
+   "tekst": [
+    "1 512 197,30",
+    "24 690,00"
+   ]
+  },
+  {
+   "ansvar": "1350",
+   "rammeomrade": "Næring",
+   "budsjett_2026": 1549320.75,
+   "endring": -18517.5,
+   "tekst": [
+    "1 549 320,75",
+    "−18 517,50"
+   ]
+  },
+  {
+   "ansvar": "1360",
+   "rammeomrade": "Barnevern",
+   "budsjett_2026": 1586444.2,
+   "endring": -11110.5,
+   "tekst": [
+    "1 586 444,20",
+    "(11 110,50)"
+   ]
+  },
+  {
+   "ansvar": "1370",
+   "rammeomrade": "NAV",
+   "budsjett_2026": 1623567.65,
+   "endring": -3703.5,
+   "tekst": [
+    "1 623 567,65",
+    "−3 703,50"
+   ]
+  },
+  {
+   "ansvar": "1380",
+   "rammeomrade": "Brann og redning",
+   "budsjett_2026": 1660691.1,
+   "endring": 3703.5,
+   "tekst": [
+    "1 660 691,10",
+    "3 703,50"
+   ]
+  },
+  {
+   "ansvar": "1390",
+   "rammeomrade": "Havn",
+   "budsjett_2026": 1697814.55,
+   "endring": 11110.5,
+   "tekst": [
+    "1 697 814,55",
+    "11 110,50"
+   ]
+  },
+  {
+   "ansvar": "1400",
+   "rammeomrade": "Oppvekst",
+   "budsjett_2026": 1734938.0,
+   "endring": 18517.5,
+   "tekst": [
+    "1 734 938,00",
+    "18 517,50"
+   ]
+  },
+  {
+   "ansvar": "1410",
+   "rammeomrade": "Helse og omsorg",
+   "budsjett_2026": 1772061.45,
+   "endring": -24690.0,
+   "tekst": [
+    "1 772 061,45",
+    "−24 690,00"
+   ]
+  },
+  {
+   "ansvar": "1420",
+   "rammeomrade": "Kultur",
+   "budsjett_2026": 1809184.9,
+   "endring": -17283.0,
+   "tekst": [
+    "1 809 184,90",
+    "(17 283,00)"
+   ]
+  },
+  {
+   "ansvar": "1430",
+   "rammeomrade": "Teknisk drift",
+   "budsjett_2026": 1846308.35,
+   "endring": -9876.0,
+   "tekst": [
+    "1 846 308,35",
+    "−9 876,00"
+   ]
+  },
+  {
+   "ansvar": "1440",
+   "rammeomrade": "Sentraladministrasjon",
+   "budsjett_2026": 1883431.8,
+   "endring": -2469.0,
+   "tekst": [
+    "1 883 431,80",
+    "−2 469,00"
+   ]
+  },
+  {
+   "ansvar": "1450",
+   "rammeomrade": "Næring",
+   "budsjett_2026": 1920555.25,
+   "endring": 4938.0,
+   "tekst": [
+    "1 920 555,25",
+    "4 938,00"
+   ]
+  },
+  {
+   "ansvar": "1460",
+   "rammeomrade": "Barnevern",
+   "budsjett_2026": 1957678.7,
+   "endring": 12345.0,
+   "tekst": [
+    "1 957 678,70",
+    "12 345,00"
+   ]
+  },
+  {
+   "ansvar": "1470",
+   "rammeomrade": "NAV",
+   "budsjett_2026": 1994802.15,
+   "endring": 19752.0,
+   "tekst": [
+    "1 994 802,15",
+    "19 752,00"
+   ]
+  },
+  {
+   "ansvar": "1480",
+   "rammeomrade": "Brann og redning",
+   "budsjett_2026": 2031925.6,
+   "endring": -23455.5,
+   "tekst": [
+    "2 031 925,60",
+    "(23 455,50)"
+   ]
+  },
+  {
+   "ansvar": "1490",
+   "rammeomrade": "Havn",
+   "budsjett_2026": 2069049.05,
+   "endring": -16048.5,
+   "tekst": [
+    "2 069 049,05",
+    "−16 048,50"
+   ]
+  }
+ ],
+ "pages": 2,
+ "table2_pages": [
+  1,
+  2
+ ]
+}

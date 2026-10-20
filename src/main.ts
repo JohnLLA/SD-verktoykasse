@@ -4,7 +4,10 @@
 import { createTauriPlatform, insideTauri } from "./platform/tauri";
 import type { Platform } from "./platform/types";
 import { startApp } from "./shell/app";
-import { tools } from "./tools/registry";
+import { sharedJv } from "./tools/jv";
+import { mountJvAbout } from "./tools/jv/about-section";
+import { mountJvSettings } from "./tools/jv/settings-section";
+import { menuGroups, tools } from "./tools/registry";
 
 async function boot(): Promise<void> {
   const root = document.getElementById("app");
@@ -19,7 +22,14 @@ async function boot(): Promise<void> {
   } else {
     return;
   }
-  await startApp(root, platform, tools);
+  const jv = sharedJv(platform);
+  await startApp(root, platform, tools, {
+    groups: menuGroups,
+    extras: {
+      mountSettings: (host) => mountJvSettings(host, jv),
+      mountAbout: (host) => mountJvAbout(host, jv),
+    },
+  });
 }
 
 void boot();

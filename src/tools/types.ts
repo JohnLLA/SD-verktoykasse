@@ -14,11 +14,25 @@ export interface ToolContext {
 
 export type Busy = "running" | "unsaved" | null;
 
+/**
+ * Hvordan verktøyet står i menyen: `ready` (vanlig), `download` (ikke lastet
+ * ned: grå tekst og nedlastingsikon, men kan klikkes) og `soon` («Kommer»).
+ */
+export type MenuStatus = "ready" | "download" | "soon";
+
+export interface MenuInfo {
+  status(): MenuStatus;
+  /** Kalles hver gang statusen kan ha endret seg. */
+  subscribe(listener: () => void): void;
+}
+
 export interface ToolInstance {
   /** Tegner verktøyets skjerm. Kalles én gang; skjermen beholdes når man bytter side. */
   mountScreen(root: HTMLElement): void;
   /** Tegner verktøyets del av Innstillinger. `refresh` kalles hver gang siden vises. */
   mountSettings?(root: HTMLElement): { refresh(): void };
+  /** Bare for verktøy som kan være ikke lastet ned (journalistverktøyene). */
+  menu?: MenuInfo;
   /** Starter opp (lytter på hendelser, leser innstillinger). */
   init?(): Promise<void>;
   /** Skjermen vises nå. */

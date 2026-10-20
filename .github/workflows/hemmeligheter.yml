@@ -1,0 +1,28 @@
+# Stopper bygget hvis nøkler, .env-filer, notarisering/ eller .claude/ og oppsett/ fra
+# Verktoy2_0 har kommet inn i repoet (spesifikasjon-journalistverktoy.md, steg 6).
+# Kjøres på alle PR-er og push til main, uten stifilter. Ingen hemmeligheter brukes.
+name: hemmeligheter
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sperre:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ingen hemmeligheter eller sperrede mapper
+        run: tools/sjekk-hemmeligheter.sh

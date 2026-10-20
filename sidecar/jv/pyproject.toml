@@ -1,0 +1,23 @@
+[project]
+name = "journalistverktoy"
+version = "0.1.0"
+description = "Lette, lokale verktøy for journalister (uv-workspace)"
+requires-python = ">=3.12,<3.13"
+dependencies = ["jv-common"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+jv-common = { workspace = true }
+
+[tool.uv.workspace]
+members = ["verktoy/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["verktoy", "pakking/mac/tests"]
+# importlib mode lets every tool have its own tests/ with overlapping file names
+addopts = "--import-mode=importlib -ra"

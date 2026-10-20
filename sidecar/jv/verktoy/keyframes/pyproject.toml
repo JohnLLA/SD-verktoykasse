@@ -1,0 +1,16 @@
+[project]
+name = "jv-keyframes"
+version = "0.1.0"
+description = "Stillbilder fra video med tidskode og kontaktark"
+requires-python = ">=3.12,<3.13"
+dependencies = ["jv-common", "pillow>=10.1"]
+
+[project.entry-points."jv.tools"]
+keyframes = "jv_keyframes.cli:main"
+
+[tool.uv.sources]
+jv-common = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13"]
+build-backend = "uv_build"

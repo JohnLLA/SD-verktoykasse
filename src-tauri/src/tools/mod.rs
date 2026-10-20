@@ -5,11 +5,17 @@
 
 pub mod transkribering;
 
+// Journalistverktøyene: én plugin (`jv`) for katalog, nedlasting og kjøring av
+// de ni verktøypakkene. Menyoppføringene lages i frontend (steg 6.3).
+pub mod jv;
+
 use tauri::{Builder, Runtime};
 
 /// ID-ene til verktøyene, i rekkefølgen de vises.
 pub const TOOLS: &[&str] = &[transkribering::ID];
 
 pub fn register<R: Runtime>(builder: Builder<R>) -> Builder<R> {
-    builder.plugin(transkribering::plugin())
+    builder
+        .plugin(transkribering::plugin())
+        .plugin(jv::plugin())
 }

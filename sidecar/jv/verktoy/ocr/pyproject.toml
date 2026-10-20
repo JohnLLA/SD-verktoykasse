@@ -1,0 +1,21 @@
+[project]
+name = "jv-ocr"
+version = "0.1.0"
+description = "Gjør skannede PDF-er og bilder søkbare med OCR (ocrmypdf, norsk og engelsk)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "jv-common",
+    "ocrmypdf>=16",
+    "pikepdf>=8",
+    "pymupdf>=1.24",
+]
+
+[project.entry-points."jv.tools"]
+ocr = "jv_ocr.cli:main"
+
+[tool.uv.sources]
+jv-common = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13"]
+build-backend = "uv_build"

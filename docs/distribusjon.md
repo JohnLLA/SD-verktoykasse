@@ -1,6 +1,6 @@
 # Distribusjon: bygg, signering, oppdatering og release
 
-Steg 4. Dette dokumentet er oppskriften for John Inge. Agentene lager ikke releaser, pusher ikke versjonstagger og laster ikke opp installasjonsfiler (regel 11). Alt under er forberedt og venter på at du lager hemmelighetene og trykker på knappen.
+Steg 4. Dette dokumentet er oppskriften for John Inge. Agentene publiserer ikke releaser og laster ikke opp installasjonsfiler. Versjonstaggen pusher de når du ber om det (regel 11). Alt under er forberedt og venter på at du lager hemmelighetene og trykker på knappen.
 
 Det som er prøvd og ikke prøvd, står i PR-beskrivelsen. Det som må prøves på ekte maskiner, står i `docs/sjekkliste-steg-4.md` (merket «ikke kjørt på enhet»).
 
@@ -8,7 +8,7 @@ Det som er prøvd og ikke prøvd, står i PR-beskrivelsen. Det som må prøves p
 
 ```
 privat repo  JohnLLA/lla-verktoykasse            kode, CI, hemmeligheter
-                    |  tagg v0.2.0 (du pusher)
+                    |  tagg v0.2.0 (agenten pusher når du ber om det)
                     v
         arbeidsflyten «release»  (.github/workflows/release.yml)
           1. plan: sjekker tagg, versjon, hemmeligheter, tester

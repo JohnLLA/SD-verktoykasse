@@ -10,7 +10,7 @@ export interface AboutView {
   refresh(): void;
 }
 
-export function createAboutView(platform: Platform): AboutView {
+export function createAboutView(platform: Platform, toolSections: readonly { refresh(): void }[] = [], sectionHosts: readonly HTMLElement[] = []): AboutView {
   const A = t.about;
   const heading = h("h1", { class: "page-title", tabindex: -1, text: A.title });
   const version = h("p", { class: "about-version", text: A.versionUnknown });
@@ -78,6 +78,7 @@ export function createAboutView(platform: Platform): AboutView {
       licenses,
       full,
     ),
+    ...sectionHosts,
   );
 
   return {
@@ -87,6 +88,7 @@ export function createAboutView(platform: Platform): AboutView {
       void platform.appVersion().then((v) => {
         if (v) version.textContent = A.version(v);
       });
+      for (const s of toolSections) s.refresh();
     },
   };
 }

@@ -86,7 +86,7 @@ ol {
 
 .shell {
   display: grid;
-  grid-template-columns: 224px minmax(0, 1fr);
+  grid-template-columns: 256px minmax(0, 1fr);
   height: 100%;
 }
 
@@ -1140,4 +1140,393 @@ input.switch:checked::after {
   .main {
     padding-inline: 24px;
   }
+}
+
+/* ---------- journalistverktøyene (jv) ---------- */
+
+.nav-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.nav-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.nav-group .nav-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.nav-group-title {
+  padding: 0 12px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.nav-item > span:not(.icon):not(.nav-extra) {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.nav-item-muted:not([aria-current="page"]) {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.nav-extra {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.nav-sub {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.nav-item:has(.nav-extra) {
+  gap: 10px;
+}
+
+.tool-lead {
+  max-width: 62ch;
+  margin-bottom: 20px;
+  font-size: 1.0625rem;
+}
+
+.view-install .install-body {
+  display: grid;
+  gap: 16px;
+}
+
+.install-local {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-soon > .icon,
+.card-done > .icon {
+  color: var(--success);
+}
+
+.card-soon > .icon {
+  color: var(--gold);
+}
+
+.drop-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.view-jv > .notice,
+.view-jv > .jv-result-slot {
+  margin-top: 12px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 2px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.input-number {
+  width: 8rem;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.help-bad {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.choice-toggle {
+  flex-basis: 100%;
+  max-width: 560px;
+}
+
+.choice-toggle .help {
+  max-width: none;
+}
+
+.choice-file {
+  max-width: 560px;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ready-item .badge {
+  margin-left: 0;
+  color: var(--text-muted);
+}
+
+.badge-warn {
+  border-color: var(--warning);
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.result {
+  display: grid;
+  gap: 18px;
+}
+
+.result .card-title {
+  font-size: 1.25rem;
+}
+
+.draft-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid var(--warning);
+  border-radius: 8px;
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.result-subtitle {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.warn-list {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.warn-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--warning);
+  border-radius: 10px;
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.warn-item .icon {
+  margin-top: 2px;
+}
+
+.warn-item span:last-child {
+  overflow-wrap: anywhere;
+}
+
+.meta-list {
+  display: grid;
+  gap: 10px;
+}
+
+.meta-details {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.meta-details > summary {
+  font-weight: 600;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.meta-group {
+  margin-top: 14px;
+}
+
+.meta-group-title {
+  margin-bottom: 6px;
+  font-size: 0.9375rem;
+}
+
+.meta-fields {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.meta-field {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.meta-field dt {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.meta-field dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.meta-sensitive dd {
+  font-weight: 600;
+}
+
+.review-summary {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.review-count {
+  margin-bottom: 8px;
+}
+
+.plan-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.plan-table th,
+.plan-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.plan-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.plan-table th {
+  background: var(--surface-2);
+  font-size: 0.875rem;
+}
+
+.plan-cell-check {
+  width: 4.5rem;
+}
+
+.plan-cell-page {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.plan-cell-excerpt {
+  overflow-wrap: anywhere;
+}
+
+.plan-check {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.plan-rejected td {
+  background: var(--warning-bg);
+}
+
+.rejected-group {
+  margin-top: 24px;
+}
+
+.rejected-group .warn {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.row-update {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.result-warnings,
+.review .result-warnings {
+  margin-top: 16px;
+}
+
+.result .row-body {
+  align-self: center;
+}
+
+/* Ti verktøy skal få plass i menyen: tettere rader, og Innstillinger og Om står alltid nederst. */
+.nav-tools .nav-item {
+  min-height: 38px;
+  padding-block: 4px;
+}
+
+.nav-tools .nav-list {
+  gap: 2px;
+}
+
+.nav-tools {
+  gap: 10px;
+}
+
+.nav-bottom {
+  position: sticky;
+  bottom: -16px;
+  padding-bottom: 16px;
+  background: var(--surface);
 }
