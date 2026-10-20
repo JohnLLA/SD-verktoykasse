@@ -8,6 +8,7 @@ file in a package has a known licence.
 
 from __future__ import annotations
 
+import os
 import struct
 from pathlib import Path
 
@@ -96,11 +97,19 @@ def imports(path: Path) -> list[str]:
     return names
 
 
+def _in_windows(name: str) -> bool:
+    """True if Windows itself has the DLL (System32 on the build machine)."""
+    root = Path(os.environ.get("SystemRoot") or r"C:\Windows")
+    return (root / "System32" / name).is_file()
+
+
 def closure(programs: list[Path], search: list[Path]) -> tuple[dict[str, Path], set[str]]:
     """(DLLs found in `search`, by lower-case name; DLLs found nowhere).
 
-    System DLLs (Windows itself) are skipped. A DLL that is neither a system
-    DLL nor in `search` is returned in the second set so the build can stop.
+    Order: a known Windows DLL (SYSTEM_DLLS, api-ms-win-*) is never copied; a
+    DLL that comes with the program (in `search`) is copied; a DLL that only
+    Windows has (System32, for example avicap32.dll for ffmpeg) is skipped.
+    Anything else is returned in the second set so the build can stop.
     """
     index: dict[str, Path] = {}
     for d in search:
@@ -118,7 +127,8 @@ def closure(programs: list[Path], search: list[Path]) -> tuple[dict[str, Path], 
                 continue
             p = index.get(key)
             if p is None:
-                missing.add(key)
+                if not _in_windows(name):
+                    missing.add(key)
                 continue
             found[key] = p
             todo.append(p)

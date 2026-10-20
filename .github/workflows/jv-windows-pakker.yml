@@ -179,6 +179,8 @@ jobs:
           path: sidecar/build/out/work/x86_64-pc-windows-msvc/*/pakke/Lisenser/Kildekode og versjoner.txt
 
       - name: Python-testene mot de pakkede binærfilene (uten nett)
+        # Også når et verktøy ikke ble bygget: de andre testes likevel.
+        if: always() && steps.ids.outcome == 'success'
         timeout-minutes: 60
         run: sidecar/build/test-pakker-windows.sh "${{ steps.ids.outputs.ids }}"
 
