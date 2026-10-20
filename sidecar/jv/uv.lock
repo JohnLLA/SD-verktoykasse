@@ -348,7 +348,7 @@ dev = [{ name = "pillow", specifier = ">=10.1" }]
 
 [[package]]
 name = "jv-nynorsk"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "verktoy/nynorsk" }
 dependencies = [
     { name = "jv-common" },

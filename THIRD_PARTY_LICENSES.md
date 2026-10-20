@@ -24,11 +24,9 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | ffmpeg | 9.0.2_1 | GPL-3.0-or-later | Homebrew | Mac | keyframes, loudness | https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz |
 | fontconfig | 2.18.3 | HPND-sell-variant AND Unicode-3.0 AND MIT-Modern-Variant AND MIT AND LicenseRef-Homebrew-public-domain | Homebrew | Mac | redact | https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz |
 | freetype | 2.15.0 | FTL | Homebrew | Mac | redact | https://downloads.sourceforge.net/project/freetype/freetype2/2.15.0/freetype-2.15.0.tar.xz |
-| gawk | 5.4.1 | GPL-3.0-or-later | Homebrew | Mac | nynorsk | https://ftpmirror.gnu.org/gnu/gawk/gawk-5.4.1.tar.xz |
-| gettext | 1.0 | GPL-3.0-or-later AND LGPL-2.1-or-later | Homebrew | Mac | nynorsk, redact | https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz |
+| gettext | 1.0 | GPL-3.0-or-later AND LGPL-2.1-or-later | Homebrew | Mac | redact | https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz |
 | giflib | 6.1.3 | MIT | Homebrew | Mac | ocr | https://downloads.sourceforge.net/project/giflib/giflib-6.x/giflib-6.1.3.tar.gz |
 | glib | 2.90.1 | LGPL-2.1-or-later | Homebrew | Mac | redact | https://download.gnome.org/sources/glib/2.90/glib-2.90.1.tar.xz |
-| gmp | 6.3.0 | LGPL-3.0-or-later OR GPL-2.0-or-later | Homebrew | Mac | nynorsk | https://ftpmirror.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz |
 | gpgme | 2.2.0 | LGPL-2.1-or-later | Homebrew | Mac | redact | https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-2.2.0.tar.bz2 |
 | gpgmepp | 2.2.0 | LGPL-2.1-or-later | Homebrew | Mac | redact | https://www.gnupg.org/ftp/gcrypt/gpgmepp/gpgmepp-2.2.0.tar.xz |
 | graphite2 | 1.3.15 | GPL-2.0-or-later OR LGPL-2.1-or-later OR MPL-1.1+ | Homebrew | Mac | redact | https://github.com/silnrsi/graphite/releases/download/1.3.15/graphite2-1.3.15.tgz |
@@ -47,7 +45,6 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | libvpx | 1.17.0 | BSD-3-Clause | Homebrew | Mac | keyframes, loudness | https://github.com/webmproject/libvpx/archive/refs/tags/v1.17.0.tar.gz |
 | little-cms2 | 2.19.1 | MIT | Homebrew | Mac | redact | https://downloads.sourceforge.net/project/lcms/lcms/2.19.1/lcms2-2.19.1.tar.gz |
 | lz4 | 1.10.0 | BSD-2-Clause | Homebrew | Mac | ocr | https://github.com/lz4/lz4/archive/refs/tags/v1.10.0.tar.gz |
-| mpfr | 4.2.2 | LGPL-3.0-or-later | Homebrew | Mac | nynorsk | https://ftpmirror.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.xz |
 | mpg123 | 1.33.7 | LGPL-2.1-only | Homebrew | Mac | keyframes, loudness | https://www.mpg123.de/download/mpg123-1.33.7.tar.bz2 |
 | nspr | 4.40 | MPL-2.0 | Homebrew | Mac | redact | https://archive.mozilla.org/pub/nspr/releases/v4.40/src/nspr-4.40.tar.gz |
 | nss | 3.131 | MPL-2.0 | Homebrew | Mac | redact | https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_131_RTM/src/nss-3.131.tar.gz |
@@ -56,7 +53,6 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | opus | 1.6.1 | BSD-3-Clause | Homebrew | Mac | keyframes, loudness | https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.6.1.tar.gz |
 | pcre2 | 10.49 | BSD-3-Clause | Homebrew | Mac | redact | https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2 |
 | poppler | 26.10.0 | GPL-2.0-only OR GPL-3.0-only | Homebrew | Mac | redact | https://poppler.freedesktop.org/poppler-26.10.0.tar.xz |
-| readline | 8.3.6 | GPL-3.0-or-later | Homebrew | Mac | nynorsk | https://ftpmirror.gnu.org/readline/readline-8.3.tar.gz |
 | svt-av1 | 4.2.0 | BSD-3-Clause | Homebrew | Mac | keyframes, loudness | https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.2.0/SVT-AV1-v4.2.0.tar.bz2 |
 | tesseract | 5.5.3 | Apache-2.0 | Homebrew | Mac | ocr | https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.3.tar.gz |
 | tesseract-lang | 4.1.0 | Apache-2.0 | Homebrew | Mac | ocr | https://github.com/tesseract-ocr/tessdata_fast/archive/refs/tags/4.1.0.tar.gz |

@@ -4,9 +4,9 @@ Bygger én nedlastbar pakke per journalistverktøy og plattform (`docs/spesifika
 
 - **Runde A (Mac):** alle ni for Apple Silicon, bygget **lokalt** på John Inges Mac. Funnene fra
   spiken står i `docs/spike-sidecar.md`.
-- **Runde B (Windows):** åtte av ni for Windows x64, bygget i GitHub Actions
-  (`.github/workflows/jv-windows-pakker.yml`, `windows-latest`). `nynorsk` venter på Apertium og vises
-  som «Kommer for Windows». Se «Windows» under.
+- **Runde B (Windows):** alle ni for Windows x64, bygget i GitHub Actions
+  (`.github/workflows/jv-windows-pakker.yml`, `windows-latest`). `nynorsk` kom med i 0.2.0
+  (Apertiums eget Windows-bygg, se `docs/spike-sidecar.md`, «nynorsk på Windows»). Se «Windows» under.
 
 ## Kommandoer (fra repo-roten)
 
@@ -70,9 +70,9 @@ Arkivet har ingen toppmappe:
 |---|---|
 | `jv-package.json` | id, navn, versjon, plattform, `entry`, mapper til `PATH`, miljøvariabler (relative stier), bunter som skal ha gyldig kodesignatur, minste macOS |
 | `jv-<id>.app/Contents/MacOS/jv` | PyInstaller (onedir som app-bunt, bare kommandolinje, uten tkinter) |
-| `jv-<id>.app/Contents/Helpers/` | systemprogrammene (ffmpeg, ffprobe, tesseract, pdftotext, gawk, Apertium-programmene) |
+| `jv-<id>.app/Contents/Helpers/` | systemprogrammene (ffmpeg, ffprobe, tesseract, pdftotext, Apertium-programmene) |
 | `jv-<id>.app/Contents/Frameworks/jv-lib/` | bibliotekene deres, med omskrevne stier |
-| `jv-<id>.app/Contents/Resources/` | data: tessdata, exiftool (Perl-skript og bibliotek), Apertium (skript, moduser, språkdata), fontconfig |
+| `jv-<id>.app/Contents/Resources/` | data: tessdata, exiftool (Perl-skript og bibliotek), Apertium (moduser og språkdata), fontconfig |
 | `Lisenser/` | lisenstekster og «Kildekode og versjoner.txt» |
 
 | Verktøy | Innebygde programmer | Miljøvariabler |
@@ -82,7 +82,7 @@ Arkivet har ingen toppmappe:
 | keyframes, loudness | ffmpeg, ffprobe | `JV_FFMPEG`, `JV_FFPROBE` |
 | ocr | tesseract med `nor`, `eng`, `osd` (ikke Ghostscript) | `JV_TESSERACT`, `TESSDATA_PREFIX` |
 | redact | pdftotext (poppler) | `JV_PDFTOTEXT`, `FONTCONFIG_*` |
-| nynorsk | Apertium (`nob-nno`, `nno-nob`) og gawk | `JV_APERTIUM`, `JV_GAWK`, `APERTIUM_DATADIR`, `APERTIUM_PATH` |
+| nynorsk | de 14 Apertium-programmene modusene `nob-nno` og `nno-nob` bruker (uten bash-skriptet og gawk, fra 0.2.0) | `APERTIUM_DATADIR`, `JV_LT_PROC`, `JV_CG_PROC` (prøvekjøringen) |
 
 `jv_common.require_binary` sjekker `JV_<NAVN>` før `PATH`. `jv --version` skriver JSON med id og
 versjon og kjører hvert innebygde program én gang; det er prøvekjøringen appen gjør før en pakke tas i
@@ -115,7 +115,7 @@ variablene fra `jv-package.json`.
 
 ## Forutsetninger (lokal Mac)
 
-- Homebrew i `/opt/homebrew` med `ffmpeg`, `tesseract`, `tesseract-lang`, `poppler`, `exiftool` og `gawk`.
+- Homebrew i `/opt/homebrew` med `ffmpeg`, `tesseract`, `tesseract-lang`, `poppler` og `exiftool`.
 - Apertium med `apertium-nno-nob` bygget fra kilde i `~/.local`, og kildene i `~/Kilder/apertium/<repo>`
   (se `sidecar/jv/verktoy/nynorsk/OPPSETT.md`).
 - PyInstaller i venv-en eller den lokale PyInstaller 6.6 for Apples Python 3.9 (som i Verktoy2_0).
@@ -135,10 +135,10 @@ Pakkene kan ikke bygges på en Mac. Arbeidsflyten **jv-windows-pakker** kjører 
 
 - startes for hånd (Actions → jv-windows-pakker → Run workflow; feltet «verktoy» er `alle` eller en
   kommaliste), og på pull request bare når `sidecar/build/**` eller arbeidsflyten endres;
-- bygger med `python -m jvpack windows <id>[,<id>…]|alle` (alle = de åtte);
+- bygger med `python -m jvpack windows <id>[,<id>…]|alle` (alle = alle ni);
 - prøvekjører hver pakke (`jv.exe --version`), kjører verktøyenes Python-tester mot den pakkede
   binærfila med utgående trafikk sperret i Windows-brannmuren (`test-pakker-windows.sh`), og kjører
-  `full_chain` i Rust med de åtte pakkene;
+  `full_chain` i Rust med pakkene;
 - laster opp pakkene som **artefakter** på kjøringen (`jv-windows-pakker`, 14 dager), sammen med
   lisenslistene (`jv-windows-lisenser`) og testloggene. **Ingenting lastes opp til releases.**
 
@@ -159,7 +159,7 @@ Pakkene kan ikke bygges på en Mac. Arbeidsflyten **jv-windows-pakker** kjører 
 | keyframes, loudness | ffmpeg og ffprobe 9.0.2 (gyan.dev essentials, GPL-3, uten «nonfree») | `JV_FFMPEG`, `JV_FFPROBE` |
 | ocr | Tesseract 5.5.3 (UB Mannheim, pakket ut med 7-Zip, aldri kjørt) | `JV_TESSERACT`, `TESSDATA_PREFIX` |
 | redact | pdftotext fra poppler 26.09.0 (poppler-windows, conda-forge) | `JV_PDFTOTEXT` |
-| nynorsk | **ingen Windows-pakke** (Apertium) | – |
+| nynorsk | Apertium-nattbygget `apertium-all-dev` 14.10.2026 (samme commiter som Mac; speilet i `kilder-apertium-windows`), bare de 14 programmene modusene bruker og DLL-ene deres; språkdataene fra Mac-pakken 0.1.0 | `APERTIUM_DATADIR`, `JV_LT_PROC`, `JV_CG_PROC` |
 
 Hver DLL et program laster, må stå i `jvpack/windows/components.py` med kjent, fri lisens og
 lisenstekst i `jvpack/windows/lisenstekster/` (hver mappe har `KILDE.txt`). En ukjent DLL stopper
@@ -187,7 +187,7 @@ Kjør på Macen, i repoet. `jvpack` er
    ```zsh
    W=~/jv-windows; rm -rf $W; mkdir -p $W
    gh run download <kjørings-id> -R JohnLLA/lla-verktoykasse -n jv-windows-pakker -D $W
-   ls $W/dist/*.zip       # åtte filer: jv-<id>-0.1.0-x86_64-pc-windows-msvc.zip
+   ls $W/dist/*.zip       # jv-<id>-<versjon>-x86_64-pc-windows-msvc.zip
    ```
 3. **Last opp** hver zip som et ekstra vedlegg til den eksisterende pre-releasen for verktøyet
    (samme tagg som Mac-pakken, så URL-ene i katalogen stemmer):
@@ -208,7 +208,8 @@ Kjør på Macen, i repoet. `jvpack` er
    jvpack katalog lag --usignert --dist $W/dist --behold $K/tools.json --ut $K/ut --min-app 1.0.0
    ```
    `--usignert` skriver bare `tools.json` og sletter en gammel `.sig` i `--ut`. Se over at `$K/ut/tools.json`
-   har ni Mac-linjer og åtte Windows-linjer.
+   har ni Mac-linjer og ni Windows-linjer (åtte før nynorsk 0.2.0). Linjer for pakker i `--dist` erstatter
+   linjene for samme verktøy og plattform i den gamle katalogen; resten beholdes uendret.
 5. **Signer** med den ekte nøkkelen (bare du har den):
    ```zsh
    minisign -S -s <sti>/katalog.key -m $K/ut/tools.json -x $K/ut/tools.json.sig
@@ -219,8 +220,8 @@ Kjør på Macen, i repoet. `jvpack` er
    ```zsh
    gh release upload katalog $K/ut/tools.json $K/ut/tools.json.sig --repo $REPO --clobber
    ```
-7. **Prøv** på en Windows-PC: «Se etter oppdateringer» i Innstillinger → Verktøy. De åtte skal
-   få «Last ned verktøyet», `nynorsk` skal fortsatt si «Kommer for Windows».
+7. **Prøv** på en Windows-PC: «Se etter oppdateringer» i Innstillinger → Verktøy. Alle ni skal
+   få «Last ned verktøyet» (nynorsk fra 0.2.0).
 
 Lisenslista: last ned artefakten `jv-windows-lisenser` til `sidecar/build/out/work/x86_64-pc-windows-msvc/`
 og kjør `jvpack lisenser` (gir `THIRD_PARTY_LICENSES.md` med begge plattformene).

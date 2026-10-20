@@ -1,0 +1,1 @@
+Fra https://github.com/apertium/apertium-lex-tools, commit 1ccefa6269ad1b3f1c0a0ef17f14e3d9c7c346ea (COPYING). Samme commit som i pakken.

@@ -17,7 +17,9 @@ uv run jv nynorsk "Sak om biblioteket.docx" --to nn --out ut/
 
 ## Oppsett
 
-Krever `apertium` og språkparet `apertium-nno-nob`. Se [OPPSETT.md](OPPSETT.md). Mangler de, stopper verktøyet med en norsk feilmelding og kode 1.
+Krever Apertium-programmene og språkparet `apertium-nno-nob`. Se [OPPSETT.md](OPPSETT.md). Mangler de, stopper verktøyet med en norsk feilmelding og kode 1.
+
+Verktøyet bruker ikke bash-skriptet `apertium`. Fra 0.2.0 leser det modusfila (`modes/nob-nno.mode` eller `modes/nno-nob.mode`) selv og kobler programmene sammen med `subprocess`, uten skall: `apertium-destxt | <modus> | apertium-retxt`, som `apertium -f txt` gjør. Resultatet er byte for byte det samme som før, og det virker likt på macOS og Windows. Programmene kjøres i datamappa og får bare relative stier, så æøå i stien til appdatamappa gjør ikke noe. En modusfil kan bare starte de 14 Apertium-programmene verktøyet kjenner, og bare peke på filer i datamappa.
 
 ## Slik virker det
 
@@ -34,5 +36,5 @@ Apertium setter selv `*`, `#` eller `@` på problemord; verktøyet gjenkjenner d
 - Markdown-syntaks sendes gjennom Apertium som vanlig tekst. Kodeblokker og lenkeadresser kan derfor bli endret.
 - Egennavn Apertium ikke kjenner (for eksempel «Fiktivhavn»), merkes som ukjente selv om de er riktige.
 - Bare standardmodusene `nob-nno` og `nno-nob` brukes; ingen valg for nynorsknorm (e-/a-infinitiv o.l.).
-- Enhetstestene bruker en falsk `apertium`; integrasjonstestene kjører mot ekte Apertium og hoppes over hvis den eller språkparet mangler (se OPPSETT.md).
+- Enhetstestene bruker falske Apertium-programmer og en falsk modusfil (`tests/fake_apertium.py`). Integrasjonstestene kjører mot ekte Apertium og sammenligner med fasiter i `testdata/nynorsk/referanse/` (laget med `apertium -f txt` på Mac). De hoppes over hvis Apertium eller språkparet mangler (se OPPSETT.md).
 - Apertium deler ukjente sammensatte ord i deler (for eksempel «fjordglimring»), så slike ord oversettes uten å bli merket. Les alltid korrektur.

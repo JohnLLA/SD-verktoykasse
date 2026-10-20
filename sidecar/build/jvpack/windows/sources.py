@@ -21,6 +21,14 @@ Choice of builds (docs/spike-sidecar.md, runde B):
   tesseract-lang on Mac, byte for byte).
 - poppler: Owen Schwartz' poppler-windows 26.09.0-0 (conda-forge build).
   Only pdftotext and the DLLs it loads are copied.
+- Apertium (nynorsk): Apertium's own nightly Windows build (MinGW-w64, by Tino
+  Didriksen), with the same commits as the Mac package. The nightly folder has
+  no permanent URLs, so the archive and the source code for the same commits
+  are mirrored to the release «kilder-apertium-windows» in the release repo
+  (docs/spike-sidecar.md, «nynorsk på Windows»). Only the 14 programs the
+  modes use and the DLLs they load are copied.
+- Apertium language data: the modes and data files from the published Mac
+  package nynorsk 0.1.0, byte for byte, so both platforms translate the same.
 """
 
 from __future__ import annotations
@@ -35,7 +43,7 @@ class Source:
     version: str
     url: str
     sha256: str
-    kind: str  # "zip", "nsis" (unpacked with 7-Zip) or "file"
+    kind: str  # "zip", "nsis" (unpacked with 7-Zip), "file" or "data" (read by programs.py)
     license: str
     homepage: str
     source_code: str  # where the corresponding source code is
@@ -46,6 +54,20 @@ class Source:
     def filename(self) -> str:
         return self.url.rsplit("/", 1)[-1]
 
+
+APERTIUM_MIRROR = "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/"
+_APERTIUM_SOURCES = " ".join(APERTIUM_MIRROR + f for f in (
+    "kilde-lttoolbox-ed9b682b9e3e.tar.gz",
+    "kilde-apertium-d8dfb942e31d.tar.gz",
+    "kilde-apertium-lex-tools-1ccefa6269ad.tar.gz",
+    "kilde-apertium-separable-18045e4da12c.tar.gz",
+    "kilde-cg3-0250250fe982.tar.gz",
+))
+_APERTIUM_DATA_SOURCES = " ".join(APERTIUM_MIRROR + f for f in (
+    "kilde-apertium-nob-3d63c61e5520.tar.gz",
+    "kilde-apertium-nno-2efb61642310.tar.gz",
+    "kilde-apertium-nno-nob-af921d87acad.tar.gz",
+))
 
 TESSDATA_TAG = "4.1.0"
 _TESSDATA = "https://github.com/tesseract-ocr/tessdata_fast/raw/" + TESSDATA_TAG + "/{lang}.traineddata"
@@ -119,6 +141,31 @@ SOURCES: dict[str, Source] = {
             ("redact",),
             "Bare pdftotext.exe og DLL-ene den laster er med (se components.py).",
         ),
+        Source(
+            "apertium", "Apertium for Windows (nattbygg apertium-all-dev)",
+            "2026-10-14: lttoolbox 3.8.4 (ed9b682b), apertium 3.9.12 (d8dfb942), apertium-lex-tools 0.5.0 "
+            "(1ccefa62), apertium-separable 0.7.1 (18045e4d), cg3 1.7.0 (0250250f)",
+            APERTIUM_MIRROR + "apertium-all-dev-2026-10-14.x86_64.zip",
+            "c8236ac537be7ba35849cf9ad4222a399646076f9cfa75bf86806e3a614de8a8",
+            "zip", "GPL-2.0-or-later AND GPL-3.0-or-later", "https://apertium.projectjj.com/win32/nightly/",
+            _APERTIUM_SOURCES,
+            ("nynorsk",),
+            "Speil av https://apertium.projectjj.com/win32/nightly/apertium-all-dev.x86_64.zip (14.10.2026, "
+            "uendret). GPL-2.0-or-later: lttoolbox og apertium; GPL-3.0-or-later: apertium-lex-tools, "
+            "apertium-separable og cg3. Bare de 14 programmene modusene bruker og DLL-ene de laster er med.",
+        ),
+        Source(
+            "apertium-data", "Apertium-språkdata nob-nno og nno-nob (apertium-nno-nob 1.6.0)",
+            "1.6.0 (af921d87; apertium-nob 3d63c61e, apertium-nno 2efb6164)",
+            "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/jv-nynorsk-v0.1.0/"
+            "jv-nynorsk-0.1.0-aarch64-apple-darwin.tar.gz",
+            "4f5f100fc92c5437ef4708c8054a4586fdbd50805c3f93e4b47353baeedccd26",
+            "data", "GPL-2.0-or-later", "https://github.com/apertium/apertium-nno-nob",
+            _APERTIUM_DATA_SOURCES,
+            ("nynorsk",),
+            "Modusene og datafilene hentes fra Mac-pakken nynorsk 0.1.0 (Resources/apertium), så Windows og Mac "
+            "oversetter likt. Datafilene er uendret; i mode-filene er bare stiene gjort relative til datamappa.",
+        ),
     ]
 }
 
@@ -132,12 +179,9 @@ TOOL_SOURCES: dict[str, tuple[str, ...]] = {
     "pdf-tables": (),
     "ocr": ("tesseract", "tessdata-nor", "tessdata-eng", "tessdata-osd"),
     "redact": ("poppler",),
+    "nynorsk": ("apertium", "apertium-data"),
 }
 
 # Tools without a Windows package, and why (shown in the build summary and
-# the README; the app shows «Kommer for Windows»).
-NOT_ON_WINDOWS: dict[str, str] = {
-    "nynorsk": "Apertium (nob-nno, nno-nob) er ikke pakket for Windows ennå. Apertium-skriptet "
-               "krever bash, og språkdataene må kompileres med lttoolbox og make. Venter, som "
-               "spesifikasjonen sier.",
-}
+# the README; the app shows «Kommer for Windows»). Empty since nynorsk 0.2.0.
+NOT_ON_WINDOWS: dict[str, str] = {}

@@ -81,6 +81,9 @@ COMPONENTS: dict[str, Component] = {
         C("libffi", "libffi", "MIT", "https://github.com/libffi/libffi/releases", ("libffi",)),
         C("sqlite", "SQLite", "blessing (public domain)", "https://www.sqlite.org/download.html", ("sqlite",)),
         C("mpdecimal", "mpdecimal", "BSD-2-Clause", "https://www.bytereef.org/mpdecimal/download.html", ("mpdecimal",)),
+        # Apertium's Windows build (MinGW-w64, nynorsk)
+        C("lttoolbox", "lttoolbox (liblttoolbox)", "GPL-2.0-or-later", "https://github.com/apertium/lttoolbox", ("lttoolbox",)),
+        C("cg3", "VISL CG-3 (libcg3)", "GPL-3.0-or-later", "https://github.com/GrammarSoft/cg3", ("cg3",)),
         # Not free: Microsoft's C/C++ runtime (redistributable). See NOT_FREE_NOTE.
         C("msvc-runtime", "Microsoft Visual C++ Redistributable (vcruntime140, msvcp140)",
           "LicenseRef-Microsoft-Visual-C-Redistributable", "https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files",
@@ -130,6 +133,9 @@ DLL_PATTERNS: list[tuple[str, str]] = [
     (r"libnghttp2-\d+\.dll", "nghttp2"),
     (r"libnghttp3-\d+\.dll", "nghttp3"),
     (r"libngtcp2(_crypto_\w+)?-\d+\.dll", "ngtcp2"),
+    (r"libsqlite3(-\d+)?\.dll", "sqlite"),
+    (r"liblttoolbox(-\d+)?\.dll", "lttoolbox"),
+    (r"libcg3(-\d+)?\.dll", "cg3"),
     (r"(vcruntime140(_1)?|msvcp140(_\w+)?|concrt140|vcomp140)\.dll", "msvc-runtime"),
 ]
 

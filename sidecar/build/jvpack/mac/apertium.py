@@ -1,20 +1,22 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Apertium for the nynorsk package: programs, the apertium script, modes and data.
+"""Apertium for the nynorsk package: programs, modes and data.
 
 Apertium is installed from source in ~/.local (see verktoy/nynorsk/OPPSETT.md).
-Its .mode files are shell pipelines with absolute paths to the language data,
-and the ``apertium`` script has its install prefix written into it.
+Its .mode files are pipelines with absolute paths to the language data.
 
-Relocation: the mode files are rewritten at build time so
-every data path becomes ``"${APERTIUM_DATADIR}/<rest>"``. jv-package.json
-sets APERTIUM_DATADIR and APERTIUM_PATH (the app passes them on), and the
-``apertium`` script already reads both variables. The script runs the mode
-through ``apertium-wblank-mode`` and ``bash``, so the variable is expanded
-there. Nothing inside the signed bundle is written at run time.
+From nynorsk 0.2.0 the tool runs the mode itself (jv_nynorsk.core.read_mode):
+no ``apertium`` script, no bash and no gawk. The mode files are rewritten at
+build time so every data path is relative to the data folder
+(``'apertium-nno-nob/nob-nno.automorf.bin'``); the tool starts the programs in
+that folder. jv-package.json sets APERTIUM_DATADIR and puts Helpers/ in PATH.
+Nothing inside the signed bundle is written at run time.
+
+The Windows package (windows/programs.py) uses the same rewritten modes and
+the same data files, taken from the Mac package of the same release
+(windows/sources.py, «apertium-data»).
 
 Layout in the package bundle:
   Contents/Helpers/<program>              Mach-O programs (via macho.install)
-  Contents/Resources/apertium/bin/apertium   the shell script
   Contents/Resources/apertium/modes/<mode>.mode
   Contents/Resources/apertium/<pair>/<data files the modes use>
 """
@@ -36,18 +38,15 @@ SOURCES = Path.home() / "Kilder" / "apertium"
 # the other variants are left out: the tool never asks for them.
 MODES = ("nob-nno", "nno-nob")
 
-# Programs the apertium script itself runs for ``-f txt`` (besides the mode
-# pipeline): the deformatter, reformatter and the wordbound-blank wrapper.
-SCRIPT_PROGRAMS = ("apertium-destxt", "apertium-retxt", "apertium-wblank-mode")
-# gawk is needed too (setvar_wrap/setvar_unwrap in the script always run it,
-# with a regex RS and RT); it comes from Homebrew via AppInfo.binaries.
+# Programs the tool runs around the mode pipeline for ``-f txt``: the
+# deformatter and the reformatter (jv_nynorsk.core.read_mode).
+SCRIPT_PROGRAMS = ("apertium-destxt", "apertium-retxt")
 
 DATA_VAR = "APERTIUM_DATADIR"
-PATH_VAR = "APERTIUM_PATH"
 RESOURCE_DIR = "apertium"  # under Contents/Resources
 
-# Characters that would change the meaning of a path inside "…" in bash.
-_UNSAFE = re.compile(r'["$`\\\n]')
+# A data path in a rewritten mode file: plain ASCII, «/» separated.
+_SAFE_REL = re.compile(r"[A-Za-z0-9._+-]+(?:/[A-Za-z0-9._+-]+)*")
 
 # Source repositories: (folder in ~/Kilder/apertium, version, licence, extra texts).
 REPOS: list[tuple[str, str, str, tuple[str, ...]]] = [
@@ -63,11 +62,10 @@ REPOS: list[tuple[str, str, str, tuple[str, ...]]] = [
 
 
 def rewrite_mode(text: str, datadir: Path) -> tuple[str, list[str]]:
-    """Point a mode pipeline at ${APERTIUM_DATADIR} instead of datadir.
+    """Make every data path in a mode pipeline relative to datadir.
 
     Returns the new text and the data files it uses, relative to datadir.
-    Paths are single-quoted in the installed mode files; they become
-    double-quoted so the variable is expanded and spaces still work.
+    Paths stay single-quoted (``'apertium-nno-nob/nob-nno.automorf.bin'``).
     Raises BuildError if any absolute path would be left behind.
     """
     prefix = str(datadir).rstrip("/") + "/"
@@ -75,11 +73,11 @@ def rewrite_mode(text: str, datadir: Path) -> tuple[str, list[str]]:
 
     def repl(m: re.Match[str]) -> str:
         rel = m.group(2)
-        if _UNSAFE.search(rel) or ".." in Path(rel).parts:
+        if not _SAFE_REL.fullmatch(rel) or ".." in rel.split("/"):
             raise BuildError(f"Uventet tegn i stien {rel!r} i en mode-fil.")
         if rel not in used:
             used.append(rel)
-        return f'"${{{DATA_VAR}}}/{rel}"'
+        return f"'{rel}'"
 
     pattern = re.compile(r"(['\"]?)" + re.escape(prefix) + r"([^'\"\s|]+)\1")
     new = pattern.sub(repl, text)
@@ -104,41 +102,6 @@ def pipeline_programs(pipeline: str) -> list[str]:
         if name not in names:
             names.append(name)
     return names
-
-
-def rewrite_script(text: str, prefix: Path = PREFIX) -> str:
-    """Make the installed apertium script find its programs and data itself.
-
-    The generated header sets APERTIUM_PATH and APERTIUM_DATADIR to the install
-    prefix. They become defaults relative to the script's own folder
-    (Resources/apertium/bin), so the script also works when it is started
-    without the shell's environment. Both are exported, because the mode
-    pipelines read APERTIUM_DATADIR. Nothing else in the script changes.
-    """
-    lines = text.splitlines(keepends=True)
-    if not lines or not lines[0].startswith("#!"):
-        raise BuildError("apertium-skriptet har ingen #!-linje.")
-    head = (
-        '_jv_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # journalistverktøy: relocatable\n'
-        f'{PATH_VAR}="${{{PATH_VAR}:-$_jv_here/../../../Helpers}}"\n'
-        f'{DATA_VAR}="${{{DATA_VAR}:-$_jv_here/..}}"\n'
-        f"export {PATH_VAR} {DATA_VAR}\n"
-    )
-    found = 0
-    out = [lines[0]]
-    for line in lines[1:]:
-        if re.match(rf"^({PATH_VAR}|{DATA_VAR})=", line):
-            found += 1
-            if found == 1:
-                out.append(head)
-            continue
-        out.append(line)
-    if found != 2:
-        raise BuildError("Fant ikke APERTIUM_PATH- og APERTIUM_DATADIR-linjene i apertium-skriptet.")
-    new = "".join(out)
-    if str(prefix) in new:
-        raise BuildError(f"apertium-skriptet peker fortsatt til {prefix}.")
-    return new
 
 
 @dataclass
@@ -182,16 +145,12 @@ def plan(prefix: Path = PREFIX, modes: tuple[str, ...] = MODES) -> Plan:
 
 
 def install_data(p: Plan, resources: Path, prefix: Path = PREFIX) -> Path:
-    """Copy the script, the rewritten modes and the data files into Resources."""
+    """Copy the rewritten modes and the data files into Resources."""
     datadir = prefix / "share" / "apertium"
     dst = resources / RESOURCE_DIR
     if dst.exists():
         shutil.rmtree(dst)
-    (dst / "bin").mkdir(parents=True)
-    (dst / "modes").mkdir()
-    script = (prefix / "bin" / "apertium").read_text(encoding="utf-8")
-    (dst / "bin" / "apertium").write_text(rewrite_script(script, prefix), encoding="utf-8")
-    (dst / "bin" / "apertium").chmod(0o755)
+    (dst / "modes").mkdir(parents=True)
     for mode, text in p.modes.items():
         (dst / "modes" / f"{mode}.mode").write_text(text, encoding="utf-8")
     for rel in p.data:
@@ -208,7 +167,7 @@ FOREIGN_TEXT = (b"/Users/", b"/opt/homebrew", b"/usr/local", b"/.local/")
 
 
 def foreign_text_references(root: Path, checked_suffixes: tuple[str, ...] = (".mode", "")) -> list[str]:
-    """Text files (script, modes) that still name a path outside the app."""
+    """Mode files that still name a path outside the app."""
     problems = []
     for f in sorted(root.rglob("*")):
         if not f.is_file() or f.suffix not in checked_suffixes:

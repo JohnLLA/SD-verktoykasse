@@ -2,11 +2,11 @@
 """Per-tool build facts: menu name, bundled programs and PyInstaller extras.
 
 Only the tools listed here can be built. Runde A (Mac) covers all nine.
-Runde B (Windows) covers the eight that can be packed (`targets`); nynorsk
-waits for Apertium (windows/sources.py, NOT_ON_WINDOWS). A tool with a
-Windows package gets a Windows line in the catalogue, and the app stops
-showing «Kommer for Windows» for it. The Windows programs are listed in
-windows/sources.py (TOOL_SOURCES).
+Runde B (Windows) covers the eight that could be packed then; nynorsk 0.2.0
+followed (Apertium's own Windows build, mirrored; docs/spike-sidecar.md,
+«nynorsk på Windows»). A tool with a Windows package gets a Windows line in
+the catalogue, and the app stops showing «Kommer for Windows» for it. The
+Windows programs are listed in windows/sources.py (TOOL_SOURCES).
 """
 
 from __future__ import annotations
@@ -25,10 +25,13 @@ VERSION_ARGS: dict[str, tuple[str, ...] | None] = {
     "ffprobe": ("-version",),
     "tesseract": ("--version",),
     "pdftotext": ("-v",),
-    "gawk": ("--version",),
     "exiftool": ("-ver",),
-    "apertium": None,
+    # Apertium: the trial run starts the two programs every mode uses (and
+    # with them liblttoolbox, libcg3 and ICU).
+    "lt-proc": ("--version",),
+    "cg-proc": ("-v",),
 }
+APERTIUM_CHECKED = ("lt-proc", "cg-proc")
 
 
 @dataclass(frozen=True)
@@ -46,8 +49,10 @@ class ToolSpec:
 
     @property
     def checked_programs(self) -> tuple[str, ...]:
-        """Programs `jv --version` checks: the Homebrew ones and the script programs."""
-        scripts = tuple(p for p in ("exiftool", "apertium") if p in self.extra)
+        """Programs `jv --version` checks: the Homebrew ones, exiftool and two Apertium programs."""
+        scripts = ("exiftool",) if "exiftool" in self.extra else ()
+        if "apertium" in self.extra:
+            scripts += APERTIUM_CHECKED
         return self.programs + scripts
 
 
@@ -85,7 +90,13 @@ SPECS: dict[str, ToolSpec] = {
             note=FIRST,
         ),
         ToolSpec("redact", "Sladding av PDF", programs=("pdftotext",), targets=BOTH, note=FIRST),
-        ToolSpec("nynorsk", "Bokmål ↔ nynorsk", programs=("gawk",), extra=("apertium",), note=FIRST),
+        ToolSpec(
+            "nynorsk", "Bokmål ↔ nynorsk",
+            extra=("apertium",),
+            targets=BOTH,
+            note="Finnes nå også for Windows. Apertium kjøres direkte, uten bash-skriptet og gawk. "
+                 "Oversettelsen er den samme som i 0.1.0.",
+        ),
     ]
 }
 assert tuple(SPECS) == ALL_IDS

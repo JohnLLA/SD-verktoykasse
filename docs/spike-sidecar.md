@@ -433,3 +433,31 @@ DLL-ene (48,5 MB utpakket, med ICU-dataene som største del) og språkdataene (2
    uten bash-skriptet og gawk.
 6. **Språkdata:** Windows-pakken bruker datafilene fra Mac-pakken av samme versjon (anbefales), eller
    dataene kompileres i CI på Linux fra de samme commitene.
+
+### Avgjort av John Inge 20.10.2026, og fase 2
+
+John Inge bestemte dette:
+- Vi bruker vei A med `apertium-all-dev`, speilet i taggen `kilder-apertium-windows` i `JohnLLA/sd-verktoy-releases`, sammen med kildearkivene.
+- Python kobler programmene sammen selv.
+- nynorsk får versjon 0.2.0 på begge plattformene.
+- Begge plattformene bruker språkdataene fra Mac-pakken 0.1.0.
+
+Dette er gjort i fase 2:
+
+- **`jv_nynorsk`** (`core.py`) leser modusfila og kjører `apertium-destxt | <modus> | apertium-retxt` med `subprocess`, uten skall.
+  - `$1` blir `-g`, og `$2` faller bort.
+  - wblank-regelen er lagt inn.
+  - Det er en fast liste med 14 programmer, og stiene er relative i datamappa.
+  - stderr fra hvert steg går til en egen fil. Det er tidsgrense, og `CREATE_NO_WINDOW` brukes på Windows.
+  - Linjeskift gjøres om fra `\r\n` til `\n` på Windows hvis inndataene ikke har `\r`.
+- **Testene:**
+  - Den falske `apertium` er erstattet med falske programmer og en falsk modusfil.
+  - Det er lagt til nye tester for reglene i modusfila, mapper med æøå og mellomrom, krasj midt i kjeden og store tekster.
+  - Det er lagt til fasiter i `sidecar/jv/testdata/nynorsk/referanse/`, laget med `apertium -f txt` (bash-skriptet) på Mac. Integrasjonstestene krever samme bytes på Mac og Windows.
+- **Mac-pakken 0.2.0:**
+  - Den har ikke lenger bash-skriptet, gawk, gmp, mpfr eller readline, og har 14 programmer i `Helpers`.
+  - De 40 datafilene er identiske med 0.1.0.
+  - Oversettelsen fra 0.1.0- og 0.2.0-pakken er byte for byte lik for 18 kjøringer: 9 filer (txt, md og docx, 0,4–36 kB) i begge retninger.
+- **Windows-pakken:**
+  - `jvpack/windows/programs.py` kopierer de 14 programmene og DLL-ene de laster fra speilet.
+  - Modusene og datafilene kommer fra Mac-pakken 0.1.0. Modusene får relative stier og blir da identiske med Mac 0.2.0.

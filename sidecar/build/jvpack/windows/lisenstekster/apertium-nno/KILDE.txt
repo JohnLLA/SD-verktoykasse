@@ -1,0 +1,1 @@
+Fra https://github.com/apertium/apertium-nno, commit 2efb61642310ca504b9f1b2ed29fc6bb7a030b13 (COPYING). Samme commit som i pakken.

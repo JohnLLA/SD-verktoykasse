@@ -1,32 +1,33 @@
 """Integration tests against a real Apertium with apertium-nno-nob.
 
-Skipped when apertium is not in PATH, or when the language pair is missing.
+The tool runs the mode files itself (core.read_mode), so these tests need the
+Apertium programs in PATH and the data folder (APERTIUM_DATADIR, or
+<prefix>/share/apertium next to the programs). Skipped when they are missing,
+or when the language pair is missing. Against a package (pytest_packaged) the
+package's programs and data are used.
 """
 
 from __future__ import annotations
 
 import json
 import re
-import shutil
-import subprocess
+from pathlib import Path
 
 import docx
 import pytest
 
-from jv_nynorsk import cli
+from jv_nynorsk import cli, core
 
+DATADIR = core.find_datadir()
 pytestmark = pytest.mark.skipif(
-    shutil.which("apertium") is None,
-    reason="apertium mangler i PATH; se verktoy/nynorsk/OPPSETT.md",
+    DATADIR is None or core._program_argv("lt-proc") is None,
+    reason="Apertium mangler; se verktoy/nynorsk/OPPSETT.md",
 )
+REFERENCE = Path(__file__).resolve().parents[3] / "testdata" / "nynorsk"
 
 
 def _modes() -> list[str]:
-    exe = shutil.which("apertium")
-    if exe is None:
-        return []
-    proc = subprocess.run([exe, "-l"], capture_output=True, check=False)
-    return proc.stdout.decode("utf-8", errors="replace").split()
+    return core.Apertium("nob-nno").available_modes() if DATADIR else []
 
 
 @pytest.fixture
@@ -52,11 +53,8 @@ def _unknown(report) -> dict[str, str]:
 
 
 def test_precondition_xqztvik_is_unknown_to_real_apertium(needs_pair):
-    exe = shutil.which("apertium")
     for mode in ("nob-nno", "nno-nob"):
-        out = subprocess.run(
-            [exe, "-f", "txt", mode], input=b"xqztvik\n", capture_output=True, check=False
-        ).stdout.decode()
+        out = core.Apertium(mode).run("xqztvik\n")
         assert out.strip() == "*xqztvik"
 
 
@@ -216,3 +214,15 @@ def test_real_random_sentences_keep_symbols(needs_pair, tmp_path, capsys):
     assert len(out) == 101
     for before, after in zip(sentences, out):
         assert _shape(after) == _shape(before), (before, after)
+
+
+@pytest.mark.parametrize("reference", sorted((REFERENCE / "referanse").glob("*.txt")), ids=lambda p: p.name)
+def test_real_output_is_byte_for_byte_the_reference(needs_pair, reference):
+    # testdata/nynorsk/referanse/<file>.<mode>.txt is what «apertium -f txt <mode>»
+    # (the bash script, Apertium 3.9.12, apertium-nno-nob 1.6.0) gave on macOS for
+    # testdata/nynorsk/<file>.txt. The pipeline must give exactly the same bytes,
+    # on macOS and on Windows.
+    name, mode = reference.stem.rsplit(".", 1)
+    engine = core.Apertium(mode)
+    out = engine.run((REFERENCE / f"{name}.txt").read_text("utf-8"))
+    assert out.encode("utf-8") == reference.read_bytes()

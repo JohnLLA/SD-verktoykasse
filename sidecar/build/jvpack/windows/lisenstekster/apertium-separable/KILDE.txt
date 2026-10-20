@@ -1,0 +1,1 @@
+Fra https://github.com/apertium/apertium-separable, commit 18045e4da12c5f8dd7373c842cc93e38291d1826 (COPYING). Samme commit som i pakken.
