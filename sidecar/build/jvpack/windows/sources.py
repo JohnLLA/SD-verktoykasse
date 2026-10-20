@@ -142,8 +142,7 @@ SOURCES: dict[str, Source] = {
             "Bare pdftotext.exe og DLL-ene den laster er med (se components.py).",
         ),
         Source(
-            "apertium", "Apertium for Windows (nattbygg apertium-all-dev: lttoolbox 3.8.4, apertium 3.9.12, "
-            "apertium-lex-tools 0.5.0, apertium-separable 0.7.1, cg3 1.7.0)",
+            "apertium", "Apertium for Windows (apertium-all-dev)",
             "2026-10-14",
             APERTIUM_MIRROR + "apertium-all-dev-2026-10-14.x86_64.zip",
             "c8236ac537be7ba35849cf9ad4222a399646076f9cfa75bf86806e3a614de8a8",
@@ -151,14 +150,14 @@ SOURCES: dict[str, Source] = {
             _APERTIUM_SOURCES,
             ("nynorsk",),
             "Speil av https://apertium.projectjj.com/win32/nightly/apertium-all-dev.x86_64.zip (14.10.2026, "
-            "uendret). Commiter: lttoolbox ed9b682b, apertium d8dfb942, apertium-lex-tools 1ccefa62, "
-            "apertium-separable 18045e4d, cg3 0250250f (de samme som i Mac-pakken). "
+            "uendret). Versjoner og commiter: lttoolbox 3.8.4 ed9b682b, apertium 3.9.12 d8dfb942, "
+            "apertium-lex-tools 0.5.0 1ccefa62, apertium-separable 0.7.1 18045e4d, cg3 1.7.0 0250250f "
+            "(de samme som i Mac-pakken). "
             "GPL-2.0-or-later: lttoolbox og apertium; GPL-3.0-or-later: apertium-lex-tools, "
             "apertium-separable og cg3. Bare de 14 programmene modusene bruker og DLL-ene de laster er med.",
         ),
         Source(
-            "apertium-data", "Apertium-språkdata nob-nno og nno-nob (apertium-nno-nob af921d87, "
-            "apertium-nob 3d63c61e, apertium-nno 2efb6164)",
+            "apertium-data", "Apertium-språkdata (apertium-nno-nob)",
             "1.6.0",
             "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/jv-nynorsk-v0.1.0/"
             "jv-nynorsk-0.1.0-aarch64-apple-darwin.tar.gz",
@@ -166,6 +165,7 @@ SOURCES: dict[str, Source] = {
             "data", "GPL-2.0-or-later", "https://github.com/apertium/apertium-nno-nob",
             _APERTIUM_DATA_SOURCES,
             ("nynorsk",),
+            "Commiter: apertium-nno-nob af921d87, apertium-nob 3d63c61e, apertium-nno 2efb6164. "
             "Modusene og datafilene hentes fra Mac-pakken nynorsk 0.1.0 (Resources/apertium), så Windows og Mac "
             "oversetter likt. Datafilene er uendret; i mode-filene er bare stiene gjort relative til datamappa.",
         ),

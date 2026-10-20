@@ -770,27 +770,27 @@
         "used_by": [
           "nynorsk"
         ],
-        "name": "Apertium for Windows (nattbygg apertium-all-dev: lttoolbox 3.8.4, apertium 3.9.12, apertium-lex-tools 0.5.0, apertium-separable 0.7.1, cg3 1.7.0)",
+        "name": "Apertium for Windows (apertium-all-dev)",
         "version": "2026-10-14",
         "license": "GPL-2.0-or-later AND GPL-3.0-or-later",
         "download_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/apertium-all-dev-2026-10-14.x86_64.zip",
         "download_sha256": "c8236ac537be7ba35849cf9ad4222a399646076f9cfa75bf86806e3a614de8a8",
         "source_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-lttoolbox-ed9b682b9e3e.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-d8dfb942e31d.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-lex-tools-1ccefa6269ad.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-separable-18045e4da12c.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-cg3-0250250fe982.tar.gz",
         "homepage": "https://apertium.projectjj.com/win32/nightly/",
-        "note": "Speil av https://apertium.projectjj.com/win32/nightly/apertium-all-dev.x86_64.zip (14.10.2026, uendret). Commiter: lttoolbox ed9b682b, apertium d8dfb942, apertium-lex-tools 1ccefa62, apertium-separable 18045e4d, cg3 0250250f (de samme som i Mac-pakken). GPL-2.0-or-later: lttoolbox og apertium; GPL-3.0-or-later: apertium-lex-tools, apertium-separable og cg3. Bare de 14 programmene modusene bruker og DLL-ene de laster er med."
+        "note": "Speil av https://apertium.projectjj.com/win32/nightly/apertium-all-dev.x86_64.zip (14.10.2026, uendret). Versjoner og commiter: lttoolbox 3.8.4 ed9b682b, apertium 3.9.12 d8dfb942, apertium-lex-tools 0.5.0 1ccefa62, apertium-separable 0.7.1 18045e4d, cg3 1.7.0 0250250f (de samme som i Mac-pakken). GPL-2.0-or-later: lttoolbox og apertium; GPL-3.0-or-later: apertium-lex-tools, apertium-separable og cg3. Bare de 14 programmene modusene bruker og DLL-ene de laster er med."
       },
       "apertium-data": {
         "used_by": [
           "nynorsk"
         ],
-        "name": "Apertium-språkdata nob-nno og nno-nob (apertium-nno-nob af921d87, apertium-nob 3d63c61e, apertium-nno 2efb6164)",
+        "name": "Apertium-språkdata (apertium-nno-nob)",
         "version": "1.6.0",
         "license": "GPL-2.0-or-later",
         "download_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/jv-nynorsk-v0.1.0/jv-nynorsk-0.1.0-aarch64-apple-darwin.tar.gz",
         "download_sha256": "4f5f100fc92c5437ef4708c8054a4586fdbd50805c3f93e4b47353baeedccd26",
         "source_url": "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nob-3d63c61e5520.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nno-2efb61642310.tar.gz https://github.com/JohnLLA/sd-verktoy-releases/releases/download/kilder-apertium-windows/kilde-apertium-nno-nob-af921d87acad.tar.gz",
         "homepage": "https://github.com/apertium/apertium-nno-nob",
-        "note": "Modusene og datafilene hentes fra Mac-pakken nynorsk 0.1.0 (Resources/apertium), så Windows og Mac oversetter likt. Datafilene er uendret; i mode-filene er bare stiene gjort relative til datamappa."
+        "note": "Commiter: apertium-nno-nob af921d87, apertium-nob 3d63c61e, apertium-nno 2efb6164. Modusene og datafilene hentes fra Mac-pakken nynorsk 0.1.0 (Resources/apertium), så Windows og Mac oversetter likt. Datafilene er uendret; i mode-filene er bare stiene gjort relative til datamappa."
       }
     },
     "libraries": {
