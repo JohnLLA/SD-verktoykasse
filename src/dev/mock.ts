@@ -107,7 +107,7 @@ function buildCatalog(installed: Set<string>): ModelList {
   return {
     models,
     choices,
-    app_model_dir: "/Users/kari/Library/Application Support/no.lla.verktoykasse/modeller",
+    app_model_dir: "/Users/kari/Library/Application Support/no.samarbeidsdesken.verktoy/modeller",
     custom_model_dir: null,
     license: catalog.license,
     license_holder: catalog.license_holder,

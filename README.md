@@ -1,6 +1,6 @@
 # Agenter for LLAs verktøykasse
 
-Fem Claude Code-agenter som bygger en skrivebordsapp for Mac og Windows som LLA-medlemmene laster ned og installerer selv. Første verktøy: **Transkribering** med NB-Whisper, lokalt på maskinen, bokmål eller nynorsk, lydrett eller tolket. Nedlastingssiden ligger på lla.no, og installasjonsfilene på GitHub Releases i `JohnLLA/lla-verktoykasse-releases`.
+Fem Claude Code-agenter som bygger en skrivebordsapp for Mac og Windows som LLA-medlemmene laster ned og installerer selv. Første verktøy: **Transkribering** med NB-Whisper, lokalt på maskinen, bokmål eller nynorsk, lydrett eller tolket. Nedlastingssiden ligger på lla.no, og installasjonsfilene på GitHub Releases i `JohnLLA/sd-verktoy-releases`.
 
 ## Installering
 

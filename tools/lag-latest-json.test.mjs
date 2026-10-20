@@ -22,7 +22,7 @@ test("latest.json har riktige adresser og signaturer", () => {
   assert.equal(j.platforms["darwin-aarch64"].signature, "AAA");
   assert.equal(
     j.platforms["windows-x86_64"].url,
-    "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/v0.2.0/SD-Verktoy_0.2.0_x64-setup.exe",
+    "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/v0.2.0/SD-Verktoy_0.2.0_x64-setup.exe",
   );
   assert.match(j.platforms["darwin-aarch64"].url, /_aarch64\.app\.tar\.gz$/);
 });

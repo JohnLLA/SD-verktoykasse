@@ -209,7 +209,7 @@ export class MockJvBackend implements JvBackend {
       name: NAMES[id] ?? id,
       version: v,
       target: param("os", "mac") === "windows" ? "x86_64-pc-windows-msvc" : "aarch64-apple-darwin",
-      url: "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/jv/pakke",
+      url: "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/jv/pakke",
       bytes: SIZES[id] ?? 100_000_000,
       sha256: "0".repeat(64),
       min_app_version: "0.1.0",

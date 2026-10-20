@@ -16,13 +16,13 @@ privat repo  JohnLLA/lla-verktoykasse            kode, CI, hemmeligheter
           3. publiser: UTKAST i det offentlige repoet
                     |
                     v
-offentlig repo  JohnLLA/lla-verktoykasse-releases   installasjonsfiler + latest.json
+offentlig repo  JohnLLA/sd-verktoy-releases   installasjonsfiler + latest.json
                     ^                          ^
    nedlastingssiden på lla.no          appens oppdatering
    (site/lla-no/verktoy.html, din)     (Tauri updater, signert)
 ```
 
-Alle releaser ligger i `JohnLLA/lla-verktoykasse-releases`. Arbeidsflyten lager bare **utkast** (draft). Medlemmer og appen ser ingenting før du selv trykker «Publish release» i GitHub.
+Alle releaser ligger i `JohnLLA/sd-verktoy-releases`. Arbeidsflyten lager bare **utkast** (draft). Medlemmer og appen ser ingenting før du selv trykker «Publish release» i GitHub.
 
 ## Filnavn (avtale med nedlastingssiden)
 
@@ -52,7 +52,7 @@ Legges inn i det **private** repoet: GitHub, `JohnLLA/lla-verktoykasse`, Setting
 
 Lag den slik: github.com, Settings, Developer settings, Personal access tokens, Fine-grained tokens, Generate new token.
 - Resource owner: `JohnLLA`.
-- Repository access: **bare** `lla-verktoykasse-releases`.
+- Repository access: **bare** `sd-verktoy-releases`.
 - Permissions: Repository permissions, **Contents: Read and write**. Ingenting annet.
 - Utløpsdato: maks ett år. Sett en påminnelse i kalenderen; utløper den, stopper arbeidsflyten med melding om at `RELEASES_TOKEN` mangler eller avvises.
 
@@ -171,9 +171,9 @@ Variables: `WINDOWS_SIGNING` (valgfri), `WINDOWS_TIMESTAMP_URL`, `AZURE_TS_ENDPO
    ```
    Taggen må være `v` + versjonen i `tauri.conf.json`. Passer de ikke, stopper arbeidsflyten før noe bygges.
 5. **Vent på arbeidsflyten.** Den stopper tydelig hvis noe av dette mangler: `RELEASES_TOKEN`, oppdateringsnøkkelen, ekte `pubkey` i konfigurasjonen, eller Apple-hemmelighetene. Sammendraget på kjøringen lister hva som mangler.
-6. **Kontroller utkastet** i `https://github.com/JohnLLA/lla-verktoykasse-releases/releases`: nøyaktig seks filer finnes (`.dmg`, `-setup.exe`, `-setup.exe.sig`, `.app.tar.gz`, `.app.tar.gz.sig` og `latest.json`), og notatene stemmer. Rediger gjerne notatene (men `notes` i `latest.json` er generisk).
+6. **Kontroller utkastet** i `https://github.com/JohnLLA/sd-verktoy-releases/releases`: nøyaktig seks filer finnes (`.dmg`, `-setup.exe`, `-setup.exe.sig`, `.app.tar.gz`, `.app.tar.gz.sig` og `latest.json`), og notatene stemmer. Rediger gjerne notatene (men `notes` i `latest.json` er generisk).
 7. **Publiser** ved å trykke «Publish release». Først da får nedlastingssiden og appens oppdatering den nye versjonen. Er det en forhåndsversjon (`v0.2.0-beta.1`), merkes den som pre-release og vises ikke som «siste».
-8. **Kontroller:** `https://github.com/JohnLLA/lla-verktoykasse-releases/releases/latest/download/latest.json` viser den nye versjonen, og nedlastingssiden gir riktige knapper.
+8. **Kontroller:** `https://github.com/JohnLLA/sd-verktoy-releases/releases/latest/download/latest.json` viser den nye versjonen, og nedlastingssiden gir riktige knapper.
 
 Rettelser: en publisert versjon endres ikke (arbeidsflyten nekter å skrive over den). Er noe galt, lag en ny versjon. Et utkast kan slettes og taggen kjøres på nytt (slett taggen lokalt og i det private repoet først).
 
@@ -192,10 +192,10 @@ Webvisningen (grensesnittet) har **ingen** nettilgang: CSP `connect-src` tillate
 | Formål | Vert | Når |
 |---|---|---|
 | Modellnedlasting | `huggingface.co` og `*.hf.co` | bare når brukeren trykker «Last ned» |
-| Versjonssjekk: `latest.json` | `github.com` (stien `/JohnLLA/lla-verktoykasse-releases/releases/latest/download/latest.json`), som GitHub videresender til `release-assets.githubusercontent.com` (tidligere `objects.githubusercontent.com`) | ved oppstart, hvis bryteren er på |
-| Oppdateringspakke | `github.com` (`/JohnLLA/lla-verktoykasse-releases/releases/download/...`), videresendt til samme `*.githubusercontent.com`-vert | bare etter «Oppdater nå» |
+| Versjonssjekk: `latest.json` | `github.com` (stien `/JohnLLA/sd-verktoy-releases/releases/latest/download/latest.json`), som GitHub videresender til `release-assets.githubusercontent.com` (tidligere `objects.githubusercontent.com`) | ved oppstart, hvis bryteren er på |
+| Oppdateringspakke | `github.com` (`/JohnLLA/sd-verktoy-releases/releases/download/...`), videresendt til samme `*.githubusercontent.com`-vert | bare etter «Oppdater nå» |
 
-Redaksjoner med brannmur som slipper gjennom utvalgte verter, må altså tillate disse. Begrensninger som er bygget inn utover vertslisten: adressen til `latest.json` ligger fast i `tauri.conf.json`; Rust-koden nekter å laste ned en pakke hvis adressen i `latest.json` ikke er `https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/...`; og pakken må ha gyldig signatur fra vår nøkkel. Videresendingen til `githubusercontent.com` styres av GitHub og kan ikke låses i CSP (den gjelder bare webvisningen); den er derfor dokumentert her og dekket av signaturkontrollen. Forespørslene inneholder ingen lyd, tekst eller filnavn (reqwest sender standard `User-Agent` og plattformens TLS).
+Redaksjoner med brannmur som slipper gjennom utvalgte verter, må altså tillate disse. Begrensninger som er bygget inn utover vertslisten: adressen til `latest.json` ligger fast i `tauri.conf.json`; Rust-koden nekter å laste ned en pakke hvis adressen i `latest.json` ikke er `https://github.com/JohnLLA/sd-verktoy-releases/releases/download/...`; og pakken må ha gyldig signatur fra vår nøkkel. Videresendingen til `githubusercontent.com` styres av GitHub og kan ikke låses i CSP (den gjelder bare webvisningen); den er derfor dokumentert her og dekket av signaturkontrollen. Forespørslene inneholder ingen lyd, tekst eller filnavn (reqwest sender standard `User-Agent` og plattformens TLS).
 
 ## Windows-installasjon: per bruker, uten administrator
 

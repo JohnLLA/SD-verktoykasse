@@ -30,7 +30,7 @@ from .sources import NOT_ON_WINDOWS
 
 LAUNCHER = BUILD_ROOT / "launcher" / "jv_launcher.py"
 # Longest path inside a package we accept. The app installs to
-# %APPDATA%\no.lla.verktoykasse\verktoy\<id>\.ny-<versjon>\ (about 90 characters
+# %APPDATA%\no.samarbeidsdesken.verktoy\verktoy\<id>\.ny-<versjon>\ (about 90 characters
 # for a typical user name); Windows' classic limit is 260.
 MAX_REL_PATH = 150
 

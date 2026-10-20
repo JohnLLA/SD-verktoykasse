@@ -2,7 +2,7 @@
 
 De ni journalistverktøyene fra `/Volumes/Prosjektdisk/Verktoy2_0/journalistverktoy` skal inn i LLAs verktøykasse. Appen er et skall med samme utseende som Transkribering. Alle ti verktøyene står i venstremenyen. Transkribering følger med appen, og de ni andre lastes ned inne i appen når brukeren vil ha dem (bestemt av John Inge 19.10.2026).
 
-Medlemmene laster ned én app per plattform fra det offentlige release-repoet `JohnLLA/lla-verktoykasse-releases` eller fra `verktoy.html` på lla.no. Verktøyene lastes deretter ned fra det samme repoet, inne i appen.
+Medlemmene laster ned én app per plattform fra det offentlige release-repoet `JohnLLA/sd-verktoy-releases` eller fra `verktoy.html` på lla.no. Verktøyene lastes deretter ned fra det samme repoet, inne i appen.
 
 `docs/spesifikasjon-v1.md` gjelder fortsatt. Dette dokumentet utvider den, og der de to sier noe forskjellig, gjelder dette for journalistverktøyene. Spør John Inge før du endrer noe av det.
 
@@ -86,7 +86,7 @@ src/tools/<id>/                Én liten modul per verktøy: registeroppføring,
 
 ### Nettverk
 
-Spesifikasjon v1 tillater to nettkall: nedlasting av språkmodeller og sjekk etter ny appversjon. Nå kommer et tredje til: **katalog og verktøypakker fra `github.com/JohnLLA/lla-verktoykasse-releases`** (og GitHubs CDN for vedlegg). Kallet skjer bare når brukeren ber om det, og ingenting om brukeren eller filene sendes med. Det er godkjent av John Inge 19.10.2026.
+Spesifikasjon v1 tillater to nettkall: nedlasting av språkmodeller og sjekk etter ny appversjon. Nå kommer et tredje til: **katalog og verktøypakker fra `github.com/JohnLLA/sd-verktoy-releases`** (og GitHubs CDN for vedlegg). Kallet skjer bare når brukeren ber om det, og ingenting om brukeren eller filene sendes med. Det er godkjent av John Inge 19.10.2026.
 
 - Verktøyene selv har aldri nett. Kontrollvokteren kjører hver pakke med nettet sperret.
 - `capabilities`: bare kjøring av installerte jv-pakker fra appens datamappe, gjennom Rust. Webvisningen har ingen nettilgang, og CSP endres ikke.

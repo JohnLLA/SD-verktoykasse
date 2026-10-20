@@ -51,7 +51,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from . import DIST, MANIFEST, TARGET_MAC, TARGET_WINDOWS, archive_name
 
-RELEASE_REPO = "https://github.com/JohnLLA/lla-verktoykasse-releases"
+RELEASE_REPO = "https://github.com/JohnLLA/sd-verktoy-releases"
 TEST_SEED_TEXT = b"lla-verktoykasse: TESTNOKKEL for verktoykatalogen. Ikke hemmelig. Aldri i produksjon."
 CATALOG_SCHEMA = 1
 

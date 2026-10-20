@@ -52,9 +52,9 @@ pub const TEST_PUBLIC_KEY: &str = "RWTFfRytwwVmgKnJsuxEairT7gRXXXln9Rww6j6VoszCO
 
 /// Katalogen ligger i den faste releasen `katalog` i release-repoet.
 pub const CATALOG_URL: &str =
-    "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/katalog/tools.json";
+    "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/katalog/tools.json";
 pub const CATALOG_SIG_URL: &str =
-    "https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/katalog/tools.json.sig";
+    "https://github.com/JohnLLA/sd-verktoy-releases/releases/download/katalog/tools.json.sig";
 
 /// Vertene katalogen og pakkene kan hentes fra: GitHub og CDN-et for vedlegg.
 pub const RELEASE_HOSTS: &[&str] = &[
