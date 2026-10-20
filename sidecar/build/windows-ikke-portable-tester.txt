@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Python-tester som ikke kan kjøres på Windows slik de er skrevet, og som derfor velges bort
+# (pytest --deselect) når test-pakker-windows.sh tester Windows-pakkene. Én node-id per linje,
+# med grunnen etter «#». Testene og verktøyene i sidecar/jv er ikke endret (spesifikasjonen:
+# endringer der går gjennom kontraktvokter). Funnet i CI 20.10.2026, se PR-en for runde B.
+#
+# A) Filnavn som er ulovlige på Windows (« : » og « < > »). Det testene sjekker (at slike
+#    navn leses som lokale filer på Mac), kan ikke oppstå på Windows.
+verktoy/compare/tests/test_compare.py::test_html_is_self_contained_and_escaped  # filnavn «a<b>.md»
+verktoy/keyframes/tests/test_cli.py::test_http_like_relative_path_is_read_as_local_file  # «http:…»
+verktoy/keyframes/tests/test_cli.py::test_name_starting_with_http_colon  # «http:…»
+verktoy/keyframes/tests/test_cli.py::test_colon_and_dash_names  # «opptak:1.mp4», «pipe:0» …
+verktoy/keyframes/tests/test_cli.py::test_ffmpeg_arguments_are_local_only  # «opptak:1.mp4»
+verktoy/loudness/tests/test_loudness.py::test_relative_path_with_colon  # «opptak:1.wav», «ut:mappe»
+#
+# B) Testene antar Mac. Verktøyet selv svarer riktig (kode 0); det er sjekken i testen som må
+#    rettes for Windows (kontraktvokter):
+verktoy/metadata/tests/test_vask.py::test_vask_image_removes_gps_and_keeps_orientation  # testens hjelper leser exiftool-utdata som UTF-8; på Windows skriver exiftool filnavnet med «æøå» i systemets tegnsett
+verktoy/loudness/tests/test_loudness.py::test_ffmpeg_gets_file_urls  # venter «file:/…»; på Windows er det «file:C:\…»

@@ -38,6 +38,14 @@ if "$prove/curl.exe" -s -o /dev/null --max-time 20 https://github.com; then
 fi
 echo "Brannmursperren virker (sperret curl.exe nådde ikke github.com)." | tee -a "$SUM"
 
+# Tester som ikke kan kjøres på Windows slik de er skrevet (med grunn i filen).
+deselect=()
+while IFS= read -r linje; do
+  linje="${linje%%#*}"; linje="${linje%"${linje##*[![:space:]]}"}"
+  [[ -n "$linje" ]] && deselect+=(--deselect "$linje")
+done < "$HER/windows-ikke-portable-tester.txt"
+echo "Valgt bort på Windows: $(( ${#deselect[@]} / 2 )) tester (windows-ikke-portable-tester.txt)." | tee -a "$SUM"
+
 feil=0
 cd "$JV"
 for id in ${ids//,/ }; do
@@ -52,11 +60,11 @@ for id in ${ids//,/ }; do
   echo "[$id] tester mot $(basename "${arkiv[0]}")"
   set +e
   JV_NETTSPERRE="brannmursperre for pakkens .exe-filer" JV_PACKAGE_DIR="$(W "$rot")" PYTHONPATH="$(W "$HER")" \
-    uv run --frozen --all-packages --no-sync pytest -q -p pytest_packaged "verktoy/$id" -p no:cacheprovider \
+    uv run --frozen --all-packages --no-sync pytest -q -p pytest_packaged "verktoy/$id" -p no:cacheprovider "${deselect[@]}" \
     > "$LOGG/$id.log" 2>&1
   kode=$?
   set -e
-  linje=$(grep -E "^(=+ )?[0-9]+ (passed|failed)|[0-9]+ (passed|failed)|jv-pakke " "$LOGG/$id.log" | tail -n 2 | tr '\n' ' ')
+  linje=$(grep -E "[0-9]+ (passed|failed)|jv-pakke " "$LOGG/$id.log" | tail -n 2 | tr '\n' ' ')
   echo "[$id] kode $kode: $linje" | tee -a "$SUM"
   [[ $kode -eq 0 ]] || { feil=1; tail -60 "$LOGG/$id.log"; }
 done
