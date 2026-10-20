@@ -187,13 +187,13 @@ Kjør på Macen, i repoet. `jvpack` er
    ```zsh
    W=~/jv-windows; rm -rf $W; mkdir -p $W
    gh run download <kjørings-id> -R JohnLLA/lla-verktoykasse -n jv-windows-pakker -D $W
-   ls $W/*.zip            # åtte filer: jv-<id>-0.1.0-x86_64-pc-windows-msvc.zip
+   ls $W/dist/*.zip       # åtte filer: jv-<id>-0.1.0-x86_64-pc-windows-msvc.zip
    ```
 3. **Last opp** hver zip som et ekstra vedlegg til den eksisterende pre-releasen for verktøyet
    (samme tagg som Mac-pakken, så URL-ene i katalogen stemmer):
    ```zsh
    REPO=JohnLLA/lla-verktoykasse-releases
-   for f in $W/*.zip; do
+   for f in $W/dist/*.zip; do
      id=$(basename $f | sed -E 's/^jv-(.+)-[0-9.]+-x86_64-pc-windows-msvc\.zip$/\1/')
      v=$(basename $f | sed -E 's/^jv-.+-([0-9.]+)-x86_64-pc-windows-msvc\.zip$/\1/')
      gh release upload "jv-$id-v$v" "$f" --repo $REPO
@@ -205,7 +205,7 @@ Kjør på Macen, i repoet. `jvpack` er
    ```zsh
    K=~/jv-katalog; rm -rf $K; mkdir -p $K/ut
    gh release download katalog -R $REPO -D $K
-   jvpack katalog lag --usignert --dist $W --behold $K/tools.json --ut $K/ut --min-app 1.0.0
+   jvpack katalog lag --usignert --dist $W/dist --behold $K/tools.json --ut $K/ut --min-app 1.0.0
    ```
    `--usignert` skriver bare `tools.json` og sletter en gammel `.sig` i `--ut`. Se over at `$K/ut/tools.json`
    har ni Mac-linjer og åtte Windows-linjer.

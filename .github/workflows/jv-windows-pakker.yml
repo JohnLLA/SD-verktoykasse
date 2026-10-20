@@ -212,8 +212,9 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
+          # Artefakten har dist/*.zip og bygg-oppsummering-windows.json.
           name: jv-windows-pakker
-          path: sidecar/build/out/dist
+          path: sidecar/build/out
 
       - uses: astral-sh/setup-uv@v6
         with:
