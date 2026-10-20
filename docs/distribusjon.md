@@ -30,10 +30,10 @@ Nedlastingssiden (`site/lla-no/verktoy.html`) henter `releases/latest` fra API-e
 
 | Fil | Bruk |
 |---|---|
-| `LLAs-verktoykasse_<versjon>_aarch64.dmg` | Mac, nedlasting for medlemmer |
-| `LLAs-verktoykasse_<versjon>_x64-setup.exe` | Windows, nedlasting for medlemmer, og oppdateringspakken på Windows |
-| `LLAs-verktoykasse_<versjon>_x64-setup.exe.sig` | signatur for oppdateringen |
-| `LLAs-verktoykasse_<versjon>_aarch64.app.tar.gz` (+ `.sig`) | oppdateringspakken på Mac |
+| `SD-Verktoy_<versjon>_aarch64.dmg` | Mac, nedlasting for medlemmer |
+| `SD-Verktoy_<versjon>_x64-setup.exe` | Windows, nedlasting for medlemmer, og oppdateringspakken på Windows |
+| `SD-Verktoy_<versjon>_x64-setup.exe.sig` | signatur for oppdateringen |
+| `SD-Verktoy_<versjon>_aarch64.app.tar.gz` (+ `.sig`) | oppdateringspakken på Mac |
 | `latest.json` | oppdateringsfilen appen leser |
 
 Det er nøyaktig én fil som slutter på `.dmg` og én på `setup.exe` per release, og ingen `.msi` (`.sig` og `.tar.gz` treffer ikke siden). Mønsteret er låst i `tools/lag-latest-json.mjs` og testet (`npm run test:tools`). Endres siden, må filnavnene fortsatt tilfredsstille dette.
@@ -201,7 +201,7 @@ Redaksjoner med brannmur som slipper gjennom utvalgte verter, må altså tillate
 
 Medlemmene på redaksjons-PC-er har ofte ikke administratorrettigheter. Derfor installeres appen **per bruker** (`%LOCALAPPDATA%`), uten UAC-spørsmål.
 
-- Tauri 2 sin `.msi` (WiX) kan ikke installere per bruker uten en egen, skjør WiX-mal. NSIS har støtte for det innebygd (`bundle.windows.nsis.installMode: "currentUser"`), så Windows leveres som `LLAs-verktoykasse_<versjon>_x64-setup.exe`. NSIS er en del av Tauri sin bundler; ingen ny avhengighet.
+- Tauri 2 sin `.msi` (WiX) kan ikke installere per bruker uten en egen, skjør WiX-mal. NSIS har støtte for det innebygd (`bundle.windows.nsis.installMode: "currentUser"`), så Windows leveres som `SD-Verktoy_<versjon>_x64-setup.exe`. NSIS er en del av Tauri sin bundler; ingen ny avhengighet.
 - Oppdatering virker som før: `latest.json` peker på `-setup.exe`, og updateren kjører den i passiv modus (`plugins.updater.windows.installMode`). Siden installasjonen er per bruker, trengs ikke administrator for oppdateringer heller.
 - WebView2 (webvisningen) følger med Windows 11 og de fleste oppdaterte Windows 10. Mangler den, laster installasjonsprogrammet ned en bootstrapper fra Microsoft under installasjonen (den eneste ekstra nettforbindelsen, og bare ved installasjon). Dette må prøves på en ren redaksjons-PC (sjekklisten).
 - Eksisterende installasjoner: det finnes ingen `.msi`-versjon ute, så ingen må flyttes over.

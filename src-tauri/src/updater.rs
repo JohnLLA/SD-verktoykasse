@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     fn allows_only_our_release_downloads() {
-        assert!(ok("https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/v0.2.0/LLAs-verktoykasse_0.2.0_x64.msi"));
+        assert!(ok("https://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/v0.2.0/SD-Verktoy_0.2.0_x64.msi"));
         assert!(!ok("https://github.com/JohnLLA/lla-verktoykasse/releases/download/v0.2.0/x.msi"));
         assert!(!ok("https://github.com/Annen/lla-verktoykasse-releases/releases/download/v1/x.msi"));
         assert!(!ok("http://github.com/JohnLLA/lla-verktoykasse-releases/releases/download/v1/x.msi"));
