@@ -19,9 +19,9 @@ Oppskrift for hemmeligheter og release: `docs/distribusjon.md`.
 ## Mac (ren Mac, Apple Silicon, macOS 13 eller nyere, uten utviklerverktøy)
 
 - [ ] Last ned `.dmg` fra nedlastingssiden i Safari. Åpne, dra til Programmer. Første oppstart: macOS spør «er lastet ned fra internett, vil du åpne?». Svar Åpne. **Ingen** melding om «utvikleren kan ikke bekreftes» eller «ødelagt».
-- [ ] Terminal: `spctl --assess --type execute -vv "/Applications/LLAs verktøykasse.app"` sier `accepted` og `source=Notarized Developer ID`.
+- [ ] Terminal: `spctl --assess --type execute -vv "/Applications/SD-Verktøy.app"` sier `accepted` og `source=Notarized Developer ID`.
 - [ ] Uten nett (Wi-Fi av) første gang etter installasjon: appen starter likevel (stiftet billett).
-- [ ] Programmer-mappen: ikon og navn «LLAs verktøykasse». Om-vinduet viser riktig versjon.
+- [ ] Programmer-mappen: ikon og navn «SD-Verktøy». Om-vinduet viser riktig versjon.
 - [ ] macOS 13 (eller eldste tilgjengelige): appen starter.
 - [ ] Intel-Mac: dmg-en er ikke ment for den; siden sier at Apple Silicon kreves.
 - [ ] Avinstallering: dra appen til papirkurven. Innstillinger og modeller ligger igjen i brukerens bibliotek (modellmappen kan slettes under Innstillinger først).

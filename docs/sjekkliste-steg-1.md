@@ -38,7 +38,7 @@ Testene skriver bare tall (tider, antall segmenter), aldri transkribert tekst.
 
 - [ ] Mac M1 (eldste støttede) med Metal: `real_`-testene, og fart med medium q5 og beam 5 på 30 min intervju, både tolket (mål: under 10 min) og lydrett (mål: under 30 min). De endelige målene i spesifikasjonen settes etter denne målingen.
 - [ ] macOS 13 på ekte maskin: appen starter og transkriberer.
-- [ ] Dvale: under en lang jobb viser `pmset -g assertions` linjen `PreventUserIdleSystemSleep named: "LLAs verktoykasse: transkribering"`, og den forsvinner når jobben er ferdig eller avbrutt. Maskinen går ikke i dvale av seg selv under jobben (skjermen kan slukke).
+- [ ] Dvale: under en lang jobb viser `pmset -g assertions` linjen `PreventUserIdleSystemSleep named: "SD-Verktoy: transkribering"`, og den forsvinner når jobben er ferdig eller avbrutt. Maskinen går ikke i dvale av seg selv under jobben (skjermen kan slukke).
 - [ ] «Best» (large q5, 1,1 GB) på en Mac med 16 GB: fart og minne.
 - [ ] Modellmappe på delt disk (SMB) og ekstern disk: modellen finnes, sjekkes mot SHA-256 første gang (tar litt tid), og neste gang uten ny sjekk.
 

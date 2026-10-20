@@ -20,7 +20,7 @@ const SUPPORTED_FORMATS = "mp3, m4a, wav, flac, ogg, mp4 og mov";
 
 const something_went_wrong: ErrorText = {
   title: "Noe gikk galt i appen",
-  hint: "Prøv igjen. Skjer det igjen, start appen på nytt og ta kontakt med LLA.",
+  hint: "Prøv igjen. Skjer det igjen, start appen på nytt og ta kontakt med Samarbeidsdesken.",
 };
 
 const errors: ErrorTexts = {
@@ -133,15 +133,15 @@ const osName = (v: string) => `macOS ${v.replace(/(\.0)+$/, "")}`;
 const jvErrors: JvErrorTexts = {
   catalog_signature: () => ({
     title: "Verktøylisten kunne ikke kontrolleres",
-    hint: "Av sikkerhetshensyn brukes ikke listen. Prøv igjen senere. Hjelper ikke det, ta kontakt med LLA.",
+    hint: "Av sikkerhetshensyn brukes ikke listen. Prøv igjen senere. Hjelper ikke det, ta kontakt med Samarbeidsdesken.",
   }),
   catalog_invalid: () => ({
     title: "Verktøylisten kunne ikke leses",
-    hint: "Prøv igjen senere. Hjelper ikke det, ta kontakt med LLA.",
+    hint: "Prøv igjen senere. Hjelper ikke det, ta kontakt med Samarbeidsdesken.",
   }),
   catalog_outdated: () => ({
     title: "Verktøylisten er eldre enn den appen allerede har",
-    hint: "Prøv igjen senere. Hjelper ikke det, ta kontakt med LLA.",
+    hint: "Prøv igjen senere. Hjelper ikke det, ta kontakt med Samarbeidsdesken.",
   }),
   catalog_missing: () => ({
     title: "Appen har ingen verktøyliste ennå",
@@ -149,7 +149,7 @@ const jvErrors: JvErrorTexts = {
   }),
   catalog_key_missing: () => ({
     title: "Denne versjonen av appen kan ikke laste ned verktøy",
-    hint: "Last ned den nyeste versjonen av appen fra lla.no, eller ta kontakt med LLA.",
+    hint: "Last ned den nyeste versjonen av appen fra lla.no, eller ta kontakt med Samarbeidsdesken.",
   }),
   unknown_tool: () => something_went_wrong,
   not_for_platform: () => ({
@@ -178,7 +178,7 @@ const jvErrors: JvErrorTexts = {
   }),
   unsafe_archive: () => ({
     title: "Nedlastingen så ikke trygg ut",
-    hint: "Den er ikke installert. Prøv igjen senere. Skjer det igjen, ta kontakt med LLA.",
+    hint: "Den er ikke installert. Prøv igjen senere. Skjer det igjen, ta kontakt med Samarbeidsdesken.",
   }),
   archive_read: () => ({
     title: "Nedlastingen kunne ikke pakkes ut",
@@ -186,7 +186,7 @@ const jvErrors: JvErrorTexts = {
   }),
   manifest_invalid: () => ({
     title: "Verktøypakken passer ikke med appen",
-    hint: "Prøv å laste ned på nytt. Skjer det igjen, ta kontakt med LLA.",
+    hint: "Prøv å laste ned på nytt. Skjer det igjen, ta kontakt med Samarbeidsdesken.",
   }),
   code_signature: () => ({
     title: "Verktøyet er ikke godkjent av macOS",
@@ -194,11 +194,11 @@ const jvErrors: JvErrorTexts = {
   }),
   trial_run_failed: () => ({
     title: "Verktøyet startet ikke",
-    hint: "Det ble ikke installert. Prøv å laste ned på nytt. Skjer det igjen, ta kontakt med LLA.",
+    hint: "Det ble ikke installert. Prøv å laste ned på nytt. Skjer det igjen, ta kontakt med Samarbeidsdesken.",
   }),
   tool_failed: () => ({
     title: "Verktøyet stoppet uventet",
-    hint: "Prøv igjen. Skjer det igjen, sjekk at filen åpner seg i et vanlig program, og ta kontakt med LLA.",
+    hint: "Prøv igjen. Skjer det igjen, sjekk at filen åpner seg i et vanlig program, og ta kontakt med Samarbeidsdesken.",
   }),
   report_invalid: () => ({
     title: "Verktøyet ble ferdig, men svaret kunne ikke leses",
@@ -239,7 +239,7 @@ const jvErrors: JvErrorTexts = {
       default:
         return {
           title: "Nedlastingen mislyktes",
-          hint: "Prøv igjen. Skjer det igjen, ta kontakt med LLA.",
+          hint: "Prøv igjen. Skjer det igjen, ta kontakt med Samarbeidsdesken.",
         };
     }
   },
@@ -282,8 +282,8 @@ const headerLabels: HeaderLabels = {
 
 const nb = {
   app: {
-    name: "LLAs verktøykasse",
-    shortName: "Verktøykasse",
+    name: "SD-Verktøy",
+    shortName: "Verktøy",
     menuLabel: "Verktøy",
     skipToContent: "Hopp til innholdet",
     closeWithRunning:
@@ -903,14 +903,14 @@ const nb = {
   },
 
   about: {
-    title: "Om verktøykassen",
+    title: "Samarbeidsdeskens verktøykasse",
     version: (v: string) => `Versjon ${v}`,
     versionUnknown: "Versjon ukjent",
-    by: "Laget for medlemmene i Landslaget for lokalaviser.",
+    by: "Laget av John Inge Johansen og Claude Code for medlemmer i Samarbeidsdesken.",
     privacyTitle: "Personvern",
-    privacy: "Lyden din forlater aldri maskinen.",
+    privacy: "Programmene kan kjøres uten internettilgang, og sender ikke fra seg noe informasjon.",
     privacyDetail:
-      "Alt skjer lokalt. Appen kobler seg bare til internett for å laste ned modeller når du ber om det, og for å sjekke om det finnes en ny versjon (dette kan slås av under Innstillinger).",
+      "Når du laster ned pakker eller sjekker for oppdateringer, må du ha nett. Sjekken ved oppstart kan slås av under Innstillinger.",
     licensesTitle: "Lisenser",
     licensesIntro: "Verktøykassen bygger på åpen kildekode og åpne modeller.",
     licenses: [

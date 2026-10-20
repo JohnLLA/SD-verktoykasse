@@ -30,7 +30,7 @@ export function buildConfig(env) {
     conf.bundle.windows = {
       signCommand: {
         cmd: "trusted-signing-cli",
-        args: ["-e", env.TS_ENDPOINT, "-a", env.TS_ACCOUNT, "-c", env.TS_PROFILE, "-d", "LLAs verktøykasse", "%1"],
+        args: ["-e", env.TS_ENDPOINT, "-a", env.TS_ACCOUNT, "-c", env.TS_PROFILE, "-d", "SD-Verktøy", "%1"],
       },
     };
   } else if (mode !== "none") {

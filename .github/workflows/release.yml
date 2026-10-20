@@ -522,7 +522,7 @@ jobs:
       - name: Lag utgivelsesnotater
         run: |
           {
-            echo "LLAs verktøykasse $VERSION."
+            echo "SD-Verktøy $VERSION."
             echo
             echo "- **Mac:** last ned filen som slutter på .dmg (Apple Silicon, macOS 13 eller nyere)."
             echo "- **Windows:** last ned filen som slutter på setup.exe (64-bit, Windows 10 eller 11). Den installeres for din bruker og trenger ikke administratorrettigheter."
@@ -562,7 +562,7 @@ jobs:
           else
             flags=(--draft)
             if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
-            gh release create "$TAG" "${files[@]}" --repo "$RELEASES_REPO" --title "LLAs verktøykasse $VERSION" --notes-file notater.md "${flags[@]}"
+            gh release create "$TAG" "${files[@]}" --repo "$RELEASES_REPO" --title "SD-Verktøy $VERSION" --notes-file notater.md "${flags[@]}"
           fi
           {
             echo "### Utkast klart"
