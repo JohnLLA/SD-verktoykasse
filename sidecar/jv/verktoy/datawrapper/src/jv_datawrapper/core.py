@@ -119,16 +119,16 @@ def _pick(found, sheet_name: str | None, table_no: int | None) -> tuple[Sheet, l
     else:
         idx = next((i for i, (s, _, _) in enumerate(found) if s.name == sheet_name), None)
         if idx is None:
-            raise UserError(f"Fant ikke arket «{sheet_name}» blant de synlige arkene i filen.")
+            raise UserError("Fant ikke arket blant de synlige arkene i filen. Velg et annet ark.")
     sheet, tables, _ = found[idx]
     if not tables:
-        raise UserError(f"Arket «{sheet.name}» har ingen tabell.")
+        raise UserError("Arket har ingen tabell. Velg et annet ark.")
     if table_no is None:
         n = _suggested_table(tables)
     else:
         if not 1 <= table_no <= len(tables):
             raise UserError(
-                f"Arket «{sheet.name}» har {_plural(len(tables), 'tabell', 'tabeller')}. "
+                f"Arket har {_plural(len(tables), 'tabell', 'tabeller')}. "
                 f"Velg et tall fra 1 til {len(tables)}."
             )
         n = table_no - 1
@@ -175,11 +175,6 @@ def _warnings(r: Result, tables_in_sheet: int, table_no: int, wb: Workbook) -> l
         )
     if r.percent_text:
         w.append(f"Fjernet prosenttegnet i {_plural(r.percent_text, 'celle', 'celler')}. Tallene er beholdt.")
-    if r.percent_format:
-        w.append(
-            f"{_plural(r.percent_format, 'celle', 'celler')} er formatert som prosent i Excel "
-            "og står som desimaltall (0.125 betyr 12,5 %)."
-        )
     if r.excel_errors:
         w.append(
             f"{_plural(r.excel_errors, 'celle', 'celler')} hadde en feilverdi fra Excel "
@@ -279,9 +274,9 @@ def write_csv(original: Path, target: Path, table: tuple[list[str], list[list[st
         raise UserError("CSV-filen må ha endelsen .csv.")
     parent = target.parent
     if not parent.is_dir():
-        raise UserError(f"Mappen «{parent.name}» finnes ikke. Velg en annen mappe.")
+        raise UserError("Mappen for CSV-filen finnes ikke. Velg en annen mappe.")
     if not os.access(parent, os.W_OK | os.X_OK):
-        raise UserError(f"Mangler skrivetilgang til mappen «{parent.name}». Velg en annen mappe.")
+        raise UserError("Mangler skrivetilgang til mappen for CSV-filen. Velg en annen mappe.")
     out = _free_path(target, original)
     header, rows = table
     fd, tmp = tempfile.mkstemp(dir=parent, prefix=".jv-datawrapper-", suffix=".tmp")

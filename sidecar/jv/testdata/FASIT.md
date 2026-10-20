@@ -198,7 +198,7 @@ Alle steder og tall er oppdiktet. Filene er like byte for byte hver gang. Fasite
 | `sumrader.xlsx` | hierarkisk tabell (fylke/kommune) med tomme etiketter, to «Sum»-rader, «I alt» og sumkolonnen «Totalt» | `sumrader.fasit.tsv`, `sumrader.med-sum.fasit.tsv` |
 | `to_tabeller.xlsx` | to tabeller i ett ark med tomme rader mellom, hver med tittel; tabell 2 er størst og foreslås; «54 %» som tekst | `to_tabeller.fasit.tsv` (tabell 2), `to_tabeller.tabell1.fasit.tsv` |
 | `skjult_rad.xlsx` | skjult rad (4), skjult kolonne (C) og et skjult ark med flest tall; arket «Data» foreslås foran «Oversikt» | `skjult_rad.fasit.tsv` |
-| `tall_som_tekst.xlsx` | tall lagret som tekst («1 234 567,50», «(51 499,75)», «12,5 %»), tvetydige «1.234» og «12.5» (C4, D4), koden «0301», Excel-datoer, en celle formatert som prosent (0,125) og `#DIV/0!` | `tall_som_tekst.fasit.tsv` |
+| `tall_som_tekst.xlsx` | tall lagret som tekst («1 234 567,50», «(51 499,75)», «12,5 %»), tvetydige «1.234» og «12.5» (C4, D4), koden «0301», Excel-datoer, en celle formatert som prosent (0,125 → 12.5, overskriften blir «Andel (%)») og `#DIV/0!` | `tall_som_tekst.fasit.tsv` |
 | `semikolon_cp1252.csv` | semikolon, Windows-1252, CRLF, æøå, desimalkomma, U+00A0 som tusenskille, sitert felt, `..` og en «Sum»-rad | `semikolon_cp1252.fasit.tsv` |
 | `bytt.csv` | UTF-8 med BOM og komma; første kolonne er tall og første rad tekst, så bytte foreslås | `bytt.fasit.tsv`, `bytt.bytt.fasit.tsv` (med `--bytt`) |
 | `omsetning.xls` | `.xls` (BIFF8): sammenslått tittel, årstall, datoer, skjult rad, «I alt», `..`, kilde og et skjult ark | `omsetning.fasit.tsv` |

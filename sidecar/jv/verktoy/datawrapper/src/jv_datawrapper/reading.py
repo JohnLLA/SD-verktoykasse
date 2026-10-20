@@ -12,6 +12,7 @@ import codecs
 import csv
 import io
 import os
+import re
 import warnings
 import zipfile
 from dataclasses import dataclass, field
@@ -22,6 +23,10 @@ from jv_common import UserError
 
 MAX_BYTES = 50 * 1024 * 1024
 MAX_CELLS = 5_000_000
+# Zip bombs: an .xlsx is a zip. Limits checked from the zip directory before anything is unpacked.
+MAX_UNZIPPED_BYTES = 500 * 1024 * 1024
+MAX_RATIO = 100  # per part, for parts larger than RATIO_MIN_BYTES
+RATIO_MIN_BYTES = 1024 * 1024
 
 EXCEL_SUFFIXES = (".xlsx", ".xlsm")
 XLS_SUFFIXES = (".xls",)
@@ -108,10 +113,7 @@ def _build_sheet(
     max_r = max(r for r, _ in used)
     max_c = max(c for _, c in used)
     if (max_r + 1) * (max_c + 1) > MAX_CELLS:
-        raise UserError(
-            "Arket er for stort til å klargjøres her (mer enn fem millioner celler). "
-            "Kopier tabellen til et nytt ark og prøv igjen."
-        )
+        raise _too_big()
     data_rows = {r for r, _ in used}
     data_cols = {c for _, c in used}
     row_ids = [r for r in range(max_r + 1) if r not in hidden_rows]
@@ -150,10 +152,70 @@ def _build_sheet(
 # ---------------------------------------------------------------- xlsx
 
 
+def check_zip(path: Path) -> None:
+    """Refuse zip bombs before openpyxl unpacks anything (sizes from the zip directory)."""
+    try:
+        with zipfile.ZipFile(path) as zf:
+            infos = zf.infolist()
+            _check_sizes(infos)
+            _check_no_dtd(zf, infos)
+    except (zipfile.BadZipFile, OSError, ValueError, EOFError, RuntimeError, NotImplementedError) as exc:
+        raise _broken() from exc
+
+
+# A DTD (and with it entity declarations) is never part of OOXML. openpyxl reads
+# the sheets with defusedxml, but other parts with lxml, which expands internal
+# entities. So any part with a DTD is refused before openpyxl sees it.
+_DTD_MARKS = tuple(m.encode(enc) for m in ("<!DOCTYPE", "<!ENTITY") for enc in ("utf-8", "utf-16-le", "utf-16-be"))
+_PROLOG_BYTES = 64 * 1024
+_ROOT_START = re.compile(rb"<[A-Za-z_]|<\x00[A-Za-z_]\x00|\x00<\x00[A-Za-z_]")
+
+
+def _check_no_dtd(zf: zipfile.ZipFile, infos: list[zipfile.ZipInfo]) -> None:
+    for info in infos:
+        if not info.filename.lower().endswith((".xml", ".rels", ".vml")):
+            continue
+        with zf.open(info) as fh:
+            head = fh.read(_PROLOG_BYTES)
+        # The DTD can only come before the root element; the root must start in the
+        # bytes read, so a long comment cannot push a DTD out of sight.
+        no_root = len(head) == _PROLOG_BYTES and not _ROOT_START.search(head)
+        if no_root or any(m in head for m in _DTD_MARKS):
+            raise UserError(
+                "Filen inneholder XML som Excel ikke bruker (DTD eller entiteter), og blir ikke åpnet. "
+                "Åpne den i Excel og lagre den på nytt som .xlsx."
+            )
+
+
+def _check_sizes(infos: list[zipfile.ZipInfo]) -> None:
+    total = sum(i.file_size for i in infos)
+    packed_ratio = any(
+        i.file_size > RATIO_MIN_BYTES and i.file_size > MAX_RATIO * max(i.compress_size, 1) for i in infos
+    )
+    if total > MAX_UNZIPPED_BYTES or packed_ratio:
+        raise UserError(
+            "Filen pakker seg ut til mye mer enn den tar på disken, og blir ikke åpnet. "
+            "Åpne den i Excel og lagre den på nytt som .xlsx, eller kopier tabellen til en ny fil."
+        )
+
+
+def _too_big() -> UserError:
+    return UserError(
+        "Arket er for stort til å klargjøres her (mer enn fem millioner celler). "
+        "Kopier tabellen til et nytt ark og prøv igjen."
+    )
+
+
 def _read_xlsx(path: Path) -> Workbook:
+    import openpyxl
     from openpyxl import load_workbook
     from openpyxl.utils.exceptions import InvalidFileException
 
+    # openpyxl parses the XML with defusedxml when it is installed (no entity
+    # expansion, no external entities). Never read without it.
+    if not openpyxl.DEFUSEDXML:
+        raise RuntimeError("defusedxml mangler; regnearket leses ikke")
+    check_zip(path)
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -168,15 +230,23 @@ def _read_xlsx(path: Path) -> Workbook:
             continue
         cells: dict[tuple[int, int], object] = {}
         percent: set[tuple[int, int]] = set()
-        for row in ws.iter_rows():
-            for cell in row:
-                v = cell.value
-                if v is None:
-                    continue
-                key = (cell.row - 1, cell.column - 1)
-                cells[key] = v
-                if isinstance(v, (int, float)) and not isinstance(v, bool) and "%" in (cell.number_format or ""):
-                    percent.add(key)
+        # Only the cells that exist in the file, never the dense range up to
+        # max_row x max_column: one cell in XFD1048576 must not mean billions
+        # of iterations. The size of the used area is checked before any grid
+        # is built.
+        stored = ws._cells  # openpyxl's {(row, col): Cell}
+        max_r = max_c = 0
+        for (r, c), cell in stored.items():
+            v = cell.value
+            if v is None or (isinstance(v, str) and not v.strip()):
+                continue
+            max_r, max_c = max(max_r, r), max(max_c, c)
+            if max_r * max_c > MAX_CELLS:
+                raise _too_big()
+            key = (r - 1, c - 1)
+            cells[key] = v
+            if isinstance(v, (int, float)) and not isinstance(v, bool) and "%" in (cell.number_format or ""):
+                percent.add(key)
         hidden_rows = {r - 1 for r, dim in ws.row_dimensions.items() if dim.hidden}
         hidden_cols: set[int] = set()
         for dim in ws.column_dimensions.values():
@@ -213,6 +283,8 @@ def _read_xls(path: Path) -> Workbook:
         if sh.visibility != 0:
             hidden += 1
             continue
+        if sh.nrows * sh.ncols > MAX_CELLS:
+            raise _too_big()
         cells: dict[tuple[int, int], object] = {}
         percent: set[tuple[int, int]] = set()
         for r in range(sh.nrows):
@@ -330,12 +402,10 @@ def _empty() -> UserError:
 def read_file(path_str: str) -> Workbook:
     path = Path(path_str)
     if not path.is_file():
-        raise UserError(f"Finner ikke filen «{path.name}».")
+        raise UserError("Finner ikke filen.")
     suffix = path.suffix.lower()
     if suffix not in SUFFIXES:
-        raise UserError(
-            f"Filtypen «{path.suffix or path.name}» støttes ikke. Bruk .xlsx, .xls eller .csv."
-        )
+        raise UserError("Filtypen støttes ikke. Bruk .xlsx, .xls eller .csv.")
     size = path.stat().st_size
     if size > MAX_BYTES:
         raise UserError("Filen er større enn 50 MB. Kopier tabellen til en mindre fil og prøv igjen.")

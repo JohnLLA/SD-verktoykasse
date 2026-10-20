@@ -294,10 +294,11 @@ def make_numbers_as_text() -> None:
     write_fasit(
         "tall_som_tekst.fasit.tsv",
         [
-            ["Post", "Dato", "Regnskap", "Budsjett", "Andel", "Kode"],
+            # E4 is formatted as percent in Excel: 0.125 becomes 12.5 and the header gets « (%)».
+            ["Post", "Dato", "Regnskap", "Budsjett", "Andel (%)", "Kode"],
             ["Lønn", "2025-01-31", "1234567.5", "1300000", "12.5", "0301"],
             ["Husleie", "2025-02-28", "-145320.4", "-51499.75", "3", "0402"],
-            ["Inventar", "2025-03-31", "1234", "12.5", "0.125", "1100"],
+            ["Inventar", "2025-03-31", "1234", "12.5", "12.5", "1100"],
             ["Reise", "2025-04-30", "2500", "2500", "", "0503"],
         ],
     )

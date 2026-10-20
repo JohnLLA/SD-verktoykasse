@@ -45,7 +45,11 @@ uv run jv datawrapper lag tabell.xlsx --ark Tabell --tabell 1 [--med-sum] [--byt
 10. Med to eller flere etikettkolonner fylles tomme etiketter (alle unntatt den siste) med etiketten over.
 
 Celler med feilverdi fra Excel (#DIV/0! og lignende) blir tomme, med advarsel. Tall som er formatert som
-prosent i Excel, står som de er lagret (0.125), med advarsel.
+prosent i Excel, ganges med 100 (0,125 blir 12.5), og overskriften får « (%)» hvis den ikke sier prosent fra før.
+
+**Fiendtlige filer:** høyst 5 millioner celler per ark (regnet fra cellene med innhold, før rutenettet lages),
+en `.xlsx` sjekkes mot zip-katalogen før utpakking (høyst 500 MB utpakket, høyst 100:1 for deler over 1 MB),
+og ingen XML-del kan ha DTD eller entiteter. Feilmeldingene nevner ikke fil-, ark- eller mappenavn.
 
 Ingenting fra cellene skrives til stderr eller logger. stderr har bare fremdriftslinjer og feilmeldingen.
 

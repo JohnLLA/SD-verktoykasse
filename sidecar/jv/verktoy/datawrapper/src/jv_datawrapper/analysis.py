@@ -341,7 +341,6 @@ class Result:
     filled_labels: int
     uncertain: list[str]  # cell refs
     percent_text: int
-    percent_format: int
     excel_errors: int
     transpose_suggested: bool
     transposed: bool
@@ -467,7 +466,7 @@ def build(
     symbols: dict[str, int] = {}
     uncertain: list[str] = []
     percent_text = 0
-    percent_format = 0
+    percent_cols: set[int] = set()
     excel_errors = 0
     out_rows: list[list[str]] = []
     kinds: list[list[str]] = []
@@ -480,6 +479,10 @@ def build(
                 ks.append("text" if not is_empty(v) else "empty")
                 continue
             conv = convert_value(v)
+            # Percent format in Excel: 0.125 is shown as 12,5 % and becomes 12.5.
+            if conv.kind == "num" and (gr, gc) in s.percent and isinstance(v, (int, float)):
+                conv = Converted(format_number(v * 100), "num")
+                percent_cols.add(c)
             if conv.kind == "symbol":
                 sym = clean_text(str(v))
                 symbols[sym] = symbols.get(sym, 0) + 1
@@ -487,14 +490,17 @@ def build(
                 uncertain.append(cell_ref(s.row_ids[gr], s.col_ids[gc]))
             if conv.percent_text:
                 percent_text += 1
-            if conv.kind == "num" and (gr, gc) in s.percent:
-                percent_format += 1
             if (gr, gc) in s.errors:
                 excel_errors += 1
             texts.append(conv.text)
             ks.append(conv.kind)
         out_rows.append(texts)
         kinds.append(ks)
+
+    # Columns with Excel percent cells get « (%)» unless the header already says percent.
+    for c in percent_cols:
+        if "%" not in header[c] and "prosent" not in header[c].lower():
+            header[c] = f"{header[c]} (%)" if header[c] else "%"
 
     # Transposing is suggested when column 0 holds numbers and the header is text.
     transpose_suggested = (
@@ -572,7 +578,6 @@ def build(
         filled_labels=filled,
         uncertain=uncertain,
         percent_text=percent_text,
-        percent_format=percent_format,
         excel_errors=excel_errors,
         transpose_suggested=transpose_suggested,
         transposed=transpose,

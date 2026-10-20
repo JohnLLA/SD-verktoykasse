@@ -131,3 +131,31 @@ def test_one_column_lists_are_not_tables():
 def test_empty_sheet():
     assert isinstance(_sheet([]), Sheet)
     assert find_tables(_sheet([])) == []
+
+
+def test_zip_total_size_limit(tmp_path, monkeypatch):
+    import zipfile
+
+    from jv_common import UserError
+    from jv_datawrapper import reading
+
+    f = tmp_path / "a.xlsx"
+    with zipfile.ZipFile(f, "w", zipfile.ZIP_STORED) as z:
+        z.writestr("a.bin", b"x" * 2048)
+    reading.check_zip(f)  # under the limits
+    monkeypatch.setattr(reading, "MAX_UNZIPPED_BYTES", 1024)
+    with pytest.raises(UserError, match="pakker seg ut"):
+        reading.check_zip(f)
+
+
+def test_excel_percent_is_multiplied_and_header_marked():
+    from jv_datawrapper.analysis import build
+
+    s = _sheet([["Kommune", "Andel"], ["a", 0.125], ["b", 0.07]])
+    s.percent = {(1, 1), (2, 1)}
+    r = build(find_tables(s)[0])
+    assert r.header == ["Kommune", "Andel (%)"]
+    assert r.rows == [["a", "12.5"], ["b", "7"]]
+    s2 = _sheet([["Kommune", "Andel i %"], ["a", 0.5], ["b", 0.25]])
+    s2.percent = {(1, 1), (2, 1)}
+    assert build(find_tables(s2)[0]).header == ["Kommune", "Andel i %"]

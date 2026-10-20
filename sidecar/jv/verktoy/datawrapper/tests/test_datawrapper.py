@@ -120,7 +120,8 @@ def test_numbers_as_text_warnings(capsys):
     text = " ".join(report["warnings"])
     assert "to måter" in text and "C4, D4" in text
     assert "prosenttegnet i 2 celler" in text
-    assert "formatert som prosent" in text
+    assert "formatert som prosent" not in text  # Excel percent is converted silently (12.5)
+    assert [c["name"] for c in d["columns"]][4] == "Andel (%)"
     assert "feilverdi fra Excel" in text
 
 
@@ -269,3 +270,130 @@ def test_bad_arguments_are_user_errors(capsys):
     assert code == 1 and "heltall" in captured.err
     code, _, captured = run(capsys, "finn", DATA / "bytt.csv")
     assert code == 1 and "Ugyldige argumenter" in captured.err
+
+
+# ------------------------------------------------------------------ hostile files
+# Built in the test (tmp_path), never stored in git.
+
+
+def _xlsx(path, rows=(("Navn", "Tall"), ("a", 1), ("b", 2))):
+    from openpyxl import Workbook
+
+    wb = Workbook()
+    for row in rows:
+        wb.active.append(list(row))
+    wb.save(path)
+    return path
+
+
+def _rewrite(src, dst, changes):
+    """Copy a zip, replacing (or adding) members: {name: bytes or function(old bytes)}."""
+    import zipfile
+
+    with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
+        names = [i.filename for i in zin.infolist()]
+        for name in names:
+            data = zin.read(name)
+            change = changes.get(name)
+            if callable(change):
+                data = change(data)
+            elif change is not None:
+                data = change
+            zout.writestr(name, data)
+        for name, change in changes.items():
+            if name not in names:
+                zout.writestr(name, change)
+    return dst
+
+
+def test_one_cell_far_out_is_refused_quickly(capsys, tmp_path):
+    from openpyxl import Workbook
+
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Navn", "Tall"])
+    ws.append(["a", 1])
+    ws["XFD1048576"] = "langt ute"
+    f = tmp_path / "glissen.xlsx"
+    wb.save(f)
+    for cmd in ("analyser", "lag"):
+        code, _, captured = run(capsys, cmd, f)
+        assert code == 1
+        assert "for stort" in captured.err
+
+
+def test_zip_bomb_is_refused_before_unpacking(capsys, tmp_path):
+    good = _xlsx(tmp_path / "god.xlsx")
+    # 64 MB of zeros packs to about 64 kB: a ratio far above 100:1.
+    bomb = _rewrite(good, tmp_path / "bombe.xlsx", {"xl/media/fyll.bin": b"\0" * (64 * 1024 * 1024)})
+    assert bomb.stat().st_size < 1024 * 1024
+    code, _, captured = run(capsys, "analyser", bomb)
+    assert code == 1
+    assert "pakker seg ut" in captured.err
+
+
+BILLION_LAUGHS = (
+    b'<?xml version="1.0"?>\n<!DOCTYPE lolz [<!ENTITY lol "lol">'
+    b'<!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">'
+    b'<!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">'
+    b'<!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">]>\n'
+)
+
+
+def _body(data):
+    return data.split(b"?>", 1)[1] if data.startswith(b"<?xml") else data
+
+
+def test_xml_entities_are_not_expanded(capsys, tmp_path):
+    """No part of an .xlsx may carry a DTD: openpyxl reads sheets with defusedxml,
+    but other parts with lxml, which expands internal entities."""
+    good = _xlsx(tmp_path / "god.xlsx", rows=(("Navn", "Tall"), ("ENTITET", 1), ("b", 2)))
+
+    def in_sheet(data):
+        return BILLION_LAUGHS + _body(data).replace(b"ENTITET", b"&lol4;")
+
+    f = _rewrite(good, tmp_path / "entitet-ark.xlsx", {"xl/worksheets/sheet1.xml": in_sheet})
+    code, _, captured = run(capsys, "lag", f)
+    assert code == 1
+    assert "lollol" not in captured.out + captured.err
+
+    def in_workbook(data):
+        return BILLION_LAUGHS + _body(data).replace(b'name="Sheet"', b'name="&lol4;"')
+
+    f = _rewrite(good, tmp_path / "entitet-bok.xlsx", {"xl/workbook.xml": in_workbook})
+    code, _, captured = run(capsys, "analyser", f)
+    assert code == 1 and "DTD" in captured.err
+    assert "lollol" not in captured.out + captured.err
+
+    def comment_first(data):  # a long comment must not hide a DTD after it
+        return b"<!--" + b"x" * 70000 + b"-->" + BILLION_LAUGHS + _body(data)
+
+    f = _rewrite(good, tmp_path / "entitet-kommentar.xlsx", {"xl/workbook.xml": comment_first})
+    code, _, captured = run(capsys, "analyser", f)
+    assert code == 1
+
+
+def test_external_entities_are_not_read(capsys, tmp_path):
+    secret = tmp_path / "hemmelig.txt"
+    secret.write_text("HEMMELIG-INNHOLD", encoding="utf-8")
+    good = _xlsx(tmp_path / "god.xlsx", rows=(("Navn", "Tall"), ("ENTITET", 1), ("b", 2)))
+
+    def xxe(data):
+        doctype = f'<?xml version="1.0"?>\n<!DOCTYPE worksheet [<!ENTITY xxe SYSTEM "{secret.as_uri()}">]>\n'
+        return doctype.encode() + _body(data).replace(b"ENTITET", b"&xxe;")
+
+    f = _rewrite(good, tmp_path / "xxe.xlsx", {"xl/worksheets/sheet1.xml": xxe})
+    code, _, captured = run(capsys, "lag", f)
+    assert code == 1
+    assert "HEMMELIG" not in captured.out + captured.err
+
+
+def test_messages_do_not_name_files_sheets_or_folders(capsys, tmp_path):
+    code, _, captured = run(capsys, "lag", DATA / "skjult_rad.xlsx", "--ark", "Hjelpeark")
+    assert code == 1 and "Hjelpeark" not in captured.err
+    code, _, captured = run(capsys, "lag", DATA / "bytt.csv", "--csv", tmp_path / "Hemmelig mappe" / "ut.csv")
+    assert code == 1 and "Hemmelig" not in captured.err
+    code, _, captured = run(capsys, "analyser", tmp_path / "Kildens navn.xlsx")
+    assert code == 1 and "Kildens" not in captured.err
+    code, _, captured = run(capsys, "analyser", tmp_path / "Kildens navn.ods")
+    assert code == 1 and "Kildens" not in captured.err
