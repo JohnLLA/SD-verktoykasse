@@ -134,7 +134,8 @@ export interface RunRequest {
   command?: string;
   inputs: string[];
   out_dir?: string;
-  options: Record<string, string | number | boolean>;
+  /** Tallisten (`remove_columns` i datawrapper) er den eneste som ikke er en enkeltverdi. */
+  options: Record<string, string | number | boolean | number[]>;
 }
 
 // ---- jv_read_plan({ path }) -> PlanView       (redact: treffene fra «finn»)

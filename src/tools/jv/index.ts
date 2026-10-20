@@ -9,7 +9,7 @@ import { getJvBackend } from "./backend";
 import { JvController } from "./controller";
 import type { ToolSchema } from "./schema";
 import { toolTexts } from "./texts";
-import { mountJvTool, type JvScreen } from "./view";
+import { mountJvTool, type JvScreen, type ScreenFactory } from "./view";
 
 let shared: JvController | null = null;
 
@@ -25,7 +25,8 @@ export function resetSharedJv(): void {
   shared = null;
 }
 
-export function defineJvTool(schema: ToolSchema): ToolDefinition {
+/** `createScreen`: verktøy med egen skjerm (datawrapper). Uten den brukes den felles verktøyskjermen. */
+export function defineJvTool(schema: ToolSchema, createScreen?: ScreenFactory): ToolDefinition {
   const texts = toolTexts(schema.id);
   return {
     id: schema.id,
@@ -47,7 +48,7 @@ export function defineJvTool(schema: ToolSchema): ToolDefinition {
         },
         init: () => c.init(),
         mountScreen(root) {
-          screen = mountJvTool(root, c, schema.id, schema, texts, ctx);
+          screen = mountJvTool(root, c, schema.id, schema, texts, ctx, createScreen);
           // Filer sluppet i vinduet går til verktøyet som vises (skallet sorterer).
           void ctx.platform.onDrop({
             onFiles: (paths) => screen?.drop(paths),
