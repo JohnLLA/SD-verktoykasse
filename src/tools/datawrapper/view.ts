@@ -61,6 +61,7 @@ export function createDatawrapperScreen(c: JvController, id: JvToolId, _schema: 
 
   // ---- filen
   const fileName = h("span", { class: "ready-name" });
+  const otherFileButton = h("button", { type: "button", class: "btn", text: D.chooseOther, onclick: () => void dw.chooseFile() });
   const fileHeading = h("h2", { id: `jv-ready-${id}`, class: "block-title", tabindex: -1, text: D.fileTitle });
   const fileSection = h(
     "section",
@@ -69,7 +70,7 @@ export function createDatawrapperScreen(c: JvController, id: JvToolId, _schema: 
     h(
       "ul",
       { class: "ready-list" },
-      h("li", { class: "ready-item" }, icon("file", 20), fileName, h("button", { type: "button", class: "btn", text: D.chooseOther, onclick: () => void dw.chooseFile() })),
+      h("li", { class: "ready-item" }, icon("file", 20), fileName, otherFileButton),
     ),
   );
 
@@ -374,6 +375,8 @@ export function createDatawrapperScreen(c: JvController, id: JvToolId, _schema: 
     drop.classList.toggle("dropzone-over", dragging);
     dropTitle.textContent = dragging ? S.dragging : texts.dropTitle;
     fileSection.hidden = phase === "empty";
+    // På feilskjermen har feilkortet sin egen «Velg annen fil».
+    otherFileButton.hidden = phase === "failed";
     fileName.textContent = dw.file ? c.displayName(dw.file) : "";
     reading.hidden = phase !== "analysing";
     failed.hidden = phase !== "failed";
