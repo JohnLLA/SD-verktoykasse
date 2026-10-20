@@ -43,7 +43,7 @@ jvpack lisenser                                           # THIRD_PARTY_LICENSES
   skrives ut av `katalog nokkel lag` og `katalog nokkel --key-file <fil>`.
 - **Den ekte nøkkelen** (id FD360273935858EB) har John Inge laget med `minisign -G`. Den offentlige linjen står i
   `PUBLIC_KEY` i `src-tauri/src/tools/jv/catalog.rs` (er den tom, avviser appen alle
-  kataloger). Katalogen signeres da med `minisign -S -m tools.json` (samme format som Python-signeringen).
+  kataloger). Katalogen signeres da med `minisign -S -s <katalog.key> -m tools.json -x tools.json.sig` (samme format som Python-signeringen). Uten `-x` lagrer minisign signaturen som `tools.json.minisig`, men appen henter `tools.json.sig`.
 
 ### Hele kjeden i Rust (alle ni)
 

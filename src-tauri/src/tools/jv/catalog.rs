@@ -24,7 +24,7 @@ pub const CURRENT_TARGET: &str = TARGET_WINDOWS;
 // KATALOGNØKKELEN – den ekte offentlige nøkkelen (minisign-id FD360273935858EB).
 //
 // Den hemmelige delen (katalog.key) har John Inge, utenfor repoet. Katalogen
-// signeres med:   minisign -S -s katalog.key -m tools.json
+// signeres med:   minisign -S -s katalog.key -m tools.json -x tools.json.sig
 // Mistes nøkkelen, kan appene ikke få nye verktøy før appen er oppdatert med
 // en ny nøkkel.
 //
