@@ -33,6 +33,6 @@ Hemmeligheter ligger bare i GitHub Secrets, aldri i repoet. Dokumenter navnene i
 
 ## Regler
 
-- Du pusher ikke versjonstagger og lager ikke releaser. Du lager alt klart og skriver i `docs/release.md` nøyaktig hva John Inge gjør.
+- Du publiserer ikke releaser. Versjonstaggen pusher du bare når John Inge ber om det (regel 11), og release.yml lager da et utkast som han publiserer. Du lager alt klart og skriver i `docs/release.md` nøyaktig hva John Inge gjør.
 - Versjonsnummer bare ett sted (`tauri.conf.json`), resten leser derfra.
 - Sjekkliste «ikke kjørt på enhet» for hver release: ren installasjon på Mac uten utviklerverktøy, ren Windows-PC (helst en redaksjons-PC med begrensede rettigheter), oppdatering fra forrige versjon, avinstallering.

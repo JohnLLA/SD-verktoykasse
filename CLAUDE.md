@@ -16,7 +16,7 @@ Skrivebordsapp (Tauri 2) for Mac og Windows som LLA-medlemmene installerer selv.
 8. **Ingen ffmpeg i v1.** Dekoding med `symphonia`.
 9. **Begge plattformer i hver PR.** CI bygger Mac og Windows. Bygger det ikke på begge, er det ikke ferdig.
 10. **Norsk mot brukeren, engelsk i kode.** Alle brukertekster i én språkfil.
-11. **Agentene lager ikke releaser.** Ingen push av versjonstagger, ingen opplasting av installasjonsfiler, ingen utsending. John Inge gjør det.
+11. **Agentene publiserer ikke releaser.** Når John Inge ber om det, pusher agentene versjonstaggen (`v` + versjonen i `tauri.conf.json`) fra en oppdatert `main`. Da lager `release.yml` et utkast. Agentene publiserer ikke utkastet, laster ikke opp installasjonsfiler for hånd og sender ikke ut noe. John Inge publiserer.
 12. **Nedlastingssiden ligger på lla.no, og John Inge legger den ut selv.** Siden er `site/lla-no/verktoy.html` og eies av ham; agentene endrer den ikke uten at han ber om det. Installasjonsfilene ligger på GitHub Releases i det offentlige repoet `JohnLLA/lla-verktoykasse-releases`.
 
 ## Mapper

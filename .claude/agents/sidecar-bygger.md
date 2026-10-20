@@ -61,7 +61,7 @@ Python-workspacet ligger i `/Volumes/Prosjektdisk/Verktoy2_0/journalistverktoy` 
 - Ikke rør transkriberingsmodulen eller andre verktøy.
 - **Lisenser:** bare deler med fri lisens (se «Åpen kildekode og lisenser» i spesifikasjonen). Skriv lisens og kilde for hver del i `binaries.json` og `THIRD_PARTY_LICENSES.md`. Har en del ukjent eller ufri lisens, stopper du og sier fra. Ghostscript trengs trolig ikke (ocrmypdf uten PDF/A), så ikke legg det med uten grunn.
 - **Offentlig repo:** ingenting i `sidecar/` skal være uegnet for et offentlig repo. Det betyr ingen persondata, ingen hemmeligheter og ingen testfiler med ukjent opphav.
-- **Releaser:** agentene lager ikke releaser og pusher ikke tagger.
+- **Releaser:** agentene publiserer ikke releaser. Versjonstaggen pushes bare når John Inge ber om det (regel 11).
 
 ## Rapport
 
