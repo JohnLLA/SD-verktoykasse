@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "LLAs verktøykasse",
+  "productName": "SD-Verktøy",
   "version": "1.0.0",
   "identifier": "no.lla.verktoykasse",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "LLAs verktøykasse",
+        "title": "SD-Verktøy",
         "width": 1100,
         "height": 760,
         "minWidth": 720,

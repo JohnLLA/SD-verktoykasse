@@ -184,7 +184,7 @@ export async function startApp(
   if (rest.length > 0) toolList.append(h("ul", { class: "nav-list" }, ...rest));
 
   nav.append(
-    h("div", { class: "brand" }, h("span", { class: "brand-mark", "aria-hidden": "true", text: "LLA" }), h("span", { class: "brand-name", text: t.app.shortName })),
+    h("div", { class: "brand" }, h("span", { class: "brand-mark", "aria-hidden": "true", text: "SD" }), h("span", { class: "brand-name", text: t.app.shortName })),
     toolList,
     bottomList,
   );
