@@ -552,6 +552,15 @@ export class JvController {
     return buildRunRequest(schema, s.values, s.files, s.outDir, { ...fieldExtra, ...extra }, commandOverride);
   }
 
+  /**
+   * For verktøy med egen skjerm (datawrapper): starter en kjøring med en ferdig
+   * bygd forespørsel. Resultatet kommer i `session(id).run`, som ellers.
+   */
+  async runRequest(id: JvToolId, req: RunRequest): Promise<void> {
+    if (!this.isInstalled(id) || activeRun(this.session(id).run.status)) return;
+    await this.startRun(id, req, "run");
+  }
+
   /** «Kjør» (og «Finn» i sladding). */
   async run(id: JvToolId): Promise<void> {
     if (!this.canRun(id)) return;

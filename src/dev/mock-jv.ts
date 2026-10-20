@@ -10,6 +10,8 @@
 //   macos    = gammel: ocr, metadata, keyframes og loudness krever nyere macOS
 //   nedlasting = feil (stopper med «ingen nett» midt i) | treg | skadet
 //   kjoring  = feil | treg | hurtig | advarsel
+//   dw       = enkel (ett ark, én tabell) | rader=N (N rader i tabellen; standard 9)
+//            csv=finnes (lagre som CSV gir navn-2.csv)
 //   verktoyoppdatering = ny: subtitles har ny versjon i katalogen
 //   nett     = nede: katalogen kan ikke hentes
 
@@ -95,12 +97,118 @@ function plan(): PlanItem[] {
   ];
 }
 
+// ---- Klargjør for Datawrapper: oppdiktede tall, regnet etter de samme valgene som `jv datawrapper`.
+const DW_PLACES = ["Askvoll", "Bjørnevik", "Dalsfjord", "Eidsvåg", "Fjellstad", "Grønnvik", "Havnes", "Ingeborg", "Jørpeland", "Kvalvåg", "Lundbrekk", "Myrdal"];
+
+function dwTable(req: RunRequest) {
+  const o = req.options;
+  const n = Number(params.get("rader") ?? 9) || 9;
+  const table = typeof o.table === "number" ? o.table : 1;
+  const sheet = typeof o.sheet === "string" ? o.sheet : "Befolkning";
+  const places = Array.from({ length: n }, (_, i) => `${DW_PLACES[i % DW_PLACES.length]}${i >= DW_PLACES.length ? ` ${Math.floor(i / DW_PLACES.length) + 1}` : ""}`);
+  let header = ["Kommune", "Kvinner", "Menn", "I alt", "Endring (%)"];
+  let rows: string[][] = places.map((p, i) => {
+    const k = 1200 + ((i * 937) % 4800);
+    const m = 1240 + ((i * 611) % 4900);
+    return [p, String(k), String(m), String(k + m), i === 4 ? "" : (((i * 7) % 23) / 10 - 0.8).toFixed(1)];
+  });
+  if (sheet === "Boliger") {
+    header = ["Boligtype", "Antall", "Gjennomsnittspris (kr)"];
+    rows = [["Enebolig", "4210", "3250000"], ["Tomannsbolig", "880", "2490000"], ["Rekkehus", "1130", "2680000"], ["Leilighet", "2975", "2910000"]];
+  } else if (table === 2) {
+    header = ["Fylke", "Folketall"];
+    rows = [["Nordre", "251000"], ["Midtre", "418200"], ["Søre", "362700"]];
+  }
+  const sums = sheet === "Befolkning" && table === 1;
+  const withSums = o.with_sums === true;
+  if (sums && withSums) rows.push(["Hele landet", ...[1, 2, 3].map((c) => String(rows.reduce((a, r) => a + Number(r[c]), 0))), "0.4"]);
+  if (sums && !withSums) header = header.filter((h) => h !== "I alt"), (rows = rows.map((r) => r.filter((_, c) => c !== 3)));
+  if (o.transpose === true) {
+    header = [header[0] ?? "", ...rows.map((r) => r[0] ?? "")];
+    const cols = header.length;
+    const old = sums && !withSums ? ["Kvinner", "Menn", "Endring (%)"] : sums ? ["Kvinner", "Menn", "I alt", "Endring (%)"] : table === 2 ? ["Folketall"] : sheet === "Boliger" ? ["Antall", "Gjennomsnittspris (kr)"] : [];
+    rows = old.map((name, c) => [name, ...rows.slice(0, cols - 1).map((r) => r[c + 1] ?? "")]);
+  }
+  const all = header.map((name, i) => ({ index: i + 1, name, numeric: i > 0, sum: name === "I alt", removed: false }));
+  const drop = new Set(Array.isArray(o.remove_columns) ? o.remove_columns : []);
+  const keep = all.filter((c) => !drop.has(c.index));
+  const tsv = [keep.map((c) => c.name), ...rows.map((r) => keep.map((c) => r[c.index - 1] ?? ""))].map((r) => `${r.join("\t")}\n`).join("");
+  return { sheet, table, columns: all.map((c) => ({ ...c, removed: drop.has(c.index) })), rowsOut: rows.length, tsv, sums, withSums, transposed: o.transpose === true };
+}
+
+function dwReport(req: RunRequest): JvReport {
+  const single = params.get("dw") === "enkel";
+  const first = req.inputs[0] ?? "/Users/kari/Saker/fil.xlsx";
+  const table = (index: number, range: string, rows: number, columns: number, suggested: boolean) => ({
+    index, range, suggested, rows, columns, headers: [], title: "Folkemengde per kommune, 2024", description: "", source: "Statistisk sentralbyrå, tabell 07459", notes: [], sum_rows: [], sum_columns: [], hidden_rows: 0, hidden_columns: 0, symbols: {}, transpose_suggested: false,
+  });
+  if (req.command === "analyser") {
+    const n = Number(params.get("rader") ?? 9) || 9;
+    const sheets = [{ name: "Befolkning", numbers: 40, suggested: true, suggested_table: 1, tables: single ? [table(1, `A4:E${5 + n}`, n, 5, true)] : [table(1, `A4:E${5 + n}`, n, 5, true), table(2, "A30:B33", 3, 2, false)] }];
+    if (!single) sheets.push({ name: "Boliger", numbers: 8, suggested: false, suggested_table: 1, tables: [table(1, "A3:C7", 4, 3, true)] });
+    return {
+      summary: `Fant ${single ? "1 tabell" : "3 tabeller"} i ${single ? "1 ark" : "2 ark"}.`,
+      warnings: [],
+      outputs: [],
+      datawrapper: { format: base(first).endsWith(".csv") ? "csv" : "xlsx", hidden_sheets: 0, xml_parser: "defusedxml", sheets, suggested_sheet: "Befolkning" },
+    };
+  }
+  const t = dwTable(req);
+  const warnings: string[] = [];
+  if (t.sheet === "Befolkning" && t.table === 1) {
+    if (!t.withSums) warnings.push("Fjernet 1 sumrad og 1 sumkolonne. Velg «Ta med sumrader» for å beholde dem.");
+    warnings.push("Symbolet «..» ble tomme celler (1 celle).");
+    if (params.get("kjoring") === "advarsel") warnings.push("2 tall kan leses på to måter, som «1.234». Punktum med tre sifre etter er lest som tusenskille, ellers som desimaltegn. Sjekk C7, C12.");
+  }
+  if (!single) warnings.unshift(`Arket har ${t.sheet === "Befolkning" ? 2 : 1} ${t.sheet === "Befolkning" ? "tabeller" : "tabell"}. Tabell ${t.table} er valgt.`);
+  if (single || t.sheet !== "Befolkning") warnings.shift();
+  let csv: string | null = null;
+  const outs: unknown[] = [];
+  if (typeof req.options.csv_file === "string") {
+    csv = params.get("csv") === "finnes" ? req.options.csv_file.replace(/\.csv$/, "-2.csv") : req.options.csv_file;
+    outs.push({ path: csv, type: "csv" });
+  }
+  const full = t.sheet === "Befolkning" && t.table === 1;
+  return {
+    summary: `Tabellen har ${t.rowsOut} rader og ${t.columns.filter((c) => !c.removed).length} kolonner og er klar for Datawrapper.`,
+    warnings,
+    outputs: outs,
+    datawrapper: {
+      format: "xlsx",
+      hidden_sheets: 0,
+      xml_parser: "defusedxml",
+      sheet: t.sheet,
+      table: t.table,
+      tables_in_sheet: t.sheet === "Befolkning" && !single ? 2 : 1,
+      range: "A4:E13",
+      title: full ? "Folkemengde per kommune, 2024" : t.sheet === "Boliger" ? "Boliger etter type" : "",
+      description: full ? "Folkemengde 1. januar, etter kjønn." : "",
+      source: full ? "Statistisk sentralbyrå, tabell 07459" : "",
+      notes: full ? ["1) Foreløpige tall.", "2) Endring fra året før."] : [],
+      header_rows: 1,
+      columns: t.columns,
+      rows: t.rowsOut,
+      with_sums: t.withSums,
+      transposed: t.transposed,
+      transpose_suggested: false,
+      removed: {},
+      symbols: {},
+      filled_labels: 0,
+      uncertain_cells: [],
+      tsv: t.tsv,
+      ...(csv ? { csv } : {}),
+    },
+  };
+}
+
 function reportFor(id: string, req: RunRequest): JvReport {
   const first = req.inputs[0] ?? "/Users/kari/Saker/fil";
   const out = req.out_dir ?? dir(first);
   const warn = param("kjoring", "") === "advarsel";
   const o = (name: string) => `${out}/${name}`;
   switch (id) {
+    case "datawrapper":
+      return dwReport(req);
     case "compare":
       return {
         summary: "Fant 14 endrede avsnitt: 212 ord lagt til og 187 ord fjernet.",
@@ -292,7 +400,7 @@ export class MockJvBackend implements JvBackend {
   async run(id: string, request: RunRequest): Promise<JvJobId> {
     const job = this.nextJob++;
     const mode = param("kjoring", "ok");
-    const seconds = mode === "treg" ? 40 : mode === "hurtig" ? 0.6 : 5;
+    const seconds = mode === "treg" ? 40 : mode === "hurtig" || id === "datawrapper" ? 0.6 : 5;
     const t0 = Date.now();
     const timer = window.setInterval(() => {
       const p = Math.min(1, (Date.now() - t0) / 1000 / seconds);

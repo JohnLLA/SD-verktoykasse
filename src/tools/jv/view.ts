@@ -19,7 +19,18 @@ export interface JvScreen {
   hover(over: boolean): void;
 }
 
-export function mountJvTool(root: HTMLElement, c: JvController, id: JvToolId, schema: ToolSchema, texts: ToolTexts, ctx: ToolContext): JvScreen {
+/** Lager skjermen for et verktøy som er lastet ned. Standard: `createToolScreen`. */
+export type ScreenFactory = typeof createToolScreen;
+
+export function mountJvTool(
+  root: HTMLElement,
+  c: JvController,
+  id: JvToolId,
+  schema: ToolSchema,
+  texts: ToolTexts,
+  ctx: ToolContext,
+  createScreen: ScreenFactory = createToolScreen,
+): JvScreen {
   const heading = h("h1", { class: "page-title", tabindex: -1, text: texts.name });
   const stage = h("div", { class: "stage" });
   root.append(heading, stage);
@@ -39,7 +50,7 @@ export function mountJvTool(root: HTMLElement, c: JvController, id: JvToolId, sc
       install.update();
     } else {
       install?.el.remove();
-      screen ??= createToolScreen(c, id, schema, texts, ctx.platform);
+      screen ??= createScreen(c, id, schema, texts, ctx.platform);
       stage.append(screen.el);
       screen.update();
     }

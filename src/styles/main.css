@@ -1530,3 +1530,170 @@ input.switch:checked::after {
   padding-bottom: 16px;
   background: var(--surface);
 }
+
+/* ---------- Klargjør for Datawrapper ---------- */
+
+.view-datawrapper > .notice {
+  margin-top: 12px;
+}
+
+.view-datawrapper select.input {
+  max-width: 560px;
+}
+
+.dw-failed {
+  margin-top: 24px;
+}
+
+.dw-removed {
+  margin-top: 16px;
+}
+
+.dw-removed-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dw-chip {
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 500;
+}
+
+.dw-actions .button-row {
+  margin-top: 0;
+}
+
+.dw-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin-top: 8px;
+}
+
+.dw-status {
+  margin: 0;
+  font-weight: 600;
+}
+
+.dw-status-ok {
+  color: var(--success);
+}
+
+.dw-problem,
+.dw-warnings {
+  margin-top: 16px;
+}
+
+.dw-count {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.dw-preview-wrap {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.dw-stale .dw-preview-wrap {
+  opacity: 0.6;
+}
+
+.dw-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.dw-table th,
+.dw-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dw-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-2);
+}
+
+.dw-table tbody tr:last-child th,
+.dw-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.dw-table .dw-rowhead {
+  font-weight: 600;
+}
+
+.dw-table .dw-num {
+  text-align: right;
+}
+
+.dw-colbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dw-colbtn:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.dw-colbtn:disabled {
+  cursor: default;
+}
+
+.dw-colbtn .icon {
+  color: var(--text-muted);
+}
+
+.dw-colbtn:disabled .icon {
+  display: none;
+}
+
+.dw-fields {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+  max-width: 880px;
+}
+
+.dw-field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dw-textarea {
+  min-height: 70px;
+  padding-block: 8px;
+  resize: vertical;
+}
+
+.dw-copy {
+  flex: none;
+  min-width: 7rem;
+}
