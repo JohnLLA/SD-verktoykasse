@@ -106,6 +106,10 @@ Verktøyene leser filer fra utenforstående. En fil kan være laget for å utnyt
 - **Midlertidig mappe:** `verktoy/.kjoring/<app-pid>-<n>/` i appens datamappe, med profilen og `tmp/`, som blir `TMPDIR`. Den lages før kjøringen og slettes etterpå, også ved feil og avbryt. Mapper etter en app som krasjet, slettes når neste kjøring starter.
 - **Feil lukker:** mangler `sandbox-exec`, eller avviser den profilen, kjøres verktøyet ikke. Brukeren får «Verktøyet kunne ikke startes i beskyttet modus.» (`sandbox_failed`). Det finnes ingen innstilling for å slå sandkassen av. Meldinger fra `sandbox-exec` logges ikke (regel 2).
 - **Testene:** `cargo test` kjører en falsk pakke (en kopi av testbinærfila) gjennom sandkassen og sjekker at nett, DNS, lesing i `HOME` og på `/Volumes`, skriving utenfor utmappen og start av `/bin/sh` og `/usr/bin/open` stoppes, mens den valgte fila og utmappen virker. Verktøyenes egne Python-tester kjøres mot de pakkede binærfilene med den samme profilen (`sidecar/build/pytest_packaged.py`).
+- **Kjente grenser** (godkjent av John Inge 22.10.2026):
+  - En utnyttet prosess kan oppdage (ikke lese) filnavn i HOME via metadata.
+  - `datawrapper` får skrive i hele mappen til CSV-fila (ikke bare én utfil).
+  - Velger brukeren HOME selv som utmappe, blir hele HOME lesbart for verktøyet.
 - **Windows** kjører verktøyene uten sandkasse ennå. Det kommer i et eget steg (AppContainer).
 
 ## Plattformer
