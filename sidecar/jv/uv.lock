@@ -283,7 +283,7 @@ source = { editable = "verktoy/common" }
 
 [[package]]
 name = "jv-compare"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/compare" }
 dependencies = [
     { name = "jv-common" },
@@ -294,13 +294,13 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "jv-common", editable = "verktoy/common" },
-    { name = "pymupdf", specifier = ">=1.24" },
+    { name = "pymupdf", specifier = ">=1.24,<2" },
     { name = "python-docx", specifier = ">=1.1" },
 ]
 
 [[package]]
 name = "jv-datawrapper"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/datawrapper" }
 dependencies = [
     { name = "jv-common" },
@@ -317,7 +317,7 @@ requires-dist = [
 
 [[package]]
 name = "jv-keyframes"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/keyframes" }
 dependencies = [
     { name = "jv-common" },
@@ -332,7 +332,7 @@ requires-dist = [
 
 [[package]]
 name = "jv-loudness"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/loudness" }
 dependencies = [
     { name = "jv-common" },
@@ -343,7 +343,7 @@ requires-dist = [{ name = "jv-common", editable = "verktoy/common" }]
 
 [[package]]
 name = "jv-metadata"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/metadata" }
 dependencies = [
     { name = "jv-common" },
@@ -366,7 +366,7 @@ dev = [{ name = "pillow", specifier = ">=10.1" }]
 
 [[package]]
 name = "jv-nynorsk"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "verktoy/nynorsk" }
 dependencies = [
     { name = "jv-common" },
@@ -381,7 +381,7 @@ requires-dist = [
 
 [[package]]
 name = "jv-ocr"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/ocr" }
 dependencies = [
     { name = "jv-common" },
@@ -395,12 +395,12 @@ requires-dist = [
     { name = "jv-common", editable = "verktoy/common" },
     { name = "ocrmypdf", specifier = ">=16" },
     { name = "pikepdf", specifier = ">=8" },
-    { name = "pymupdf", specifier = ">=1.24" },
+    { name = "pymupdf", specifier = ">=1.24,<2" },
 ]
 
 [[package]]
 name = "jv-pdf-tables"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/pdf-tables" }
 dependencies = [
     { name = "jv-common" },
@@ -412,12 +412,12 @@ dependencies = [
 requires-dist = [
     { name = "jv-common", editable = "verktoy/common" },
     { name = "openpyxl", specifier = ">=3.1" },
-    { name = "pymupdf", specifier = ">=1.24" },
+    { name = "pymupdf", specifier = ">=1.24,<2" },
 ]
 
 [[package]]
 name = "jv-redact"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/redact" }
 dependencies = [
     { name = "jv-common" },
@@ -427,12 +427,12 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "jv-common", editable = "verktoy/common" },
-    { name = "pymupdf", specifier = ">=1.24" },
+    { name = "pymupdf", specifier = ">=1.24,<2" },
 ]
 
 [[package]]
 name = "jv-subtitles"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "verktoy/subtitles" }
 dependencies = [
     { name = "jv-common" },

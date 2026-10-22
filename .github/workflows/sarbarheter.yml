@@ -1,0 +1,97 @@
+# Sårbarhets- og lisenskontroll for alle fire lag (steg 6.5, docs/brief-avhengigheter.md).
+# Kjøres på hver PR, ved push til main og hver mandag (nye funn dukker opp uten at koden endres).
+#
+# - Rust:      cargo deny check (advisories, licenses, bans, sources), src-tauri/deny.toml
+# - npm:       npm audit --audit-level=low, og lisenser fra package-lock.json
+# - Python:    pip-audit mot uv.lock og PyInstaller-kravene, og pip-licenses
+# - Systemprogrammer: sidecar/build/sjekk-sarbarheter.py (OSV) mot binaries.json
+#
+# Bygget stopper ved funn som ikke står i unntakslista med begrunnelse og utløpsdato:
+# src-tauri/deny.toml (Rust) og sidecar/build/sarbarhet-unntak.json (systemprogrammer og Python).
+# Utløpte unntak stopper også bygget. Ingen hemmeligheter, ingen releaser, ingen tagger.
+# Verktøyversjonene er festet med vilje, så et nytt verktøy ikke endrer resultatet uten at noen ser det.
+name: sarbarheter
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_DENY_VERSION: "0.20.2"
+  PIP_AUDIT_VERSION: "2.10.1"
+  PIP_LICENSES_VERSION: "5.5.5"
+  UV_VERSION: "0.12.11"
+  PYTHONUTF8: "1"
+
+jobs:
+  kontroll:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Unntakene er ikke utløpt
+        run: uv run --no-project python sidecar/build/sjekk-sarbarheter.py --unntak
+
+      # --- Rust ---
+      - name: Cache cargo-deny
+        id: deny-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-deny*
+          key: cargo-deny-${{ env.CARGO_DENY_VERSION }}-${{ runner.os }}
+      - name: Installer cargo-deny
+        if: steps.deny-cache.outputs.cache-hit != 'true'
+        run: cargo install cargo-deny --locked --version "$CARGO_DENY_VERSION"
+      - name: Rust - sårbarheter, lisenser, kilder (cargo deny)
+        run: cargo deny --manifest-path src-tauri/Cargo.toml check
+
+      # --- npm ---
+      - name: npm - sårbarheter
+        run: npm audit --audit-level=low
+      - name: npm - lisenser
+        run: uv run --no-project python sidecar/build/sjekk-lisenser.py --npm package-lock.json
+
+      # --- Python ---
+      - name: Python - sårbarheter (uv.lock og PyInstaller)
+        working-directory: sidecar/jv
+        run: |
+          ignore=$(uv run --no-project python ../build/sjekk-sarbarheter.py --pip-ignore)
+          uv export --frozen --all-packages --no-emit-workspace -o "$RUNNER_TEMP/krav.txt" > /dev/null
+          uvx --from "pip-audit==$PIP_AUDIT_VERSION" pip-audit $ignore --disable-pip --require-hashes --no-deps -r "$RUNNER_TEMP/krav.txt"
+          for f in ../build/jvpack/windows/pyinstaller-krav.txt ../build/jvpack/mac/pyinstaller-krav.txt; do
+            uvx --from "pip-audit==$PIP_AUDIT_VERSION" pip-audit $ignore --disable-pip --require-hashes --no-deps -r "$f"
+          done
+      - name: Python - lisenser
+        working-directory: sidecar/jv
+        run: |
+          uv sync --frozen --all-packages
+          uvx --from "pip-licenses==$PIP_LICENSES_VERSION" pip-licenses --python "$(uv python find --project .)" --format=json --output-file "$RUNNER_TEMP/pl.json"
+          uv run --no-project python ../build/sjekk-lisenser.py --python "$RUNNER_TEMP/pl.json"
+
+      # --- Systemprogrammene ---
+      - name: Systemprogrammer - OSV (binaries.json)
+        run: uv run --no-project python sidecar/build/sjekk-sarbarheter.py

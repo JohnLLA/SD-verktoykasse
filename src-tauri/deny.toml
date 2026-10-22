@@ -1,0 +1,58 @@
+# cargo-deny for appen: kjente sårbarheter og lisenser (steg 6.5).
+# Kjøres av .github/workflows/sarbarheter.yml: cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses
+#
+# Hvert unntak har begrunnelse og utløpsdato (sjekkes av sidecar/build/sjekk-sarbarheter.py --unntak).
+# Utløpsdato står i formen «utloper: ÅÅÅÅ-MM-DD» i begrunnelsen.
+
+[advisories]
+unmaintained = "all"
+yanked = "deny"
+ignore = [
+    # zip 4.6.1 (tauri-plugin-updater 2.14.0 krever ^4) og zip 8.6.0 (docx-rs 0.4.22 krever ^8.6.0).
+    # Ingen utgitt versjon av noen av dem bruker zip >= 9.0.0 ennå.
+    # Rettet i zip >= 9.0.0; svakhetene gjelder bare ZipArchive::extract / ZipStreamReader::extract.
+    # - updater-pluginen pakker bare ut en oppdatering etter at minisign-signaturen er kontrollert mot den
+    #   innebygde offentlige nøkkelen, så arkivet er alltid vårt eget.
+    # - docx-rs pakker aldri ut (bare skriver .docx).
+    # - verktøypakkene pakkes ut av vår egen archive.rs, ikke av zip.
+    { id = "RUSTSEC-2026-0367", reason = "zip: bare updater (signert, minisign) og docx-rs (skriver bare); ingen utpakking av uverifiserte arkiv. utloper: 2026-12-31" },
+    { id = "RUSTSEC-2026-0368", reason = "zip: som RUSTSEC-2026-0367. utloper: 2026-12-31" },
+    { id = "RUSTSEC-2026-0369", reason = "zip: som RUSTSEC-2026-0367. utloper: 2026-12-31" },
+    # Bare på Linux (GTK/zbus via tauri/wry). Bygges ikke inn på Mac eller Windows, og vi leverer ikke for Linux.
+    { id = "RUSTSEC-2024-0370", reason = "proc-macro-error: bare Linux (gtk). utloper: 2026-12-31" },
+    { id = "RUSTSEC-2026-0370", reason = "zvariant: bare Linux (zbus). utloper: 2026-12-31" },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names: bare Linux (zbus). utloper: 2026-12-31" },
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive: bare Linux (zbus). utloper: 2026-12-31" },
+]
+
+[licenses]
+# Appen er AGPL-3.0-or-later; avhengighetene må ha en tillatende lisens (eller MPL-2.0, som er fil-basert).
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "0BSD",
+    "Unlicense",
+    "CC0-1.0",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.9
+
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

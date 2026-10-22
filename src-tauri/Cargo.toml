@@ -1,10 +1,10 @@
 [package]
 name = "lla-verktoykasse"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 publish = false
 description = "LLAs verktøykasse"
-license = "UNLICENSED"
+license = "AGPL-3.0-or-later"
 rust-version = "1.85"
 
 [lib]

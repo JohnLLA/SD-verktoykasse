@@ -1,6 +1,6 @@
 [project]
 name = "jv-subtitles"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gjør Whisper-transkripsjon med tidskoder om til undertekster (SRT og VTT)"
 requires-python = ">=3.12,<3.13"
 dependencies = ["jv-common"]

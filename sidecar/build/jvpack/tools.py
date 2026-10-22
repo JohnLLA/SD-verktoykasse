@@ -60,26 +60,26 @@ class ToolSpec:
         return self.programs + scripts
 
 
-FIRST = "Første utgave i verktøykassen."
+OPPDATERT = "Oppdaterte programmer og biblioteker (sikkerhet). Ingen endringer i hvordan verktøyet virker."
 BOTH = (TARGET_MAC, TARGET_WINDOWS)
 
 SPECS: dict[str, ToolSpec] = {
     s.tool_id: s
     for s in [
-        ToolSpec("compare", "Sammenlign versjoner", targets=BOTH, note=FIRST),
+        ToolSpec("compare", "Sammenlign versjoner", targets=BOTH, note=OPPDATERT),
         ToolSpec(
             "metadata", "Metadata – vis og fjern",
             extra=("exiftool",),
             pyinstaller_extra=("--copy-metadata", "pikepdf"),
             targets=BOTH,
-            note=FIRST,
+            note=OPPDATERT,
         ),
-        ToolSpec("keyframes", "Stillbilder fra video", programs=("ffmpeg", "ffprobe"), targets=BOTH, note=FIRST),
-        ToolSpec("loudness", "Lydnivå", programs=("ffmpeg", "ffprobe"), targets=BOTH, note=FIRST),
-        ToolSpec("subtitles", "Teksting", targets=BOTH, note=FIRST),
-        ToolSpec("pdf-tables", "Tabeller fra PDF", targets=BOTH, note=FIRST),
+        ToolSpec("keyframes", "Stillbilder fra video", programs=("ffmpeg", "ffprobe"), targets=BOTH, note=OPPDATERT),
+        ToolSpec("loudness", "Lydnivå", programs=("ffmpeg", "ffprobe"), targets=BOTH, note=OPPDATERT),
+        ToolSpec("subtitles", "Teksting", targets=BOTH, note=OPPDATERT),
+        ToolSpec("pdf-tables", "Tabeller fra PDF", targets=BOTH, note=OPPDATERT),
         # Verktøy nummer ti (docs/spesifikasjon-datawrapper.md): ingen systemprogrammer, Mac og Windows fra start.
-        ToolSpec("datawrapper", "Klargjør for Datawrapper", targets=BOTH, note=FIRST),
+        ToolSpec("datawrapper", "Klargjør for Datawrapper", targets=BOTH, note=OPPDATERT),
         ToolSpec(
             "ocr", "Søkbare PDF-er (OCR)",
             # No Ghostscript: ocrmypdf writes plain PDF (decided 19.10.2026).
@@ -93,15 +93,14 @@ SPECS: dict[str, ToolSpec] = {
                 "--copy-metadata", "pymupdf",
             ),
             targets=BOTH,
-            note=FIRST,
+            note=OPPDATERT,
         ),
-        ToolSpec("redact", "Sladding av PDF", programs=("pdftotext",), targets=BOTH, note=FIRST),
+        ToolSpec("redact", "Sladding av PDF", programs=("pdftotext",), targets=BOTH, note=OPPDATERT),
         ToolSpec(
             "nynorsk", "Bokmål ↔ nynorsk",
             extra=("apertium",),
             targets=BOTH,
-            note="Finnes nå også for Windows. Apertium kjøres direkte, uten bash-skriptet og gawk. "
-                 "Oversettelsen er den samme som i 0.1.0.",
+            note=OPPDATERT,
         ),
     ]
 }
