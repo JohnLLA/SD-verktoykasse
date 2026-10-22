@@ -120,7 +120,7 @@ variablene fra `jv-package.json`.
 - Homebrew i `/opt/homebrew` med `ffmpeg`, `tesseract`, `tesseract-lang`, `poppler` og `exiftool`.
 - Apertium med `apertium-nno-nob` bygget fra kilde i `~/.local`, og kildene i `~/Kilder/apertium/<repo>`
   (se `sidecar/jv/verktoy/nynorsk/OPPSETT.md`).
-- PyInstaller i venv-en eller den lokale PyInstaller 6.6 for Apples Python 3.9 (som i Verktoy2_0).
+- PyInstaller: `bygg-mac.sh` installerer den festede versjonen med SHA-256 fra `jvpack/mac/pyinstaller-krav.txt` i venv-en (Python 3.12, samme PyInstaller som på Windows). Den lokale PyInstaller 6.6 for Apples Python 3.9 brukes bare hvis `build.py` kjøres utenom skriptet.
 - Identiteten «Developer ID Application» i nøkkelringen (eller `JV_SIGN_IDENTITY`). Uten den signeres
   pakken ad hoc med en tydelig advarsel, og appen nekter å kjøre den.
 - For notarisering: nøkkelringprofilen `jv-notary` (`xcrun notarytool store-credentials`). Finnes den
@@ -227,3 +227,21 @@ Kjør på Macen, i repoet. `jvpack` er
 
 Lisenslista: last ned artefakten `jv-windows-lisenser` til `sidecar/build/out/work/x86_64-pc-windows-msvc/`
 og kjør `jvpack lisenser` (gir `THIRD_PARTY_LICENSES.md` med begge plattformene).
+
+## Sårbarhets- og lisenskontroll (steg 6.5)
+
+`.github/workflows/sarbarheter.yml` kjører på hver PR, ved push til main og hver mandag:
+
+| Lag | Verktøy | Unntak |
+|---|---|---|
+| Rust | `cargo deny check` (`src-tauri/deny.toml`) | i `deny.toml`, med «utloper: ÅÅÅÅ-MM-DD» i begrunnelsen |
+| npm | `npm audit --audit-level=low`, `sjekk-lisenser.py --npm` | ingen (npm audit har ikke unntak) |
+| Python | `pip-audit` mot `uv.lock` og begge `pyinstaller-krav.txt`, `pip-licenses` | `sarbarhet-unntak.json`, pakke `python:<navn>` |
+| Systemprogrammer | `sjekk-sarbarheter.py` (OSV mot `binaries.json`) | `sarbarhet-unntak.json` |
+
+`python3 sidecar/build/sjekk-sarbarheter.py` kan kjøres lokalt (trenger nett). Programmer OSV ikke
+kjenner står som «ikke kontrollert», med lenke til prosjektets sikkerhetsside; det betyr ikke at de er
+trygge. Hvert unntak har begrunnelse og utløpsdato, og kontrollen feiler når datoen er passert
+(`--unntak` sjekker bare datoene, uten nett).
+
+Mac: `binaries.json` får `source_revision` (commit) for programmer uten kildearkiv-sjekksum (x264).

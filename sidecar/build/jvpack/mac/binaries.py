@@ -62,6 +62,11 @@ def record(target: str, tool_id: str, brew: list[Package]) -> None:
             "homepage": f.get("homepage"),
             "built_as_bottle": installed.get("built_as_bottle") if installed else None,
         })
+        # Sources fetched with version control (x264) have no archive checksum: record the commit instead.
+        if same and not stable.get("checksum") and stable.get("revision"):
+            entry["source_revision"] = stable["revision"]
+        else:
+            entry.pop("source_revision", None)
         if tool_id not in entry["used_by"]:
             entry["used_by"].append(tool_id)
             entry["used_by"].sort()

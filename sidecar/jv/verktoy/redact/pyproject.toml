@@ -1,11 +1,11 @@
 [project]
 name = "jv-redact"
-version = "0.1.0"
+version = "0.1.1"
 description = "Ekte sladding av personopplysninger i PDF (fødselsnummer, telefon, e-post, egne termer)"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "jv-common",
-    "pymupdf>=1.24",
+    "pymupdf>=1.24,<2",  # 2.0 drar inn nye avhengigheter; venter på avgjørelse (steg 6.5)
 ]
 
 [project.entry-points."jv.tools"]

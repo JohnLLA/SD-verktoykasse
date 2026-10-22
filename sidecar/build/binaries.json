@@ -8,13 +8,13 @@
         "used_by": [
           "redact"
         ],
-        "version": "1.2.0",
+        "version": "1.2.1",
         "license": "MIT",
-        "source_url": "https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz",
-        "source_sha256": "816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec",
+        "source_url": "https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz",
+        "source_sha256": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f",
         "bottle": {
           "tag": "arm64_tahoe",
-          "sha256": "71ffd30ccd74a9f28cfb210c21fcdc1aa5fec79e23ad2264b6dbceb73437601f"
+          "sha256": "c5a6fba2965b2423acfbf5084a4d8291bf95b96bbc64b534c8ef83a480413e49"
         },
         "homepage": "https://github.com/google/brotli",
         "built_as_bottle": true
@@ -45,7 +45,7 @@
         "source_sha256": "5f4c81d34ad406538c2871ad72dbfceb5d9b412b2f16cbbeb4d712d270846667",
         "bottle": {
           "tag": "arm64_tahoe",
-          "sha256": "4477e036ab8db27aab707d35d077057d012637290604cd95e0aca0abae28da64"
+          "sha256": "e6c1e9b3dfeb0a75ca5c85b03ece555aa69528d6cc0bae152b17ccef19054707"
         },
         "homepage": "https://exiftool.org",
         "built_as_bottle": null
@@ -452,13 +452,13 @@
         "used_by": [
           "redact"
         ],
-        "version": "3.131",
+        "version": "3.132",
         "license": "MPL-2.0",
-        "source_url": "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_131_RTM/src/nss-3.131.tar.gz",
-        "source_sha256": "ca0005bc77e9255d9942103e6f9756cfe311a3df72afa99860709e386eb3c167",
+        "source_url": "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_132_RTM/src/nss-3.132.tar.gz",
+        "source_sha256": "ee9cf4837ba801141a804321c4462ad8f452ff4314275c6d5108a6b05af227ff",
         "bottle": {
           "tag": "arm64_tahoe",
-          "sha256": "7b427378bbebafca018417bcccb236c3c087339f94f67c25836d701951bd8cbb"
+          "sha256": "1f073aef9787a99f0466136888134a9b38ecc3aac0caf18f88adcb26d2807dc6"
         },
         "homepage": "https://firefox-source-docs.mozilla.org/security/nss/index.html",
         "built_as_bottle": true
@@ -617,7 +617,8 @@
           "sha256": "b631667b5ad55c6c3ae383484f658c5b4ba14da8a2fbb1d537975695852529ca"
         },
         "homepage": "https://www.videolan.org/developers/x264.html",
-        "built_as_bottle": true
+        "built_as_bottle": true,
+        "source_revision": "b35605ace3ddf7c1a5d67a2eb553f034aef41d55"
       },
       "x265": {
         "used_by": [

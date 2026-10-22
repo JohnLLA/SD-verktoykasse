@@ -1,0 +1,95 @@
+{
+  "note": "Unntak fra sjekk-sarbarheter.py (systemprogrammene) og pip-audit. Rust-unntakene står i src-tauri/deny.toml. Hvert unntak har begrunnelse og utløpsdato; skriptet feiler når datoen er passert.",
+  "unntak": [
+    {
+      "id": "CVE-2026-88047",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88048",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88049",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88050",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88051",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88052",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88053",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-88054",
+      "pakke": "tesseract",
+      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107705",
+      "pakke": "poppler",
+      "begrunnelse": "Ingen utgitt rettet versjon (26.10.0 er siste). Gjelder passord over 127 byte ved åpning av R6-krypterte PDF-er. pdftotext kjøres bare uten passord, på PDF-en sladdeverktøyet selv har laget, for kontroll av resultatet.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-113679",
+      "pakke": "harfbuzz",
+      "begrunnelse": "Gjelder den eksperimentelle WebAssembly-shaperen. Homebrews harfbuzz bygges uten den (ingen wasm-runtime blant avhengighetene).",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-113680",
+      "pakke": "harfbuzz",
+      "begrunnelse": "Som CVE-2026-113679 (WebAssembly-shaperen er ikke bygget inn).",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "OSV-2026-1068",
+      "pakke": "jpeg-turbo",
+      "begrunnelse": "OSS-Fuzz-funn i tj3Compress8 (komprimering via TurboJPEG-API, som vi ikke bruker); rettet i upstream, ikke utgitt.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-6192",
+      "pakke": "openjpeg",
+      "begrunnelse": "Heltallsoverflyt i opj_pi_initialise_encode (koding). Verktøyene dekoder bare JPEG 2000 (leser PDF-er); rettet i upstream, ikke utgitt.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "OSV-2025-219",
+      "pakke": "openjpeg",
+      "begrunnelse": "OSS-Fuzz-funn ved dekoding av ugyldig tile-header; rettet i upstream, ikke utgitt i 2.5.4. Gjelder lokale filer brukeren selv åpner.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "OSV-2026-343",
+      "pakke": "pcre2",
+      "begrunnelse": "OSS-Fuzz-funn i pcre2_compile; vi kompilerer aldri brukerstyrte mønstre (glib bruker pcre2 internt). Rettet i upstream, ikke utgitt.",
+      "utloper": "2026-11-30"
+    }
+  ]
+}

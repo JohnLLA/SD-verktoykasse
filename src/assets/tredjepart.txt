@@ -59,7 +59,7 @@ Gjelder:
   bs58 0.5.1
   bumpalo 3.20.3 (Nick Fitzgerald)
   camino 1.2.6 (Without Boats, Ashley Williams, Steve Klabnik, Rain)
-  cc 1.8.0
+  cc 1.9.0
   cexpr 0.6.0 (Jethro Beekman)
   cfg-if 1.0.5 (Alex Crichton)
   cmake 0.1.58 (Alex Crichton)
@@ -76,7 +76,7 @@ Gjelder:
   errno 0.3.14 (Chris Wong, Dan Gohman)
   fastrand 2.5.0 (Stjepan Glavina)
   filetime 0.2.29 (Alex Crichton)
-  find-msvc-tools 0.1.14
+  find-msvc-tools 0.1.15
   flate2 1.1.10 (Alex Crichton, Josh Triplett)
   fnv 1.0.7 (Alex Crichton)
   form_urlencoded 1.2.2 (The rust-url developers)
@@ -107,7 +107,6 @@ Gjelder:
   parking_lot 0.12.5 (Amanieu d'Antras)
   parking_lot_core 0.9.12 (Amanieu d'Antras)
   percent-encoding 2.3.2 (The rust-url developers)
-  png 0.17.16 (The image-rs Developers)
   png 0.18.1 (The image-rs Developers)
   primal-check 0.3.4 (Huon Wilson)
   regex 1.13.1 (The Rust Project Developers, Andrew Gallant)
@@ -384,7 +383,7 @@ Gjelder:
   syn 3.0.9 (David Tolnay)
   thiserror 2.0.21 (David Tolnay)
   thiserror-impl 2.0.21 (David Tolnay)
-  typed-path 0.12.3 (Chip Senkbeil)
+  typed-path 0.12.4 (Chip Senkbeil)
   typeid 1.0.3 (David Tolnay)
   unicode-ident 1.0.27 (David Tolnay)
   utf8-zero 0.8.1 (Simon Sapin, Martin Algesten)
@@ -444,7 +443,7 @@ Gjelder:
   syn 3.0.9 (David Tolnay)
   thiserror 2.0.21 (David Tolnay)
   thiserror-impl 2.0.21 (David Tolnay)
-  typed-path 0.12.3 (Chip Senkbeil)
+  typed-path 0.12.4 (Chip Senkbeil)
   typeid 1.0.3 (David Tolnay)
   unicode-ident 1.0.27 (David Tolnay)
   utf8-zero 0.8.1 (Simon Sapin, Martin Algesten)
@@ -641,17 +640,17 @@ Gjelder:
   raw-window-handle 0.6.2 (Osspial)
   simdutf8 0.1.5 (Hans Kratz)
   sync_wrapper 1.0.2 (Actyx AG)
-  tauri 2.12.4 (Tauri Programme within The Commons Conservancy)
-  tauri-build 2.7.3 (Tauri Programme within The Commons Conservancy)
-  tauri-codegen 2.7.3 (Tauri Programme within The Commons Conservancy)
-  tauri-macros 2.7.3 (Tauri Programme within The Commons Conservancy)
+  tauri 2.12.5 (Tauri Programme within The Commons Conservancy)
+  tauri-build 2.7.4 (Tauri Programme within The Commons Conservancy)
+  tauri-codegen 2.7.4 (Tauri Programme within The Commons Conservancy)
+  tauri-macros 2.7.4 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-dialog 2.8.3 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-fs 2.7.1 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-opener 2.7.2 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-store 2.5.0 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-updater 2.14.0 (Tauri Programme within The Commons Conservancy)
   tauri-runtime 2.12.2 (Tauri Programme within The Commons Conservancy)
-  tauri-runtime-wry 2.12.2 (Tauri Programme within The Commons Conservancy)
+  tauri-runtime-wry 2.12.3 (Tauri Programme within The Commons Conservancy)
   tauri-utils 2.10.2 (Tauri Programme within The Commons Conservancy)
   time 0.3.55 (Jacob Pratt, Time contributors)
   time-core 0.1.9 (Jacob Pratt, Time contributors)
@@ -1213,7 +1212,7 @@ Gjelder:
   serialize-to-javascript-impl 0.1.2 (Chip Reed)
   siphasher 1.0.4 (Frank Denis)
   tinyvec 1.13.3 (Lokathor)
-  ureq 3.4.2 (Martin Algesten, Jacob Hoffman-Andrews)
+  ureq 3.5.0 (Martin Algesten, Jacob Hoffman-Andrews)
   ureq-proto 0.6.5 (Martin Algesten)
   utf8_iter 1.0.4 (Henri Sivonen)
   zeroize 1.9.1 (The RustCrypto Project Developers)
@@ -1426,7 +1425,7 @@ Apache License
 Lisenstekst 10 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  crc32fast 1.5.2 (Sam Rijs, Alex Crichton)
+  crc32fast 1.5.3 (Sam Rijs, Alex Crichton)
   ctor 1.0.13 (Matt Mastracci)
   dpi 0.1.2
   foreign-types 0.5.0 (Steven Fackler)
@@ -1647,17 +1646,17 @@ Lisenstekst 11 av 241
 ------------------------------------------------------------------------
 Gjelder:
   @tauri-apps/api 2.12.4
-  tauri 2.12.4 (Tauri Programme within The Commons Conservancy)
-  tauri-build 2.7.3 (Tauri Programme within The Commons Conservancy)
-  tauri-codegen 2.7.3 (Tauri Programme within The Commons Conservancy)
-  tauri-macros 2.7.3 (Tauri Programme within The Commons Conservancy)
+  tauri 2.12.5 (Tauri Programme within The Commons Conservancy)
+  tauri-build 2.7.4 (Tauri Programme within The Commons Conservancy)
+  tauri-codegen 2.7.4 (Tauri Programme within The Commons Conservancy)
+  tauri-macros 2.7.4 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-dialog 2.8.3 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-fs 2.7.1 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-opener 2.7.2 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-store 2.5.0 (Tauri Programme within The Commons Conservancy)
   tauri-plugin-updater 2.14.0 (Tauri Programme within The Commons Conservancy)
   tauri-runtime 2.12.2 (Tauri Programme within The Commons Conservancy)
-  tauri-runtime-wry 2.12.2 (Tauri Programme within The Commons Conservancy)
+  tauri-runtime-wry 2.12.3 (Tauri Programme within The Commons Conservancy)
   tauri-utils 2.10.2 (Tauri Programme within The Commons Conservancy)
 
 MIT License
@@ -2753,11 +2752,11 @@ DEALINGS IN THE SOFTWARE.
 Lisenstekst 22 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  cc 1.8.0
+  cc 1.9.0
   cfg-if 1.0.5 (Alex Crichton)
   cmake 0.1.58 (Alex Crichton)
   filetime 0.2.29 (Alex Crichton)
-  find-msvc-tools 0.1.14
+  find-msvc-tools 0.1.15
   socket2 0.6.5 (Alex Crichton, Thomas de Zeeuw)
 
 Copyright (c) 2014 Alex Crichton
@@ -5280,39 +5279,6 @@ SOFTWARE.
 Lisenstekst 51 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  png 0.17.16 (The image-rs Developers)
-  png 0.18.1 (The image-rs Developers)
-
-Copyright (c) 2015 nwin
-
-Permission is hereby granted, free of charge, to any
-person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the
-Software without restriction, including without
-limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software
-is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice
-shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-
-------------------------------------------------------------------------
-Lisenstekst 52 av 241
-------------------------------------------------------------------------
-Gjelder:
   hashbrown 0.12.3 (Amanieu d'Antras)
   hashbrown 0.17.1
 
@@ -5343,7 +5309,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 53 av 241
+Lisenstekst 52 av 241
 ------------------------------------------------------------------------
 Gjelder:
   indexmap 1.9.3
@@ -5376,7 +5342,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 54 av 241
+Lisenstekst 53 av 241
 ------------------------------------------------------------------------
 Gjelder:
   dirs 7.0.0 (Simon Ochsenreither)
@@ -5403,7 +5369,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 55 av 241
+Lisenstekst 54 av 241
 ------------------------------------------------------------------------
 Gjelder:
   bytemuck 1.25.2 (Lokathor)
@@ -5422,7 +5388,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 ------------------------------------------------------------------------
-Lisenstekst 56 av 241
+Lisenstekst 55 av 241
 ------------------------------------------------------------------------
 Gjelder:
   http-body 1.1.0 (Carl Lerche, Lucio Franco, Sean McArthur)
@@ -5455,7 +5421,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 57 av 241
+Lisenstekst 56 av 241
 ------------------------------------------------------------------------
 Gjelder:
   bit-set 0.8.0 (Alexis Beingessner)
@@ -5488,7 +5454,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 58 av 241
+Lisenstekst 57 av 241
 ------------------------------------------------------------------------
 Gjelder:
   moxcms 0.8.1 (Radzivon Bartoshyk)
@@ -5522,7 +5488,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
-Lisenstekst 59 av 241
+Lisenstekst 58 av 241
 ------------------------------------------------------------------------
 Gjelder:
   miniz_oxide 0.8.9 (Frommi, oyvindln, Rich Geldreich richgel99@gmail.com)
@@ -5544,7 +5510,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 ------------------------------------------------------------------------
-Lisenstekst 60 av 241
+Lisenstekst 59 av 241
 ------------------------------------------------------------------------
 Gjelder:
   shlex 1.3.0 (comex, Fenhl, Adrian Taylor, Alex Touchet, Daniel Parks, Garrett Berg)
@@ -5565,7 +5531,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 61 av 241
+Lisenstekst 60 av 241
 ------------------------------------------------------------------------
 Gjelder:
   zerocopy 0.8.63
@@ -5597,7 +5563,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
-Lisenstekst 62 av 241
+Lisenstekst 61 av 241
 ------------------------------------------------------------------------
 Gjelder:
   zerocopy 0.8.63
@@ -5630,7 +5596,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 63 av 241
+Lisenstekst 62 av 241
 ------------------------------------------------------------------------
 Gjelder:
   serialize-to-javascript 0.1.2 (Chip Reed)
@@ -5659,7 +5625,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 64 av 241
+Lisenstekst 63 av 241
 ------------------------------------------------------------------------
 Gjelder:
   muda 0.20.0
@@ -5688,10 +5654,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 65 av 241
+Lisenstekst 64 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  tokio 1.53.3 (Tokio Contributors)
+  tokio 1.54.1 (Tokio Contributors)
   tokio-util 0.7.20 (Tokio Contributors)
 
 MIT License
@@ -5717,7 +5683,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 66 av 241
+Lisenstekst 65 av 241
 ------------------------------------------------------------------------
 Gjelder:
   zune-core 0.5.3
@@ -5726,6 +5692,39 @@ Gjelder:
 MIT License
 
 Copyright (c) zune-image developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+Lisenstekst 66 av 241
+------------------------------------------------------------------------
+Gjelder:
+  miniz_oxide 0.8.9 (Frommi, oyvindln, Rich Geldreich richgel99@gmail.com)
+  miniz_oxide 0.9.1 (Frommi, oyvindln, Rich Geldreich richgel99@gmail.com)
+
+MIT License
+
+Copyright 2013-2014 RAD Game Tools and Valve Software
+Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
+Copyright (c) 2017 Frommi
+Copyright (c) 2017-2024 oyvindln
+
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -5759,7 +5758,6 @@ Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
 Copyright (c) 2017 Frommi
 Copyright (c) 2017-2024 oyvindln
 
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -5780,38 +5778,6 @@ SOFTWARE.
 
 ------------------------------------------------------------------------
 Lisenstekst 68 av 241
-------------------------------------------------------------------------
-Gjelder:
-  miniz_oxide 0.8.9 (Frommi, oyvindln, Rich Geldreich richgel99@gmail.com)
-  miniz_oxide 0.9.1 (Frommi, oyvindln, Rich Geldreich richgel99@gmail.com)
-
-MIT License
-
-Copyright 2013-2014 RAD Game Tools and Valve Software
-Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
-Copyright (c) 2017 Frommi
-Copyright (c) 2017-2024 oyvindln
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-------------------------------------------------------------------------
-Lisenstekst 69 av 241
 ------------------------------------------------------------------------
 Gjelder:
   fdeflate 0.3.7 (The image-rs Developers)
@@ -5844,7 +5810,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 70 av 241
+Lisenstekst 69 av 241
 ------------------------------------------------------------------------
 Gjelder:
   ctor 1.0.13 (Matt Mastracci)
@@ -5857,7 +5823,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 71 av 241
+Lisenstekst 70 av 241
 ------------------------------------------------------------------------
 Gjelder:
   base64 0.21.7 (Alice Maz, Marshall Pierce)
@@ -5886,7 +5852,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 72 av 241
+Lisenstekst 71 av 241
 ------------------------------------------------------------------------
 Gjelder:
   shlex 1.3.0 (comex, Fenhl, Adrian Taylor, Alex Touchet, Daniel Parks, Garrett Berg)
@@ -5915,7 +5881,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 73 av 241
+Lisenstekst 72 av 241
 ------------------------------------------------------------------------
 Gjelder:
   security-framework 3.7.0 (Steven Fackler, Kornel)
@@ -5943,7 +5909,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 74 av 241
+Lisenstekst 73 av 241
 ------------------------------------------------------------------------
 Gjelder:
   derive_more 2.1.1 (Jelte Fennema)
@@ -5972,7 +5938,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 75 av 241
+Lisenstekst 74 av 241
 ------------------------------------------------------------------------
 Gjelder:
   quick-xml 0.41.0
@@ -6003,7 +5969,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 76 av 241
+Lisenstekst 75 av 241
 ------------------------------------------------------------------------
 Gjelder:
   same-file 1.0.6 (Andrew Gallant)
@@ -6032,7 +5998,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 77 av 241
+Lisenstekst 76 av 241
 ------------------------------------------------------------------------
 Gjelder:
   crossbeam-channel 0.5.17
@@ -6067,7 +6033,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 78 av 241
+Lisenstekst 77 av 241
 ------------------------------------------------------------------------
 Gjelder:
   vswhom 0.1.0 (nabijaczleweli)
@@ -6096,7 +6062,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 79 av 241
+Lisenstekst 78 av 241
 ------------------------------------------------------------------------
 Gjelder:
   zune-core 0.5.3
@@ -6123,10 +6089,10 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 ------------------------------------------------------------------------
-Lisenstekst 80 av 241
+Lisenstekst 79 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  webpki-roots 1.0.9
+  webpki-roots 1.0.10
 
 # Community Data License Agreement - Permissive - Version 2.0
 
@@ -6191,7 +6157,7 @@ of Data, including for example machine learning models and models'
 insights.
 
 ------------------------------------------------------------------------
-Lisenstekst 81 av 241
+Lisenstekst 80 av 241
 ------------------------------------------------------------------------
 Gjelder:
   zlib-rs 0.6.8
@@ -6217,7 +6183,7 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 ------------------------------------------------------------------------
-Lisenstekst 82 av 241
+Lisenstekst 81 av 241
 ------------------------------------------------------------------------
 Gjelder:
   cexpr 0.6.0 (Jethro Beekman)
@@ -6249,7 +6215,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 83 av 241
+Lisenstekst 82 av 241
 ------------------------------------------------------------------------
 Gjelder:
   ring 0.17.14
@@ -6265,7 +6231,7 @@ See src/polyfill/once_cell/LICENSE-APACHE and src/polyfill/once_cell/LICENSE-MIT
 for the license to code that was sourced from the once_cell project.
 
 ------------------------------------------------------------------------
-Lisenstekst 84 av 241
+Lisenstekst 83 av 241
 ------------------------------------------------------------------------
 Gjelder:
   untrusted 0.9.0 (Brian Smith)
@@ -6285,7 +6251,7 @@ Gjelder:
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 85 av 241
+Lisenstekst 84 av 241
 ------------------------------------------------------------------------
 Gjelder:
   atomic-waker 1.1.2 (Stjepan Glavina, Contributors to futures-rs)
@@ -6337,7 +6303,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 86 av 241
+Lisenstekst 85 av 241
 ------------------------------------------------------------------------
 Gjelder:
   crossbeam-channel 0.5.17
@@ -6937,7 +6903,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 87 av 241
+Lisenstekst 86 av 241
 ------------------------------------------------------------------------
 Gjelder:
   zopfli 0.8.4
@@ -7145,7 +7111,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 88 av 241
+Lisenstekst 87 av 241
 ------------------------------------------------------------------------
 Gjelder:
   powerfmt 0.2.1 (Jacob Pratt)
@@ -7353,7 +7319,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 89 av 241
+Lisenstekst 88 av 241
 ------------------------------------------------------------------------
 Gjelder:
   web-time 1.1.0
@@ -7561,7 +7527,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 90 av 241
+Lisenstekst 89 av 241
 ------------------------------------------------------------------------
 Gjelder:
   deranged 0.5.9 (Jacob Pratt)
@@ -7769,7 +7735,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 91 av 241
+Lisenstekst 90 av 241
 ------------------------------------------------------------------------
 Gjelder:
   rustix 1.1.5 (Dan Gohman, Jakub Konka)
@@ -7994,7 +7960,7 @@ the License, but only in their entirety and only with respect to the Combined
 Software.
 
 ------------------------------------------------------------------------
-Lisenstekst 92 av 241
+Lisenstekst 91 av 241
 ------------------------------------------------------------------------
 Gjelder:
   ring 0.17.14
@@ -8272,7 +8238,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
-Lisenstekst 93 av 241
+Lisenstekst 92 av 241
 ------------------------------------------------------------------------
 Gjelder:
   ipnet 2.12.2 (Kris Price)
@@ -8480,7 +8446,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 94 av 241
+Lisenstekst 93 av 241
 ------------------------------------------------------------------------
 Gjelder:
   softbuffer 0.4.8
@@ -8688,7 +8654,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 95 av 241
+Lisenstekst 94 av 241
 ------------------------------------------------------------------------
 Gjelder:
   swift-rs 1.0.9 (The swift-rs contributors)
@@ -8896,7 +8862,7 @@ Apache License
    limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 96 av 241
+Lisenstekst 95 av 241
 ------------------------------------------------------------------------
 Gjelder:
   jsonptr 0.7.1 (chance dinkins, André Sá de Mello, Oliver Wangler)
@@ -9104,7 +9070,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 97 av 241
+Lisenstekst 96 av 241
 ------------------------------------------------------------------------
 Gjelder:
   typenum 1.20.1
@@ -9312,7 +9278,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 98 av 241
+Lisenstekst 97 av 241
 ------------------------------------------------------------------------
 Gjelder:
   reqwest 0.13.5 (Sean McArthur)
@@ -9520,7 +9486,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 99 av 241
+Lisenstekst 98 av 241
 ------------------------------------------------------------------------
 Gjelder:
   cookie 0.18.2 (Sergio Benitez, Alex Crichton)
@@ -9729,7 +9695,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 100 av 241
+Lisenstekst 99 av 241
 ------------------------------------------------------------------------
 Gjelder:
   http 1.5.0 (Alex Crichton, Carl Lerche, Sean McArthur)
@@ -9937,7 +9903,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 101 av 241
+Lisenstekst 100 av 241
 ------------------------------------------------------------------------
 Gjelder:
   iana-time-zone 0.1.65 (Andrew Straw, René Kijewski, Ryan Lopopolo)
@@ -10145,7 +10111,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 102 av 241
+Lisenstekst 101 av 241
 ------------------------------------------------------------------------
 Gjelder:
   transpose 0.2.3 (Elliott Mahler)
@@ -10353,7 +10319,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 103 av 241
+Lisenstekst 102 av 241
 ------------------------------------------------------------------------
 Gjelder:
   rustls-pki-types 1.15.1
@@ -10561,7 +10527,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ------------------------------------------------------------------------
-Lisenstekst 104 av 241
+Lisenstekst 103 av 241
 ------------------------------------------------------------------------
 Gjelder:
   bindgen 0.72.1 (Jyun-Yan You, Emilio Cobos Álvarez, Nick Fitzgerald, The Servo project developers)
@@ -10597,7 +10563,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
-Lisenstekst 105 av 241
+Lisenstekst 104 av 241
 ------------------------------------------------------------------------
 Gjelder:
   adler2 2.0.1 (Jonas Schievink, oyvindln)
@@ -10616,7 +10582,7 @@ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 106 av 241
+Lisenstekst 105 av 241
 ------------------------------------------------------------------------
 Gjelder:
   sha2 0.10.9 (RustCrypto Developers)
@@ -10650,7 +10616,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 107 av 241
+Lisenstekst 106 av 241
 ------------------------------------------------------------------------
 Gjelder:
   brotli 9.0.0 (Daniel Reiter Horn, The Brotli Authors)
@@ -10676,7 +10642,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 108 av 241
+Lisenstekst 107 av 241
 ------------------------------------------------------------------------
 Gjelder:
   hex 0.4.3 (KokaKiwi)
@@ -10703,7 +10669,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 109 av 241
+Lisenstekst 108 av 241
 ------------------------------------------------------------------------
 Gjelder:
   form_urlencoded 1.2.2 (The rust-url developers)
@@ -10735,7 +10701,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 110 av 241
+Lisenstekst 109 av 241
 ------------------------------------------------------------------------
 Gjelder:
   mio 1.2.4 (Carl Lerche, Thomas de Zeeuw, Tokio Contributors)
@@ -10761,7 +10727,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 111 av 241
+Lisenstekst 110 av 241
 ------------------------------------------------------------------------
 Gjelder:
   errno 0.3.14 (Chris Wong, Dan Gohman)
@@ -10793,7 +10759,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 112 av 241
+Lisenstekst 111 av 241
 ------------------------------------------------------------------------
 Gjelder:
   primal-check 0.3.4 (Huon Wilson)
@@ -10825,7 +10791,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 113 av 241
+Lisenstekst 112 av 241
 ------------------------------------------------------------------------
 Gjelder:
   mime 0.3.17 (Sean McArthur)
@@ -10851,7 +10817,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 114 av 241
+Lisenstekst 113 av 241
 ------------------------------------------------------------------------
 Gjelder:
   uuid 1.28.0 (Ashley Mannix, Dylan DPC, Hunar Roop Kahlon)
@@ -10884,7 +10850,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 115 av 241
+Lisenstekst 114 av 241
 ------------------------------------------------------------------------
 Gjelder:
   nom 7.1.3 (contact@geoffroycouprie.com)
@@ -10911,7 +10877,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 116 av 241
+Lisenstekst 115 av 241
 ------------------------------------------------------------------------
 Gjelder:
   flate2 1.1.10 (Alex Crichton, Josh Triplett)
@@ -10943,7 +10909,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 117 av 241
+Lisenstekst 116 av 241
 ------------------------------------------------------------------------
 Gjelder:
   hyper 1.12.0 (Sean McArthur)
@@ -10969,10 +10935,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 118 av 241
+Lisenstekst 117 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  plist 1.10.1 (Ed Barnard)
+  plist 1.10.3 (Ed Barnard)
 
 Copyright (c) 2015 Edward Barnard
 
@@ -10995,7 +10961,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 119 av 241
+Lisenstekst 118 av 241
 ------------------------------------------------------------------------
 Gjelder:
   winreg 0.56.0 (Igor Shaula)
@@ -11021,7 +10987,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 120 av 241
+Lisenstekst 119 av 241
 ------------------------------------------------------------------------
 Gjelder:
   new_debug_unreachable 1.0.6 (Matt Brubeck, Jonathan Reem)
@@ -11053,7 +11019,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 121 av 241
+Lisenstekst 120 av 241
 ------------------------------------------------------------------------
 Gjelder:
   tendril 0.5.1 (Keegan McAllister, Simon Sapin, Chris Morgan)
@@ -11085,7 +11051,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
-Lisenstekst 122 av 241
+Lisenstekst 121 av 241
 ------------------------------------------------------------------------
 Gjelder:
   quick-error 2.0.1 (Paul Colomiets, Colin Kiegel)
@@ -11109,6 +11075,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+------------------------------------------------------------------------
+Lisenstekst 122 av 241
+------------------------------------------------------------------------
+Gjelder:
+  png 0.18.1 (The image-rs Developers)
+
+Copyright (c) 2015 nwin
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
 Lisenstekst 123 av 241
@@ -12917,7 +12915,7 @@ express Statement of Purpose.
 Lisenstekst 183 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  rustls-webpki 0.103.15
+  rustls-webpki 0.103.16
 
 Except as otherwise noted, this project is licensed under the following
 (ISC-style) terms:
@@ -12965,7 +12963,7 @@ THIS SOFTWARE.
 Lisenstekst 185 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  http-range 0.1.5 (Luka Zakrajšek)
+  http-range 0.1.6 (Luka Zakrajšek)
 
 MIT License
 
@@ -13105,7 +13103,7 @@ SOFTWARE.
 Lisenstekst 190 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  ico 0.5.0 (Matthew D. Steele)
+  ico 0.6.0 (Matthew D. Steele)
 
 MIT License
 
@@ -13161,7 +13159,7 @@ SOFTWARE.
 Lisenstekst 192 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  crc32fast 1.5.2 (Sam Rijs, Alex Crichton)
+  crc32fast 1.5.3 (Sam Rijs, Alex Crichton)
 
 MIT License
 
@@ -13233,7 +13231,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Lisenstekst 195 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  ureq 3.4.2 (Martin Algesten, Jacob Hoffman-Andrews)
+  ureq 3.5.0 (Martin Algesten, Jacob Hoffman-Andrews)
 
 MIT License
 
@@ -14784,7 +14782,7 @@ SOFTWARE.
 Lisenstekst 232 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  tauri-winres 0.3.6 (Tauri Programme within The Commons Conservancy, Max Resch)
+  tauri-winres 0.3.7 (Tauri Programme within The Commons Conservancy, Max Resch)
 
 The MIT License (MIT)
 
@@ -14875,7 +14873,7 @@ SOFTWARE.
 Lisenstekst 235 av 241
 ------------------------------------------------------------------------
 Gjelder:
-  open 5.4.4 (Sebastian Thiel)
+  open 5.4.5 (Sebastian Thiel)
 
 The MIT License (MIT)
 =====================

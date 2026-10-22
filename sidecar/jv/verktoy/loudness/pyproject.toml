@@ -1,6 +1,6 @@
 [project]
 name = "jv-loudness"
-version = "0.1.0"
+version = "0.1.1"
 description = "Normaliserer lydnivået (LUFS/true peak) i lyd og video med ffmpeg loudnorm"
 requires-python = ">=3.12,<3.13"
 dependencies = ["jv-common"]

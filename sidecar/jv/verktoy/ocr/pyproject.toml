@@ -1,13 +1,13 @@
 [project]
 name = "jv-ocr"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gjør skannede PDF-er og bilder søkbare med OCR (ocrmypdf, norsk og engelsk)"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "jv-common",
     "ocrmypdf>=16",
     "pikepdf>=8",
-    "pymupdf>=1.24",
+    "pymupdf>=1.24,<2",  # 2.0 drar inn nye avhengigheter; venter på avgjørelse (steg 6.5)
 ]
 
 [project.entry-points."jv.tools"]

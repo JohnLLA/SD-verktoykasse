@@ -17,4 +17,6 @@ fi
 cd "$JV"
 # Pakkene fra uv.lock; ingenting lastes ned hvis de ligger i uv-cachen (UV_OFFLINE=1).
 uv sync --frozen --all-packages --quiet ${UV_OFFLINE:+--offline}
+# PyInstaller med SHA-256 (samme versjon som på Windows); må komme etter uv sync, som fjerner alt utenfor uv.lock.
+uv pip install --quiet --require-hashes -r "$HER/jvpack/mac/pyinstaller-krav.txt" ${UV_OFFLINE:+--offline}
 exec uv run --frozen --all-packages --no-sync env PYTHONPATH="$HER" python -m jvpack mac "$@"
