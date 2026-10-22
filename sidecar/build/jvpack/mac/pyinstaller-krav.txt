@@ -31,7 +31,7 @@ pyinstaller==6.22.3 \
     --hash=sha256:a2b6fc26601e8c2596c3d54981566934a3382e85d05d0fe91b55b6a8dcc6b282 \
     --hash=sha256:ea240b5dfa831ff673c97505eee0ec24670bccf71396c83109440348944c83d0 \
     --hash=sha256:f82d0fb89f21c3ed6f482ee16f341bc59e8a31dbabb9bae9ef04e53ade4dc0d9
-    # via -r /private/tmp/claude-501/s/pyi.in
+    # via -r pyi.in
 pyinstaller-hooks-contrib==2026.9 \
     --hash=sha256:2748767901acb5cecd1304652b6c7add5bffcff1d71d01207fe24a5d42942a56 \
     --hash=sha256:fb3e67dd64122561724c48ad0366ac9e8c16e638b63bf7d85de03bf3fdbf06c3
