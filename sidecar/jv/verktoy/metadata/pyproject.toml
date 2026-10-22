@@ -3,7 +3,10 @@ name = "jv-metadata"
 version = "0.1.1"
 description = "Vis og fjern skjult metadata i bilder, PDF og Office-filer"
 requires-python = ">=3.12,<3.13"
-dependencies = ["jv-common", "pikepdf>=9.0"]
+dependencies = [
+    "jv-common",
+    "pikepdf>=10,<10.14",  # 10.14+ har bare hjul for macOS 15 (arm64); 10.13.0.post1 er siste med hjul for macOS 14. Se docs/senere.md
+]
 
 [project.entry-points."jv.tools"]
 metadata = "jv_metadata.cli:main"
