@@ -18,7 +18,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | apertium-separable | 0.7.1 | GPL-3.0-or-later | Apertium | Mac | nynorsk | https://github.com/apertium/apertium-separable (commit 18045e4da12c5f8dd7373c842cc93e38291d1826) |
 | cg3 | 1.7.0.13898 | GPL-3.0-or-later | Apertium | Mac | nynorsk | https://github.com/GrammarSoft/cg3 (commit 0250250fe98241d681fd8081f2b6495c52729d5b) |
 | lttoolbox | 3.8.4 | GPL-2.0-or-later | Apertium | Mac | nynorsk | https://github.com/apertium/lttoolbox (commit ed9b682b9e3e90d4207882be2caf54845619a255) |
-| brotli | 1.2.0 | MIT | Homebrew | Mac | redact | https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz |
+| brotli | 1.2.1 | MIT | Homebrew | Mac | redact | https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz |
 | dav1d | 1.5.4 | BSD-2-Clause | Homebrew | Mac | keyframes, loudness | https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.bz2 |
 | exiftool | 13.55_1 | Artistic-1.0-Perl OR GPL-1.0-or-later (samme vilkår som Perl) | Homebrew | Mac | metadata | https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-13.55.tar.gz |
 | ffmpeg | 9.0.2_1 | GPL-3.0-or-later | Homebrew | Mac | keyframes, loudness | https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz |
@@ -47,7 +47,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | lz4 | 1.10.0 | BSD-2-Clause | Homebrew | Mac | ocr | https://github.com/lz4/lz4/archive/refs/tags/v1.10.0.tar.gz |
 | mpg123 | 1.33.7 | LGPL-2.1-only | Homebrew | Mac | keyframes, loudness | https://www.mpg123.de/download/mpg123-1.33.7.tar.bz2 |
 | nspr | 4.40 | MPL-2.0 | Homebrew | Mac | redact | https://archive.mozilla.org/pub/nspr/releases/v4.40/src/nspr-4.40.tar.gz |
-| nss | 3.131 | MPL-2.0 | Homebrew | Mac | redact | https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_131_RTM/src/nss-3.131.tar.gz |
+| nss | 3.132 | MPL-2.0 | Homebrew | Mac | redact | https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_132_RTM/src/nss-3.132.tar.gz |
 | openjpeg | 2.5.4_1 | BSD-2-Clause | Homebrew | Mac | ocr, redact | https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.4.tar.gz |
 | openssl@4 | 4.0.3 | Apache-2.0 | Homebrew | Mac | keyframes, loudness | https://github.com/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz |
 | opus | 1.6.1 | BSD-3-Clause | Homebrew | Mac | keyframes, loudness | https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.6.1.tar.gz |
@@ -70,14 +70,13 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | mpdecimal | 2.5.1 | BSD-2-Clause | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.bytereef.org/mpdecimal/download.html |
 | OpenSSL | 3.5.8 | Apache-2.0 | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases/tag/openssl-3.5.8 |
 | OpenSSL | 3.0.16 | Apache-2.0 | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/openssl/openssl/releases |
-| PyInstaller (bootloader) | 6.6.0 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.6.0 |
-| PyInstaller (bootloader) | 6.22.3 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.22.3 |
+| PyInstaller (bootloader) | 6.22.3 | GPL-2.0-or-later WITH PyInstaller-Bootloader-exception | Kjøretid | Mac, Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/pyinstaller/pyinstaller/releases/tag/v6.22.3 |
 | Python | 3.12.14 | PSF-2.0 | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.14/Python-3.12.14.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
 | Python | 3.12.10 | PSF-2.0 | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz (bygget av python-build-standalone: https://github.com/astral-sh/python-build-standalone) |
 | SQLite | 3.53.1 | blessing (public domain) | Kjøretid | Mac | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://www.sqlite.org/download.html |
 | xz (liblzma) | ukjent | 0BSD | Kjøretid | Mac, Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://github.com/tukaani-project/xz/releases |
 | zlib | ukjent | Zlib | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://zlib.net/ |
-| altgraph | 0.17.5 | MIT | Python-pakke | Windows | ocr | https://pypi.org/project/altgraph/0.17.5/#files (kildekodearkiv: https://github.com/ronaldoussoren/altgraph) |
+| altgraph | 0.17.5 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/altgraph/0.17.5/#files (kildekodearkiv: https://github.com/ronaldoussoren/altgraph) |
 | annotated-types | 0.8.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/annotated-types/0.8.0/#files (kildekodearkiv: https://github.com/annotated-types/annotated-types) |
 | attrs | 26.1.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/attrs/26.1.0/#files (kildekodearkiv: https://github.com/python-attrs/attrs) |
 | cffi | 2.1.1 | MIT-0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/cffi/2.1.1/#files (kildekodearkiv: https://github.com/python-cffi/cffi) |
@@ -91,6 +90,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | jsonschema | 4.26.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/jsonschema/4.26.0/#files (kildekodearkiv: https://github.com/python-jsonschema/jsonschema) |
 | jsonschema-specifications | 2025.9.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/jsonschema-specifications/2025.9.1/#files (kildekodearkiv: https://github.com/python-jsonschema/jsonschema-specifications) |
 | lxml | 6.1.3 | BSD-3-Clause | Python-pakke | Mac, Windows | compare, datawrapper, metadata, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/lxml/6.1.3/#files (kildekodearkiv: https://github.com/lxml/lxml) |
+| macholib | 1.16.4 | MIT | Python-pakke | Mac | ocr | https://pypi.org/project/macholib/1.16.4/#files (kildekodearkiv: https://github.com/ronaldoussoren/macholib) |
 | markdown-it-py | 4.2.0 | MIT License | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/markdown-it-py/4.2.0/#files |
 | mdurl | 0.1.2 | MIT License | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/mdurl/0.1.2/#files |
 | ocrmypdf | 17.13.0 | MPL-2.0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/ocrmypdf/17.13.0/#files (kildekodearkiv: https://github.com/ocrmypdf/OCRmyPDF) |
@@ -105,7 +105,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | pydantic | 2.14.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pydantic/2.14.1/#files (kildekodearkiv: https://github.com/pydantic/pydantic) |
 | pydantic_core | 2.50.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pydantic_core/2.50.1/#files (kildekodearkiv: https://github.com/pydantic/pydantic/tree/main/pydantic-core) |
 | Pygments | 2.21.0 | BSD-2-Clause | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/Pygments/2.21.0/#files (kildekodearkiv: https://github.com/pygments/pygments) |
-| pyinstaller | 6.22.3 | GNU General Public License v2 (GPLv2) | Python-pakke | Windows | ocr | https://pypi.org/project/pyinstaller/6.22.3/#files (kildekodearkiv: https://github.com/pyinstaller/pyinstaller) |
+| pyinstaller | 6.22.3 | GNU General Public License v2 (GPLv2) | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pyinstaller/6.22.3/#files (kildekodearkiv: https://github.com/pyinstaller/pyinstaller) |
 | pymupdf | 1.28.2 | Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License | Python-pakke | Mac, Windows | compare, ocr, pdf-tables, redact | https://pypi.org/project/pymupdf/1.28.2/#files (kildekodearkiv: https://github.com/pymupdf/pymupdf) |
 | pypdfium2 | 5.14.0 | BSD-3-Clause, Apache-2.0, dependency licenses | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pypdfium2/5.14.0/#files (kildekodearkiv: https://github.com/pypdfium2-team/pypdfium2) |
 | python-docx | 1.2.0 | MIT | Python-pakke | Mac, Windows | compare, nynorsk | https://pypi.org/project/python-docx/1.2.0/#files (kildekodearkiv: https://github.com/python-openxml/python-docx) |
@@ -113,7 +113,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | referencing | 0.37.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/referencing/0.37.0/#files (kildekodearkiv: https://github.com/python-jsonschema/referencing) |
 | rich | 15.0.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/rich/15.0.0/#files |
 | rpds-py | 2026.9.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/rpds-py/2026.9.1/#files (kildekodearkiv: https://github.com/crate-py/rpds) |
-| setuptools | 84.2.0 | MIT | Python-pakke | Windows | ocr | https://pypi.org/project/setuptools/84.2.0/#files (kildekodearkiv: https://github.com/pypa/setuptools) |
+| setuptools | 84.2.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/setuptools/84.2.1/#files (kildekodearkiv: https://github.com/pypa/setuptools) |
 | typing-inspection | 0.4.4 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/typing-inspection/0.4.4/#files (kildekodearkiv: https://github.com/pydantic/typing-inspection) |
 | typing_extensions | 4.16.0 | PSF-2.0 | Python-pakke | Mac, Windows | compare, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/typing_extensions/4.16.0/#files (kildekodearkiv: https://github.com/python/typing_extensions) |
 | uharfbuzz | 0.56.3 | Apache License 2.0 | Python-pakke | Mac, Windows | compare, ocr, pdf-tables, redact | https://pypi.org/project/uharfbuzz/0.56.3/#files |
