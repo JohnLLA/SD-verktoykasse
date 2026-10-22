@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //! Kjøring av en installert pakke: argumentliste (aldri skall), rent miljø,
-//! fremdrift fra stderr, rapport fra stdout og avbryt.
+//! sandkasse (Mac), fremdrift fra stderr, rapport fra stdout og avbryt.
 //!
+//! - Mac: pakken startes gjennom `/usr/bin/sandbox-exec` med profilen i
+//!   `sandbox/profil.sb` (uten nett, lesing bare av pakken og filene brukeren
+//!   valgte, skriving bare i utmappen og en egen TMPDIR). Mangler
+//!   `sandbox-exec`, eller avviser den profilen, kjøres verktøyet ikke.
 //! - Pakken startes i en egen prosessgruppe (Mac) eller uten konsollvindu
 //!   (Windows). Avbryt dreper hele treet, også underprosesser som ffmpeg,
 //!   tesseract og ocrmypdfs arbeidere.
 //! - stderr leses linje for linje: `{"progress": 0.42}` blir en hendelse.
 //!   Andre linjer holdes (avgrenset) bare for å vise verktøyets norske
-//!   feilmelding ved kode 1. Ingenting av det logges (regel 2).
+//!   feilmelding ved kode 1. Ingenting av det logges (regel 2), heller ikke
+//!   feilmeldinger fra `sandbox-exec`.
 //! - Rapporten på stdout brukes bare ved kode 0 og må være et JSON-objekt.
 
 use std::ffi::OsString;
@@ -20,17 +25,42 @@ use std::time::{Duration, Instant};
 
 use super::error::{JvError, JvResult};
 use super::package::{command_env, join_rel, Manifest};
+use super::sandbox::{Access, Sandbox, Scratch, SANDBOX_EXEC_FAILURE_CODES};
 
 /// Største rapport vi leser fra stdout.
 pub const MAX_REPORT_BYTES: u64 = 32 * 1024 * 1024;
 /// Hvor mye av stderr (utenom fremdriftslinjer) vi holder.
 const MAX_STDERR_KEEP: usize = 16 * 1024;
 
-/// Kommandoen for pakkens `entry` med argumentene og det rene miljøet.
-pub fn command(root: &Path, m: &Manifest, args: &[OsString]) -> Command {
-    let mut cmd = Command::new(join_rel(root, &m.entry));
-    cmd.args(args)
-        .env_clear()
+/// En kjøring klar til start: kommandoen og (Mac) mappen for kjøringen, som
+/// slettes når kjøringen er ferdig.
+#[derive(Debug)]
+pub struct Launch {
+    pub cmd: Command,
+    scratch: Option<Scratch>,
+    sandboxed: bool,
+}
+
+impl Launch {
+    /// Mappen for kjøringen (profil og TMPDIR), hvis den finnes.
+    pub fn scratch_dir(&self) -> Option<&Path> {
+        self.scratch.as_ref().map(|s| s.dir())
+    }
+}
+
+impl From<Command> for Launch {
+    fn from(cmd: Command) -> Launch {
+        Launch {
+            cmd,
+            scratch: None,
+            sandboxed: false,
+        }
+    }
+}
+
+fn base_command(program: &Path, root: &Path, m: &Manifest) -> Command {
+    let mut cmd = Command::new(program);
+    cmd.env_clear()
         .envs(command_env(root, m))
         .current_dir(root)
         .stdin(Stdio::null())
@@ -48,6 +78,39 @@ pub fn command(root: &Path, m: &Manifest, args: &[OsString]) -> Command {
         cmd.creation_flags(CREATE_NO_WINDOW);
     }
     cmd
+}
+
+/// Kommandoen for pakkens `entry` med argumentene og det rene miljøet.
+///
+/// Mac: `sandbox-exec -f <profil> -D … <entry> <args>`, med `access` (filene
+/// brukeren valgte og utmappen) som parametere og `TMPDIR` i en egen mappe for
+/// kjøringen. Windows: `entry` direkte, som før (sandkasse kommer i et eget steg).
+pub fn command(
+    root: &Path,
+    m: &Manifest,
+    args: &[OsString],
+    access: &Access,
+    sandbox: &Sandbox,
+) -> JvResult<Launch> {
+    let entry = join_rel(root, &m.entry);
+    #[cfg(target_os = "macos")]
+    if sandbox.enabled() {
+        let (scratch, sb_args) = sandbox.prepare(root, &m.id, access)?;
+        let mut cmd = base_command(sandbox.exec(), root, m);
+        cmd.args(sb_args)
+            .arg(&entry)
+            .args(args)
+            .env("TMPDIR", scratch.tmp());
+        return Ok(Launch {
+            cmd,
+            scratch: Some(scratch),
+            sandboxed: true,
+        });
+    }
+    let _ = (access, sandbox);
+    let mut cmd = base_command(&entry, root, m);
+    cmd.args(args);
+    Ok(cmd.into())
 }
 
 /// Dreper prosessen og alt den har startet.
@@ -134,14 +197,48 @@ fn user_message(stderr_tail: &[String]) -> Option<String> {
         .map(|m| m.chars().take(2000).collect())
 }
 
+/// `sandbox-exec` selv feilet: kode 65 eller 71 og en linje som begynner med
+/// «sandbox-exec:» på stderr. Verktøyene bruker bare 0, 1 og 2.
+fn sandbox_exec_failed(code: Option<i32>, stderr_tail: &[String]) -> bool {
+    code.is_some_and(|c| SANDBOX_EXEC_FAILURE_CODES.contains(&c))
+        && stderr_tail
+            .iter()
+            .any(|l| l.trim_start().starts_with("sandbox-exec:"))
+}
+
 /// Kjører til slutt, til avbryt eller til `timeout`. `on_progress` får 0..1.
+///
+/// Mappen for kjøringen (Mac) slettes når funksjonen returnerer, også ved feil
+/// og avbryt (etter at prosesstreet er drept).
 pub fn run_job(
-    mut cmd: Command,
+    launch: impl Into<Launch>,
     cancel: &AtomicBool,
     timeout: Option<Duration>,
     on_progress: &mut dyn FnMut(f64),
 ) -> JvResult<Finished> {
-    let mut child = cmd.spawn().map_err(JvError::from)?;
+    let Launch {
+        mut cmd,
+        scratch,
+        sandboxed,
+    } = launch.into();
+    let result = run_command(&mut cmd, sandboxed, cancel, timeout, on_progress);
+    drop(cmd);
+    drop(scratch);
+    result
+}
+
+fn run_command(
+    cmd: &mut Command,
+    sandboxed: bool,
+    cancel: &AtomicBool,
+    timeout: Option<Duration>,
+    on_progress: &mut dyn FnMut(f64),
+) -> JvResult<Finished> {
+    let mut child = match cmd.spawn() {
+        Ok(c) => c,
+        Err(_) if sandboxed => return Err(JvError::SandboxFailed),
+        Err(e) => return Err(e.into()),
+    };
     let stdout = child.stdout.take().ok_or(JvError::Internal)?;
     let stderr = child.stderr.take().ok_or(JvError::Internal)?;
     let t_out = std::thread::spawn(move || {
@@ -207,6 +304,14 @@ pub fn run_job(
     drain(&rx, &mut tail, &mut tail_bytes);
     let (out, read_ok) = t_out.join().unwrap_or_default();
     let code = status.code();
+    if sandboxed && sandbox_exec_failed(code, &tail) {
+        // Profilen ble avvist eller verktøyet kunne ikke startes: verktøyet har
+        // ikke kjørt. Meldingen fra sandbox-exec (med stier) brukes ikke.
+        return Ok(Finished::Failed {
+            error: JvError::SandboxFailed,
+            message: None,
+        });
+    }
     if code != Some(0) {
         let message = if code == Some(1) {
             user_message(&tail)
@@ -256,6 +361,19 @@ mod tests {
         (root, m)
     }
 
+    /// sh-skript kan ikke startes i sandkassen (sh står utenfor pakken):
+    /// disse testene gjelder lesingen og avbryt, sandkassen testes i `tests.rs`.
+    fn test_command(root: &Path, m: &Manifest) -> Launch {
+        command(
+            root,
+            m,
+            &[],
+            &Access::default(),
+            &Sandbox::disabled_for_tests(),
+        )
+        .unwrap()
+    }
+
     fn run(body: &str, cancel_after: Option<Duration>) -> (Finished, Vec<f64>) {
         let (root, m) = script(body);
         let cancel = std::sync::Arc::new(AtomicBool::new(false));
@@ -267,7 +385,7 @@ mod tests {
             });
         }
         let mut seen = Vec::new();
-        let r = run_job(command(&root, &m, &[]), &cancel, None, &mut |p| {
+        let r = run_job(test_command(&root, &m), &cancel, None, &mut |p| {
             seen.push(p)
         })
         .unwrap();
@@ -334,7 +452,7 @@ echo '{"tool":"falsk","summary":"ok","outputs":[]}'"#,
         let cancel = AtomicBool::new(false);
         let mut seen = Vec::new();
         let t = Instant::now();
-        let r = run_job(command(&root, &m, &[]), &cancel, None, &mut |p| {
+        let r = run_job(test_command(&root, &m), &cancel, None, &mut |p| {
             seen.push(p);
             cancel.store(true, Ordering::SeqCst);
         })

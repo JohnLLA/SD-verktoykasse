@@ -91,6 +91,23 @@ Spesifikasjon v1 tillater to nettkall: nedlasting av språkmodeller og sjekk ett
 - Verktøyene selv har aldri nett. Kontrollvokteren kjører hver pakke med nettet sperret.
 - `capabilities`: bare kjøring av installerte jv-pakker fra appens datamappe, gjennom Rust. Webvisningen har ingen nettilgang, og CSP endres ikke.
 
+### Sandkasse (Mac)
+
+Verktøyene leser filer fra utenforstående. En fil kan være laget for å utnytte en feil i ffmpeg, poppler, tesseract eller et Python-bibliotek. Derfor kjører hvert verktøy i en sandkasse (steg 6.4), slik at en utnyttet feil ikke kan sende noe ut av maskinen, lese andre filer enn dem brukeren valgte, eller skrive andre steder enn i utmappen.
+
+- **Start:** `/usr/bin/sandbox-exec -f <profil> -D NAVN=verdi … <entry> <args>`. Det gjelder både kjøringer og prøvekjøringen med `--version`. Prosessgruppen, avbryt, det rene miljøet og fremdriften virker som før.
+- **Profilen** er en fast mal i `src-tauri/src/tools/jv/sandbox/profil.sb`, bygget inn i appen. Stier står aldri i profilteksten. De sendes som parametere (`-D IN_0=…`), og Rust legger bare til linjer med parameternavn, for eksempel `(allow file-read* (literal (param "IN_3")))`. Alle stier gjøres kanoniske først (`/var` er `/private/var`).
+- **Hva profilen tillater** (grunnregel `(allow default)` med forbud, se under):
+  - **Nett:** ingenting (`(deny network*)`), heller ikke lokale unix-sockets.
+  - **Mach-tjenester:** alle stengt. Det stenger blant annet LaunchServices (åpne nettadresser og programmer), Apple Events, DNS-oppslag (mDNSResponder), nsurlsessiond, utklippstavlen, skjermen og brukeroppslag. Ingen av verktøyene trenger noen. Apple Events, `lsopen`, nye launchd-jobber og IOKit er også stengt, og signaler og prosessinformasjon gjelder bare verktøyets egen prosessgruppe.
+  - **Lesing:** stengt for hjemmemappen, `/Users`, `/Volumes`, `/Network` og de midlertidige mappene (`/private/tmp`, `/private/var/tmp`, `/private/var/folders`). Åpnet igjen for pakkens mappe, filene og mappene brukeren valgte (også planfil og termliste), utmappen og den midlertidige mappen. Systemstiene (`/System`, `/usr/lib`, `/Library/Fonts` osv.) kan leses. Metadata (om en fil finnes, størrelse og tid) kan leses overalt, fordi Python og PyInstaller slår opp hver mappe på veien til en fil. Innhold og mappelister er stengt.
+  - **Skriving:** bare utmappen (for `datawrapper`: mappen for CSV-filen), en egen midlertidig mappe for kjøringen, `/dev/null` og `/dev/dtracehelper`. Pakken selv kan ikke endres.
+  - **Programmer:** bare filer inne i pakken kan startes (ocrmypdf starter tesseract, keyframes starter ffmpeg). `/bin/sh`, `/usr/bin/open` og alt annet utenfor pakken er stengt. Eneste unntak: `metadata` får bruke `/usr/bin/perl` som tolk for exiftool-skriptet i pakken (`process-exec-interpreter`, ikke vanlig start).
+- **Midlertidig mappe:** `verktoy/.kjoring/<app-pid>-<n>/` i appens datamappe, med profilen og `tmp/`, som blir `TMPDIR`. Den lages før kjøringen og slettes etterpå, også ved feil og avbryt. Mapper etter en app som krasjet, slettes når neste kjøring starter.
+- **Feil lukker:** mangler `sandbox-exec`, eller avviser den profilen, kjøres verktøyet ikke. Brukeren får «Verktøyet kunne ikke startes i beskyttet modus.» (`sandbox_failed`). Det finnes ingen innstilling for å slå sandkassen av. Meldinger fra `sandbox-exec` logges ikke (regel 2).
+- **Testene:** `cargo test` kjører en falsk pakke (en kopi av testbinærfila) gjennom sandkassen og sjekker at nett, DNS, lesing i `HOME` og på `/Volumes`, skriving utenfor utmappen og start av `/bin/sh` og `/usr/bin/open` stoppes, mens den valgte fila og utmappen virker. Verktøyenes egne Python-tester kjøres mot de pakkede binærfilene med den samme profilen (`sidecar/build/pytest_packaged.py`).
+- **Windows** kjører verktøyene uten sandkasse ennå. Det kommer i et eget steg (AppContainer).
+
 ## Plattformer
 
 - Mac (Apple Silicon, macOS 13+) og Windows 10/11 x64, som resten av appen.

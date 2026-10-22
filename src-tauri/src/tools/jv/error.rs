@@ -56,6 +56,10 @@ pub enum JvError {
     CodeSignature,
     /// Prøvekjøringen med `--version` feilet.
     TrialRunFailed,
+    /// Verktøyet kunne ikke startes i sandkassen (Mac): `sandbox-exec` mangler
+    /// eller avviste profilen. Da kjøres det ikke («Verktøyet kunne ikke startes
+    /// i beskyttet modus.»).
+    SandboxFailed,
     /// Verktøyet avsluttet med en annen kode enn 0 (1: brukerfeil, 2: intern feil).
     /// Den norske meldingen fra verktøyet sendes ved siden av, aldri i loggen.
     ToolFailed {

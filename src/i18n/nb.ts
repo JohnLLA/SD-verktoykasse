@@ -196,6 +196,10 @@ const jvErrors: JvErrorTexts = {
     title: "Verktøyet startet ikke",
     hint: "Det ble ikke installert. Prøv å laste ned på nytt. Skjer det igjen, ta kontakt med Samarbeidsdesken.",
   }),
+  sandbox_failed: () => ({
+    title: "Verktøyet kunne ikke startes i beskyttet modus.",
+    hint: "Av sikkerhetshensyn kjøres det ikke uten. Start maskinen på nytt og prøv igjen. Skjer det igjen, ta kontakt med Samarbeidsdesken.",
+  }),
   tool_failed: () => ({
     title: "Verktøyet stoppet uventet",
     hint: "Prøv igjen. Skjer det igjen, sjekk at filen åpner seg i et vanlig program, og ta kontakt med Samarbeidsdesken.",

@@ -7,12 +7,14 @@
 Every test that calls `jv_<id>.cli.main(argv)` or `jv_common.cli.main([id, ...])`
 gets the packaged binary instead: `<entry> <id> <argv...>` in a subprocess,
 with the environment from jv-package.json (jvpack.pack.package_env, the same
-rules as the Rust module) and inside `sandbox-exec` with
-
-  - no network (outbound and inbound IP denied; Unix sockets still allowed,
-    multiprocessing needs them), and
-  - no reads from /opt/homebrew, /usr/local or ~/.local, so a Homebrew
-    program can never stand in for a missing bundled one.
+rules as the Rust module) and, on macOS, inside `sandbox-exec` with the app's
+own profile (src-tauri/src/tools/jv/sandbox/profil.sb, built the same way as
+in Rust by jvpack.mac.sandbox): no network, no Mach services, reads only from
+the package, the files in the argument list and the out folder, writes only
+to the out folder and a TMPDIR of its own, and no programs outside the
+package. On top of the app's profile the tests also deny reads from
+/opt/homebrew and /usr/local, so a Homebrew library can never stand in for a
+missing bundled one (~/.local is already closed: it is in HOME).
 
 On Windows there is no sandbox-exec. The workflow (jv-windows-pakker.yml)
 blocks outbound traffic in Windows Firewall for every .exe in the unpacked
@@ -39,13 +41,13 @@ from pathlib import Path
 import pytest
 
 from jvpack import pack
+from jvpack.mac import sandbox
 
-HIDDEN = ["/opt/homebrew", "/usr/local", str(Path.home() / ".local")]
-SANDBOX = (
-    "(version 1)(allow default)"
-    '(deny network-outbound (remote ip "*:*"))'
-    '(deny network-inbound (local ip "*:*"))'
-    "(deny file-read* " + " ".join(f'(subpath "{p}")' for p in HIDDEN) + ")"
+HIDDEN = ["/opt/homebrew", "/usr/local"]
+# Stricter than the app (appended after its rules): only denies.
+EXTRA = (
+    ";; Bare i testene: Homebrew og /usr/local kan ikke leses.\n"
+    "(deny file-read* " + " ".join(f'(subpath "{p}")' for p in HIDDEN) + ")\n"
 )
 
 _ROOT: Path | None = None
@@ -71,12 +73,24 @@ def pytest_configure(config):
             os.environ[name] = value
 
 
+def _run(cmd: list[str], env: dict[str, str], cwd: Path | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", env=env, cwd=cwd,
+                          timeout=900)
+
+
 def _run_packed(argv) -> int:
-    cmd = [pack.entry(_ROOT, _DATA), _DATA["id"], *map(str, argv)]
+    argv = [str(a) for a in argv]
+    env = pack.package_env(_ROOT, _DATA)
     if sys.platform == "darwin":
-        cmd = ["/usr/bin/sandbox-exec", "-p", SANDBOX, *cmd]
-    proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
-                          env=pack.package_env(_ROOT, _DATA), timeout=900)
+        with sandbox.sandboxed(_ROOT, _DATA["id"], pack.entry(_ROOT, _DATA), argv, EXTRA) as (cmd, tmp):
+            env["TMPDIR"] = tmp
+            # Like the app: the working folder is the package (the sandbox does
+            # not let the tool read the folder pytest runs in).
+            proc = _run(cmd, env, cwd=_ROOT)
+        if proc.returncode in (65, 71) and proc.stderr.lstrip().startswith("sandbox-exec:"):
+            raise AssertionError("sandbox-exec avviste profilen eller kunne ikke starte verktøyet")
+    else:
+        proc = _run([pack.entry(_ROOT, _DATA), _DATA["id"], *argv], env)
     sys.stdout.write(proc.stdout)
     sys.stderr.write(proc.stderr)
     _COUNTS["pakket"] += 1
@@ -143,7 +157,7 @@ def _packaged_binary(request):
 
 def _isolation() -> str:
     if sys.platform == "darwin":
-        return "sandbox uten nett"
+        return "appens sandkasse"
     return os.environ.get("JV_NETTSPERRE") or "UTEN nettsperre"
 
 

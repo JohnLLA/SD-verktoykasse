@@ -4,7 +4,8 @@
 #   sidecar/build/test-pakker-mac.sh alle
 #   sidecar/build/test-pakker-mac.sh subtitles,ocr
 # Pakkene pakkes ut på nytt fra out/dist i en ny mappe. Testene kjører i
-# sandbox-exec uten nett og uten lesetilgang til Homebrew (pytest_packaged.py).
+# appens sandkasse (sandbox-exec med src-tauri/src/tools/jv/sandbox/profil.sb, se
+# pytest_packaged.py og jvpack/mac/sandbox.py), og uten lesetilgang til Homebrew.
 # Resultat per verktøy i out/test-oppsummering.txt.
 set -euo pipefail
 HER="$(cd "$(dirname "$0")" && pwd)"

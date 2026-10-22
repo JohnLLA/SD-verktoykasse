@@ -8,6 +8,7 @@
 //! verktoy/<id>/.ny-<versjon>/    under kontroll; flyttes på plass først etter prøvekjøring
 //! verktoy/.nedlasting/           jv-<id>-<versjon>-<target>.bin(.part), gjenopptas
 //! verktoy/.katalog/              siste kontrollerte tools.json og tools.json.sig
+//! verktoy/.kjoring/<pid>-<n>/    én mappe per kjøring på Mac (profil og TMPDIR), slettes etterpå
 //! ```
 //!
 //! Nett: bare [`Jv::catalog`] med `fetch = true` og [`Jv::install`], og bare
@@ -16,6 +17,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+#[cfg(target_os = "macos")]
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -24,12 +26,14 @@ use serde::Serialize;
 
 use crate::tools::transkribering::download::HostPolicy;
 
-use super::args::{build_args, RunRequest};
+use super::args::{build, RunRequest};
 use super::catalog::{
     self, Availability, Catalog, CatalogEntry, CURRENT_TARGET, KNOWN_TOOLS, MAX_CATALOG_BYTES,
 };
 use super::error::{JvError, JvResult};
 use super::package::{self, SignatureCheck};
+use super::runner::Launch;
+use super::sandbox::Sandbox;
 use super::{net, runner};
 
 pub type JobId = u64;
@@ -116,6 +120,7 @@ pub struct Jv {
     app_version: String,
     os_version: Option<String>,
     signature: SignatureCheck<'static>,
+    sandbox: Sandbox,
     jobs: Mutex<HashMap<JobId, Job>>,
     next: AtomicU64,
 }
@@ -147,13 +152,17 @@ pub struct Config {
     pub sig_url: String,
     pub policy: HostPolicy,
     pub signature: SignatureCheck<'static>,
+    /// Mac: hvordan verktøyene startes. Utenfor tester alltid `sandbox-exec`.
+    pub sandbox: Sandbox,
 }
 
 impl Config {
     /// Oppsettet appen bruker: release-repoet, katalognøkkelen og Developer ID-kravet.
     pub fn production(app_data_dir: PathBuf, app_version: String) -> Config {
+        let data_dir = app_data_dir.join("verktoy");
         Config {
-            data_dir: app_data_dir.join("verktoy"),
+            sandbox: Sandbox::new(&data_dir),
+            data_dir,
             app_version,
             os_version: os_version(),
             public_key: catalog::trusted_public_key().map(str::to_string),
@@ -185,6 +194,7 @@ impl Jv {
             app_version: cfg.app_version,
             os_version: cfg.os_version,
             signature: cfg.signature,
+            sandbox: cfg.sandbox,
             jobs: Mutex::new(HashMap::new()),
             next: AtomicU64::new(1),
         }
@@ -402,7 +412,14 @@ impl Jv {
             &mut |done, total| progress(InstallPhase::Download, done, total),
         )?;
         progress(InstallPhase::Install, 0, 0);
-        match package::install(&entry, &archive, &self.tools_dir, self.signature, cancel) {
+        match package::install(
+            &entry,
+            &archive,
+            &self.tools_dir,
+            self.signature,
+            &self.sandbox,
+            cancel,
+        ) {
             Ok(_) => Ok(entry.version),
             Err(e) => {
                 // En kontrollert, men ubrukelig pakke lastes ned på nytt neste gang.
@@ -442,14 +459,26 @@ impl Jv {
     // ------------------------------------------------------------ kjør
 
     /// Bygger kommandoen for en kjøring: installert pakke, kodesignatur (Mac),
-    /// argumenter fra hvitelisten og rent miljø.
-    pub fn prepare_run(&self, id: &str, req: &RunRequest) -> JvResult<Command> {
+    /// argumenter fra hvitelisten, rent miljø og (Mac) sandkassen med filene
+    /// brukeren valgte og utmappen.
+    pub fn prepare_run(&self, id: &str, req: &RunRequest) -> JvResult<Launch> {
         Self::check_id(id)?;
         let inst = package::installed(&self.tools_dir, id).ok_or(JvError::NotInstalled)?;
         // Mac: en pakke med ødelagt signatur kjøres ikke (sjekkes ved hver kjøring).
         package::verify_codesign(&inst.root, &inst.manifest, self.signature)?;
-        let args = build_args(id, req)?;
-        Ok(runner::command(&inst.root, &inst.manifest, &args))
+        let built = build(id, req)?;
+        runner::command(
+            &inst.root,
+            &inst.manifest,
+            &built.argv,
+            &built.access,
+            &self.sandbox,
+        )
+    }
+
+    #[cfg(test)]
+    pub fn sandbox(&self) -> &Sandbox {
+        &self.sandbox
     }
 
     #[cfg(test)]

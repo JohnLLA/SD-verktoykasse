@@ -47,6 +47,7 @@ export type JvError =
   | { code: "manifest_invalid"; reason: string }
   | { code: "code_signature" }
   | { code: "trial_run_failed" }
+  | { code: "sandbox_failed" }
   | { code: "tool_failed"; exit_code: number | null }
   | { code: "report_invalid" }
   | { code: "invalid_args"; reason: string }
@@ -74,6 +75,7 @@ export const JV_ERROR_CODES = [
   "manifest_invalid",
   "code_signature",
   "trial_run_failed",
+  "sandbox_failed",
   "tool_failed",
   "report_invalid",
   "invalid_args",
