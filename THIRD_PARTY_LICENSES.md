@@ -78,7 +78,6 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | zlib | ukjent | Zlib | Kjøretid | Windows | compare, datawrapper, keyframes, loudness, metadata, nynorsk, ocr, pdf-tables, redact, subtitles | https://zlib.net/ |
 | altgraph | 0.17.5 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/altgraph/0.17.5/#files (kildekodearkiv: https://github.com/ronaldoussoren/altgraph) |
 | annotated-types | 0.8.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/annotated-types/0.8.0/#files (kildekodearkiv: https://github.com/annotated-types/annotated-types) |
-| attrs | 26.1.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/attrs/26.1.0/#files (kildekodearkiv: https://github.com/python-attrs/attrs) |
 | cffi | 2.1.1 | MIT-0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/cffi/2.1.1/#files (kildekodearkiv: https://github.com/python-cffi/cffi) |
 | charset-normalizer | 3.5.2 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/charset-normalizer/3.5.2/#files (kildekodearkiv: https://github.com/jawah/charset_normalizer) |
 | cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/cryptography/50.0.2/#files (kildekodearkiv: https://github.com/pyca/cryptography/) |
@@ -87,18 +86,16 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | fonttools | 4.67.0 | MIT | Python-pakke | Mac, Windows | compare, ocr, pdf-tables, redact | https://pypi.org/project/fonttools/4.67.0/#files |
 | fpdf2 | 2.8.9 | LGPL-3.0-only | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/fpdf2/2.8.9/#files (kildekodearkiv: https://github.com/py-pdf/fpdf2) |
 | img2pdf | 0.6.3 | GNU Lesser General Public License v3 (LGPLv3) | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/img2pdf/0.6.3/#files |
-| jsonschema | 4.26.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/jsonschema/4.26.0/#files (kildekodearkiv: https://github.com/python-jsonschema/jsonschema) |
-| jsonschema-specifications | 2025.9.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/jsonschema-specifications/2025.9.1/#files (kildekodearkiv: https://github.com/python-jsonschema/jsonschema-specifications) |
 | lxml | 6.1.3 | BSD-3-Clause | Python-pakke | Mac, Windows | compare, datawrapper, metadata, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/lxml/6.1.3/#files (kildekodearkiv: https://github.com/lxml/lxml) |
 | macholib | 1.16.4 | MIT | Python-pakke | Mac | ocr | https://pypi.org/project/macholib/1.16.4/#files (kildekodearkiv: https://github.com/ronaldoussoren/macholib) |
 | markdown-it-py | 4.2.0 | MIT License | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/markdown-it-py/4.2.0/#files |
 | mdurl | 0.1.2 | MIT License | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/mdurl/0.1.2/#files |
-| ocrmypdf | 17.13.0 | MPL-2.0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/ocrmypdf/17.13.0/#files (kildekodearkiv: https://github.com/ocrmypdf/OCRmyPDF) |
+| ocrmypdf | 17.12.1 | MPL-2.0 | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/ocrmypdf/17.12.1/#files (kildekodearkiv: https://github.com/ocrmypdf/OCRmyPDF) |
 | openpyxl | 3.1.5 | MIT | Python-pakke | Mac, Windows | datawrapper, pdf-tables | https://pypi.org/project/openpyxl/3.1.5/#files (kildekodearkiv: https://foss.heptapod.net/openpyxl/openpyxl) |
 | packaging | 26.3 | Apache-2.0 OR BSD-2-Clause | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/packaging/26.3/#files (kildekodearkiv: https://github.com/pypa/packaging) |
 | pdfminer.six | 20260107 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pdfminer.six/20260107/#files |
 | pefile | 2024.8.26 | MIT | Python-pakke | Windows | ocr | https://pypi.org/project/pefile/2024.8.26/#files |
-| pikepdf | 10.17.0 | MPL-2.0 | Python-pakke | Mac, Windows | metadata, ocr | https://pypi.org/project/pikepdf/10.17.0/#files (kildekodearkiv: https://github.com/pikepdf/pikepdf) |
+| pikepdf | 10.13.0.post1 | MPL-2.0 | Python-pakke | Mac, Windows | metadata, ocr | https://pypi.org/project/pikepdf/10.13.0.post1/#files (kildekodearkiv: https://github.com/pikepdf/pikepdf) |
 | pillow | 13.0.0 | MIT-CMU | Python-pakke | Mac, Windows | compare, datawrapper, keyframes, metadata, ocr, pdf-tables, redact | https://pypi.org/project/pillow/13.0.0/#files (kildekodearkiv: https://github.com/python-pillow/Pillow) |
 | pluggy | 1.7.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pluggy/1.7.0/#files (kildekodearkiv: https://github.com/pytest-dev/pluggy) |
 | pycparser | 3.11 | BSD-3-Clause | Python-pakke | Windows | ocr | https://pypi.org/project/pycparser/3.11/#files |
@@ -110,9 +107,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | pypdfium2 | 5.14.0 | BSD-3-Clause, Apache-2.0, dependency licenses | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/pypdfium2/5.14.0/#files (kildekodearkiv: https://github.com/pypdfium2-team/pypdfium2) |
 | python-docx | 1.2.0 | MIT | Python-pakke | Mac, Windows | compare, nynorsk | https://pypi.org/project/python-docx/1.2.0/#files (kildekodearkiv: https://github.com/python-openxml/python-docx) |
 | pywin32-ctypes | 0.2.3 | BSD-3-Clause | Python-pakke | Windows | ocr | https://pypi.org/project/pywin32-ctypes/0.2.3/#files |
-| referencing | 0.37.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/referencing/0.37.0/#files (kildekodearkiv: https://github.com/python-jsonschema/referencing) |
 | rich | 15.0.0 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/rich/15.0.0/#files |
-| rpds-py | 2026.9.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/rpds-py/2026.9.1/#files (kildekodearkiv: https://github.com/crate-py/rpds) |
 | setuptools | 84.2.1 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/setuptools/84.2.1/#files (kildekodearkiv: https://github.com/pypa/setuptools) |
 | typing-inspection | 0.4.4 | MIT | Python-pakke | Mac, Windows | ocr | https://pypi.org/project/typing-inspection/0.4.4/#files (kildekodearkiv: https://github.com/pydantic/typing-inspection) |
 | typing_extensions | 4.16.0 | PSF-2.0 | Python-pakke | Mac, Windows | compare, nynorsk, ocr, pdf-tables, redact | https://pypi.org/project/typing_extensions/4.16.0/#files (kildekodearkiv: https://github.com/python/typing_extensions) |

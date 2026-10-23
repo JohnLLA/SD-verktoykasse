@@ -6,8 +6,8 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "jv-common",
     "ocrmypdf>=16",
-    "pikepdf>=8",
-    "pymupdf>=1.24,<2",  # 2.0 drar inn nye avhengigheter; venter på avgjørelse (steg 6.5)
+    "pikepdf>=10,<10.14",  # 10.14+ har bare hjul for macOS 15 (arm64); 10.13.0.post1 er siste med hjul for macOS 14. Se docs/senere.md
+    "pymupdf>=1.24,<2",  # 2.0 drar inn onnxruntime, numpy, pymupdf-layout og pymupdf4llm (regel 7). Se docs/senere.md
 ]
 
 [project.entry-points."jv.tools"]

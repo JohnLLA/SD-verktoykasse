@@ -85,10 +85,8 @@ jobs:
           for f in ../build/jvpack/windows/pyinstaller-krav.txt ../build/jvpack/mac/pyinstaller-krav.txt; do
             uvx --from "pip-audit==$PIP_AUDIT_VERSION" pip-audit $ignore --disable-pip --require-hashes --no-deps -r "$f"
           done
-      # pip-licenses trenger installerte pakker. På macos-14 bygges pikepdf 10.17 fra kildekode (uten hjul, og qpdf mangler),
-      # og lisenslista er den samme på begge plattformene, så den kjøres bare på Windows.
-      - name: Python - lisenser (Windows)
-        if: runner.os == 'Windows'
+      # pip-licenses trenger installerte pakker. pikepdf er låst til 10.13.x, som har hjul for macOS 14 (arm64).
+      - name: Python - lisenser
         working-directory: sidecar/jv
         run: |
           uv sync --frozen --all-packages

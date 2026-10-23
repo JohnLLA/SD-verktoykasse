@@ -5,7 +5,7 @@ description = "Ekte sladding av personopplysninger i PDF (fødselsnummer, telefo
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "jv-common",
-    "pymupdf>=1.24,<2",  # 2.0 drar inn nye avhengigheter; venter på avgjørelse (steg 6.5)
+    "pymupdf>=1.24,<2",  # 2.0 drar inn onnxruntime, numpy, pymupdf-layout og pymupdf4llm (regel 7). Se docs/senere.md
 ]
 
 [project.entry-points."jv.tools"]
