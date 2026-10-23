@@ -23,6 +23,7 @@ Layout in the package bundle:
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -32,7 +33,13 @@ from pathlib import Path
 from .macho import BuildError
 
 PREFIX = Path.home() / ".local"
-SOURCES = Path.home() / "Kilder" / "apertium"
+# Source checkouts (licence texts, commits): kilder/apertium/ at the repository
+# root, outside git (.gitignore). JV_APERTIUM_SOURCES overrides it, for example
+# when building from a worktree.
+SOURCES = Path(
+    os.environ.get("JV_APERTIUM_SOURCES")
+    or Path(__file__).resolve().parents[4] / "kilder" / "apertium"
+)
 
 # The modes the nynorsk tool uses (``apertium -f txt <mode>``). nob-nno_e and
 # the other variants are left out: the tool never asks for them.
@@ -48,7 +55,7 @@ RESOURCE_DIR = "apertium"  # under Contents/Resources
 # A data path in a rewritten mode file: plain ASCII, «/» separated.
 _SAFE_REL = re.compile(r"[A-Za-z0-9._+-]+(?:/[A-Za-z0-9._+-]+)*")
 
-# Source repositories: (folder in ~/Kilder/apertium, version, licence, extra texts).
+# Source repositories: (folder in SOURCES, version, licence, extra texts).
 REPOS: list[tuple[str, str, str, tuple[str, ...]]] = [
     ("lttoolbox", "3.8.4", "GPL-2.0-or-later", ()),
     ("apertium", "3.9.12", "GPL-2.0-or-later", ("COPYING.hunalign",)),

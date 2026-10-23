@@ -313,7 +313,7 @@ def apertium_packages(sources: Path | None = None) -> list[Package]:
     """Apertium programs and language data, built from source in ~/.local.
 
     Licence texts come from the COPYING files in the source checkouts
-    (~/Kilder/apertium/<repo>); the source line names the GitHub repository
+    (kilder/apertium/<repo> at the repository root); the source line names the GitHub repository
     and the exact commit that was built.
     """
     from . import apertium

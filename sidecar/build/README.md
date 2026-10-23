@@ -123,7 +123,7 @@ oppstart.
 ## Forutsetninger (lokal Mac)
 
 - Homebrew i `/opt/homebrew` med `ffmpeg`, `tesseract`, `tesseract-lang`, `poppler` og `exiftool`.
-- Apertium med `apertium-nno-nob` bygget fra kilde i `~/.local`, og kildene i `~/Kilder/apertium/<repo>`
+- Apertium med `apertium-nno-nob` bygget fra kilde i `~/.local`, og kildene i `kilder/apertium/<repo>` i repomappen (utenfor git; `JV_APERTIUM_SOURCES` for en annen sti, for eksempel fra en worktree)
   (se `sidecar/jv/verktoy/nynorsk/OPPSETT.md`).
 - PyInstaller: `bygg-mac.sh` installerer den festede versjonen med SHA-256 fra `jvpack/mac/pyinstaller-krav.txt` i venv-en (Python 3.12, samme PyInstaller som på Windows). Den lokale PyInstaller 6.6 for Apples Python 3.9 brukes bare hvis `build.py` kjøres utenom skriptet.
 - Identiteten «Developer ID Application» i nøkkelringen (eller `JV_SIGN_IDENTITY`). Uten den signeres

@@ -32,7 +32,7 @@ brew install autoconf automake libtool pkg-config gawk utf8cpp boost rapidjson
 
 ## Steg 3: Miljø
 
-Lag en fil, for eksempel `~/Kilder/apertium/env.sh`, og kjør `source` på den i hvert nytt skall før bygging og kjøring:
+Lag en fil, for eksempel `kilder/apertium/env.sh` i repomappen, og kjør `source` på den i hvert nytt skall før bygging og kjøring:
 
 ```
 export P=$HOME/.local
@@ -55,7 +55,7 @@ Det som betyr noe:
 
 ## Steg 4: Bygg fra kilde
 
-Hent kildene til en egen mappe utenfor prosjektet (for eksempel `~/Kilder/apertium/`) fra disse repoene, i denne rekkefølgen:
+Hent kildene til `kilder/apertium/` i repomappen (står i `.gitignore`, så de kommer aldri i git; byggeskriptet leser lisenstekstene derfra) fra disse repoene, i denne rekkefølgen:
 
 1. `lttoolbox` (apertium)
 2. `apertium` (apertium)
