@@ -1,6 +1,6 @@
 # Journalistverktøyene i verktøykassen – spesifikasjon (steg 6)
 
-De ni journalistverktøyene fra `/Volumes/Prosjektdisk/Verktoy2_0/journalistverktoy` skal inn i LLAs verktøykasse. Appen er et skall med samme utseende som Transkribering. Alle ti verktøyene står i venstremenyen. Transkribering følger med appen, og de ni andre lastes ned inne i appen når brukeren vil ha dem (bestemt av John Inge 19.10.2026).
+De ni journalistverktøyene fra `Verktoy2_0/journalistverktoy` (nå i `sidecar/jv/`; den opprinnelige mappen er slettet 23.10.2026) skal inn i LLAs verktøykasse. Appen er et skall med samme utseende som Transkribering. Alle ti verktøyene står i venstremenyen. Transkribering følger med appen, og de ni andre lastes ned inne i appen når brukeren vil ha dem (bestemt av John Inge 19.10.2026).
 
 Medlemmene laster ned én app per plattform fra det offentlige release-repoet `JohnLLA/sd-verktoy-releases` eller fra `verktoy.html` på lla.no. Verktøyene lastes deretter ned fra det samme repoet, inne i appen.
 

@@ -9,7 +9,7 @@ Verktøykassen er et skall. Transkribering følger med appen. De ni journalistve
 
 ## Kilden
 
-Python-workspacet ligger i `/Volumes/Prosjektdisk/Verktoy2_0/journalistverktoy` (lokal git, `main`).
+Python-koden ligger i `sidecar/jv/`, og byggeskriptene i `sidecar/build/`. Det opprinnelige workspacet (`Verktoy2_0/journalistverktoy`) er slettet (23.10.2026). Punktene under viser hvordan flyttingen ble gjort.
 
 - **Hva som flyttes:** kopier `verktoy/`, `conftest.py`, `pyproject.toml`, `uv.lock`, `testdata/` og `docs/` inn i `sidecar/jv/`.
 - **Mac-byggeskriptet:** `pakking/mac/` lager allerede signerte PyInstaller-app-er med en skjult CLI-modus. Bruk det som utgangspunkt for `sidecar/build/`, men lag kommandolinjebygg uten tkinter-skallet.
