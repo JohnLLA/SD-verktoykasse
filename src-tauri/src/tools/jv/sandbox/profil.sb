@@ -1,0 +1,98 @@
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+;;
+;; Sandkasseprofilen for journalistverktøyene på Mac (sandbox-exec).
+;; Se «Sandkasse (Mac)» i docs/spesifikasjon-journalistverktoy.md.
+;;
+;; Dette er en fast mal. Stier står aldri i teksten: de kommer som
+;; parametere (sandbox-exec -D NAVN=verdi) og leses med (param "NAVN").
+;; Rust (sandbox/mod.rs) legger bare til linjer med parameternavn under,
+;; for eksempel (allow file-read* (literal (param "IN_3"))), én per fil
+;; brukeren valgte. Et filnavn med " ) ; eller linjeskift kan derfor ikke
+;; endre profilen.
+;;
+;; Parametere (alle er kanoniske stier, uten symlenker):
+;;   HOME     brukerens hjemmemappe
+;;   PKG      pakkens mappe (verktoy/<id>/<versjon>)
+;;   OUT      utmappen (eller TMP når verktøyet ikke skriver filer)
+;;   TMP      en egen midlertidig mappe for kjøringen (TMPDIR)
+;;   IN_<n>   filene og mappene brukeren valgte
+;;   INTERP_<n>  tolkeren for et skript i pakken (bare /usr/bin/perl for exiftool)
+;;
+;; Grunnregelen er (allow default) med forbudene under. (deny default) med en
+;; hviteliste ble for skjørt på tvers av macOS-versjoner (dyld, Python,
+;; PyInstaller, ffmpeg, tesseract og Perl trenger hver sine småting).
+;; Senere regler vinner over tidligere.
+
+(version 1)
+(allow default)
+
+;; ---------------------------------------------------------------- nett
+;; Ingen nettilgang i det hele tatt, heller ikke lokale unix-sockets.
+;; Ingen av verktøyene trenger dem (ocrmypdf bruker tråder).
+(deny network*)
+
+;; ------------------------------------------------------- andre prosesser
+;; Alle Mach-tjenester er stengt. Det stenger blant annet:
+;;   com.apple.coreservices.launchservicesd og com.apple.lsd.*  (åpne
+;;     nettadresser og programmer)
+;;   com.apple.coreservices.appleevents  (styre andre programmer)
+;;   com.apple.mDNSResponder og com.apple.dnssd.service  (DNS-oppslag)
+;;   com.apple.nsurlsessiond og com.apple.trustd  (nett på vegne av prosessen)
+;;   com.apple.pasteboard.1  (utklippstavlen)
+;;   com.apple.windowserver.active  (skjermen, tastatur og mus)
+;;   com.apple.system.opendirectoryd.libinfo  (brukeroppslag, kan gå mot
+;;     en katalogtjener på nettet)
+;;   com.apple.logd og com.apple.diagnosticd  (systemloggen)
+;; Ingen av verktøyene trenger noen Mach-tjeneste.
+(deny mach-lookup)
+(deny mach-register)
+(deny appleevent-send)
+(deny lsopen)
+(deny job-creation)
+(deny iokit-open)
+;; Signaler og prosessinformasjon bare innenfor verktøyets egen prosessgruppe.
+(deny signal)
+(allow signal (target self) (target pgrp) (target children))
+(deny process-info*)
+(allow process-info* (target self) (target pgrp) (target children))
+
+;; ------------------------------------------------------------- skriving
+;; Bare utmappen, den midlertidige mappen, /dev/null og /dev/dtracehelper.
+;; Pakken selv kan ikke endres.
+(deny file-write*)
+(allow file-write*
+  (subpath (param "OUT"))
+  (subpath (param "TMP"))
+  (literal "/dev/null")
+  (literal "/dev/dtracehelper"))
+
+;; --------------------------------------------------------------- lesing
+;; Stengt for hjemmemappen, andre brukere, eksterne disker, nettverksdisker og
+;; midlertidige mapper (der andre programmer legger filer). Systemstiene
+;; (/System, /usr/lib, /Library/Fonts osv.) kan leses.
+(deny file-read*
+  (subpath (param "HOME"))
+  (subpath "/Users")
+  (subpath "/Volumes")
+  (subpath "/Network")
+  (subpath "/private/tmp")
+  (subpath "/private/var/tmp")
+  (subpath "/private/var/folders"))
+;; Metadata (finnes, størrelse, tid) kan leses overalt. Python og PyInstaller
+;; slår opp hver mappe på veien til en fil (realpath). Innhold og mappelister
+;; er fortsatt stengt.
+(allow file-read-metadata)
+(allow file-read*
+  (subpath (param "PKG"))
+  (subpath (param "OUT"))
+  (subpath (param "TMP")))
+
+;; ------------------------------------------------------------ programmer
+;; Bare filer inne i pakken kan startes. ocrmypdf starter tesseract og
+;; keyframes starter ffmpeg fra pakken. /bin/sh, /usr/bin/open og alt annet
+;; utenfor pakken er stengt.
+(deny process-exec*)
+(allow process-exec* (subpath (param "PKG")))
+
+;; ------------------------------------------- generert for denne kjøringen
+;; Under står bare linjer med parameternavn (IN_<n>, INTERP_<n>).

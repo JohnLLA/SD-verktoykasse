@@ -93,7 +93,10 @@ fremdrift som JSON-linjer på stderr, kode 1/2 ved feil).
 
 Miljøet settes av den som kjører pakken (Rust-modulen `src-tauri/src/tools/jv`, eller
 `jvpack.pack.package_env` i testene): bare `PATH` (pakkens mapper + systemet), `HOME`, `TMPDIR` og
-variablene fra `jv-package.json`.
+variablene fra `jv-package.json`. På Mac starter appen pakken i sandkassen (`sandbox-exec`, se
+«Sandkasse (Mac)» i `docs/spesifikasjon-journalistverktoy.md`), med `TMPDIR` i en egen mappe per kjøring.
+Pakkene trenger ingen endring for det: ingen av dem skriver til `~/Library` eller leser utenfor pakken ved
+oppstart.
 
 ## Struktur
 
@@ -101,16 +104,18 @@ variablene fra `jv-package.json`.
   minisign (`catalog.py`), tredjepartsliste (`third_party.py`).
 - `jvpack/mac/` – Mac: Mach-O-stier (`macho.py`), Homebrew-data (`resources.py`), Apertium
   (`apertium.py`), lisenser (`licenses.py`), signering (`sign.py`), notarisering (`notarize.py`),
-  `binaries.json` (`binaries.py`) og bygget (`build.py`). Tilpasset fra `pakking/mac/builder` i Verktoy2_0.
+  `binaries.json` (`binaries.py`), bygget (`build.py`) og appens sandkasse for testene (`sandbox.py`). Tilpasset fra `pakking/mac/builder` i Verktoy2_0.
 - `jvpack/windows/` – Windows: faste nedlastinger med SHA-256 (`sources.py`), utpakking (`fetch.py`),
   DLL-ene et program laster (`pe.py`), lisens for hver DLL (`components.py`, `lisenstekster/`),
   programmene (`programs.py`), lisenser (`licenses.py`), Authenticode (`sign.py`), `binaries.json`
   (`binaries.py`) og bygget (`build.py`). `pyinstaller-krav.txt` er PyInstaller med SHA-256.
   `targets` i `tools.py` sier hvilke verktøy som har Windows-pakke.
 - `launcher/jv_launcher.py` – inngangen PyInstaller fryser.
-- `pytest_packaged.py` – kjører verktøyets egne tester mot pakken i `sandbox-exec` uten nett og uten
-  lesetilgang til Homebrew, `/usr/local` og `~/.local`. Tester som bruker `monkeypatch` (selv eller
-  gjennom en fixture) kjører i prosess og telles for seg.
+- `pytest_packaged.py` – kjører verktøyets egne tester mot pakken. På Mac skjer det i appens sandkasse
+  (`jvpack/mac/sandbox.py`: samme profil, `src-tauri/src/tools/jv/sandbox/profil.sb`, bygget på samme måte
+  som i Rust), med pakken som arbeidsmappe og en egen TMPDIR per kjøring, og i tillegg uten lesetilgang til
+  Homebrew og `/usr/local`. Tester som bruker `monkeypatch` (selv eller gjennom en fixture) kjører i prosess
+  og telles for seg.
 - `binaries.json` – kilde, versjon, SHA-256 (kildearkiv og bottle) og lisens for hver Homebrew-del
   (generert). Apertium er bygget fra kilde i `~/.local` og står med repo og commit i pakkens
   «Kildekode og versjoner.txt».

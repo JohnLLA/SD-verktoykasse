@@ -17,6 +17,8 @@
 //! - `plan`: planfilen fra `redact finn`, lest for visning og lagret med avkrysningene.
 //! - `args`: argumentene fra en hviteliste per verktøy, aldri skall.
 //! - `runner`: kjøring med fremdrift, rapport og avbryt av hele prosesstreet.
+//! - `sandbox`: sandkassen på Mac (`sandbox-exec` med den faste profilen i
+//!   `sandbox/profil.sb`; stier bare som parametere).
 //! - `service`: logikken bak kommandoene (uten Tauri, testbar).
 //! - `commands`: Tauri-kommandoene og -hendelsene.
 //!
@@ -31,6 +33,7 @@ pub mod net;
 pub mod package;
 pub mod plan;
 pub mod runner;
+pub mod sandbox;
 pub mod service;
 
 include!("command_names.rs");

@@ -24,6 +24,7 @@ use super::archive;
 use super::catalog::CatalogEntry;
 use super::error::{JvError, JvResult};
 use super::runner;
+use super::sandbox::{Access, Sandbox};
 use crate::tools::transkribering::download::{self, HostPolicy};
 use crate::tools::transkribering::models::{hex, ModelDirs, ModelEntry, VerifyCache};
 
@@ -247,10 +248,11 @@ pub struct VersionInfo {
 }
 
 /// Prøvekjøring: `--version` må gi kode 0 og riktig id og versjon innen to minutter.
-pub fn trial_run(root: &Path, m: &Manifest) -> JvResult<VersionInfo> {
-    let cmd = runner::command(root, m, &["--version".into()]);
+/// På Mac skjer den i sandkassen, uten tilgang til noen filer utenfor pakken.
+pub fn trial_run(root: &Path, m: &Manifest, sandbox: &Sandbox) -> JvResult<VersionInfo> {
+    let launch = runner::command(root, m, &["--version".into()], &Access::default(), sandbox)?;
     let never = AtomicBool::new(false);
-    match runner::run_job(cmd, &never, Some(Duration::from_secs(120)), &mut |_| {})? {
+    match runner::run_job(launch, &never, Some(Duration::from_secs(120)), &mut |_| {})? {
         runner::Finished::Report(v) => {
             let v: VersionInfo = serde_json::from_value(v).map_err(|_| JvError::TrialRunFailed)?;
             if v.id != m.id || v.version != m.version {
@@ -258,6 +260,10 @@ pub fn trial_run(root: &Path, m: &Manifest) -> JvResult<VersionInfo> {
             }
             Ok(v)
         }
+        runner::Finished::Failed {
+            error: JvError::SandboxFailed,
+            ..
+        } => Err(JvError::SandboxFailed),
         _ => Err(JvError::TrialRunFailed),
     }
 }
@@ -335,6 +341,7 @@ pub fn install(
     archive: &Path,
     tools_dir: &Path,
     check: SignatureCheck,
+    sandbox: &Sandbox,
     cancel: &AtomicBool,
 ) -> JvResult<(PathBuf, InstallTimes)> {
     let cancelled = || -> JvResult<()> {
@@ -374,7 +381,7 @@ pub fn install(
         times.codesign = t.elapsed();
         cancelled()?;
         let t = Instant::now();
-        trial_run(&staging, &m)?;
+        trial_run(&staging, &m, sandbox)?;
         times.trial_run = t.elapsed();
         cancelled()
     })();

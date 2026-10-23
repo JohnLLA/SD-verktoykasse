@@ -7,13 +7,15 @@
 //!   avbrutt og gjenopptatt nedlasting, avbryt under installasjon.
 //! - Kjøring med en falsk pakke: rapport, feilmelding og avbryt. Den falske
 //!   pakken er et sh-skript på Mac og et cmd-skript i en .zip på Windows, så
-//!   testene går på begge plattformene.
+//!   testene går på begge plattformene. sh står utenfor pakken og kan ikke
+//!   startes i sandkassen, så disse kjører uten (`Sandbox::disabled_for_tests`).
+//!   Sandkassen testes med en egen falsk pakke i `sandbox/probe.rs` (Mac).
 //! - Miljøet en pakke kjøres med (`command_env`), også for Windows.
 //! - `full_chain` (ignorert som standard; krever pakkene fra
 //!   `sidecar/build/bygg-mac.sh` og en katalog laget for testserveren):
 //!   katalog fra en lokal testserver → signatur → nedlasting med brudd og
 //!   gjenopptak → SHA-256 → utpakking → codesign → `--version` → kjøring på en
-//!   testfil, for alle verktøyene i katalogen. Skriver bare tall, aldri filnavn eller
+//!   testfil, for alle verktøyene i katalogen, gjennom sandkassen på Mac. Skriver bare tall, aldri filnavn eller
 //!   tekst fra verktøyene. Se `sidecar/build/README.md`.
 
 use std::io::{BufRead, BufReader, Write};
@@ -32,6 +34,7 @@ use super::catalog::{
 use super::error::JvError;
 use super::package::{self, SignatureCheck};
 use super::runner::{self, Finished};
+use super::sandbox::Sandbox;
 use super::service::{CatalogSource, Config, InstallPhase, Jv, ToolStatus};
 use crate::tools::transkribering::download::HostPolicy;
 
@@ -274,6 +277,7 @@ fn test_jv(data: &Path, server: &DirServer, catalog_name: &str) -> Jv {
         sig_url: server.url(&format!("{catalog_name}.sig")),
         policy: HostPolicy::for_tests(&["127.0.0.1"]),
         signature: SignatureCheck::SkipForTests,
+        sandbox: Sandbox::disabled_for_tests(),
     })
 }
 
@@ -544,6 +548,7 @@ fn package_with_wrong_sha256_is_rejected_and_deleted() {
             &arch,
             &tools,
             SignatureCheck::SkipForTests,
+            &Sandbox::disabled_for_tests(),
             &never()
         )
         .unwrap_err(),
@@ -566,6 +571,7 @@ fn failing_trial_run_keeps_old_version() {
             &arch,
             &tools,
             SignatureCheck::SkipForTests,
+            &Sandbox::disabled_for_tests(),
             &never()
         )
         .unwrap_err(),
@@ -582,6 +588,7 @@ fn failing_trial_run_keeps_old_version() {
             &arch,
             &tools,
             SignatureCheck::SkipForTests,
+            &Sandbox::disabled_for_tests(),
             &never()
         )
         .unwrap_err(),
@@ -596,7 +603,15 @@ fn cancel_during_install_leaves_nothing_half_installed() {
     let tools = tmp("verktoy");
     let cancel = AtomicBool::new(true);
     assert_eq!(
-        package::install(&entry, &arch, &tools, SignatureCheck::SkipForTests, &cancel).unwrap_err(),
+        package::install(
+            &entry,
+            &arch,
+            &tools,
+            SignatureCheck::SkipForTests,
+            &Sandbox::disabled_for_tests(),
+            &cancel
+        )
+        .unwrap_err(),
         JvError::Cancelled
     );
     assert!(package::installed(&tools, "falsk").is_none());
@@ -614,6 +629,7 @@ fn good_fake_package_replaces_old_version() {
         &arch,
         &tools,
         SignatureCheck::SkipForTests,
+        &Sandbox::disabled_for_tests(),
         &never(),
     )
     .unwrap();
@@ -652,6 +668,7 @@ fn unsigned_package_is_rejected_with_team_requirement() {
             &arch,
             &tools,
             SignatureCheck::Team(package::TEAM_ID),
+            &Sandbox::disabled_for_tests(),
             &never()
         )
         .unwrap_err(),
@@ -869,6 +886,7 @@ fn installed_fake(body: Body) -> (Jv, PathBuf) {
         &arch,
         jv.tools_dir(),
         SignatureCheck::SkipForTests,
+        &Sandbox::disabled_for_tests(),
         &never(),
     )
     .unwrap();
@@ -1049,6 +1067,7 @@ fn full_chain() {
         sig_url: server.url("tools.json.sig"),
         policy: HostPolicy::for_tests(&["127.0.0.1"]),
         signature: SignatureCheck::Team(package::TEAM_ID),
+        sandbox: Sandbox::new(&data.join("verktoy")),
     });
 
     let t = Instant::now();
@@ -1089,7 +1108,7 @@ fn full_chain() {
         let mut starts = Vec::new();
         for _ in 0..3 {
             let t = Instant::now();
-            package::trial_run(&inst.root, &inst.manifest).unwrap();
+            package::trial_run(&inst.root, &inst.manifest, jv.sandbox()).unwrap();
             starts.push(t.elapsed().as_millis());
         }
 

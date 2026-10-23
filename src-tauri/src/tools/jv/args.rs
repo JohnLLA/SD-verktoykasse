@@ -12,15 +12,19 @@
 //! - Alle stier må være absolutte. En absolutt sti begynner aldri med `-`, så
 //!   et filnavn kan ikke bli tolket som et valg. NUL og linjeskift avvises.
 //! - Kommandoen startes med en argumentliste, aldri gjennom et skall.
+//! - Samtidig samles stiene verktøyet får bruke ([`Access`]): filene det leser
+//!   (inngang, planfil, termliste) og mappen det skriver i (utmappen, eller
+//!   mappen for CSV-filen i `datawrapper`). På Mac er det alt sandkassen åpner.
 
 use std::collections::BTreeMap;
 use std::ffi::OsString;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use serde_json::Value;
 
 use super::error::{JvError, JvResult};
+use super::sandbox::Access;
 
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -68,7 +72,7 @@ fn check_path(raw: &str) -> JvResult<OsString> {
     Ok(OsString::from(raw))
 }
 
-fn check_inputs(req: &RunRequest, kind: Inputs) -> JvResult<Vec<OsString>> {
+fn check_inputs(req: &RunRequest, kind: Inputs, acc: &mut Access) -> JvResult<Vec<OsString>> {
     match kind {
         Inputs::Exactly(n) if req.inputs.len() != n => return Err(invalid("input_count")),
         _ if req.inputs.is_empty() => return Err(invalid("input_count")),
@@ -83,29 +87,43 @@ fn check_inputs(req: &RunRequest, kind: Inputs) -> JvResult<Vec<OsString>> {
         if !ok {
             return Err(invalid("input_type"));
         }
+        acc.read.push(PathBuf::from(&p));
         out.push(p);
     }
     Ok(out)
 }
 
-fn check_out_dir(req: &RunRequest) -> JvResult<OsString> {
+fn check_out_dir(req: &RunRequest, acc: &mut Access) -> JvResult<OsString> {
     let raw = req.out_dir.as_deref().ok_or(invalid("out_missing"))?;
     let p = check_path(raw)?;
-    match std::fs::metadata(&p) {
-        Ok(md) if md.is_dir() => Ok(p),
-        Ok(_) => Err(invalid("out_not_dir")),
+    let p = match std::fs::metadata(&p) {
+        Ok(md) if md.is_dir() => p,
+        Ok(_) => return Err(invalid("out_not_dir")),
         // Verktøyene lager utmappen selv; foreldermappen må finnes.
         Err(_) => match Path::new(&p).parent() {
-            Some(parent) if parent.is_dir() => Ok(p),
-            _ => Err(invalid("out_parent_missing")),
+            Some(parent) if parent.is_dir() => p,
+            _ => return Err(invalid("out_parent_missing")),
         },
+    };
+    set_write_dir(acc, PathBuf::from(&p))?;
+    Ok(p)
+}
+
+/// Hvert verktøy skriver i høyst én mappe.
+fn set_write_dir(acc: &mut Access, dir: PathBuf) -> JvResult<()> {
+    if acc.write_dir.is_some() {
+        return Err(invalid("out_not_allowed"));
     }
+    acc.write_dir = Some(dir);
+    Ok(())
 }
 
 /// Valgene som er lov for et verktøy, og hvordan de blir til argumenter.
 struct Options<'a> {
     map: &'a BTreeMap<String, Value>,
     used: Vec<&'static str>,
+    /// Stier fra valgene (planfil, termliste, CSV-fil).
+    access: Access,
 }
 
 impl<'a> Options<'a> {
@@ -113,6 +131,7 @@ impl<'a> Options<'a> {
         Options {
             map,
             used: Vec::new(),
+            access: Access::default(),
         }
     }
 
@@ -182,6 +201,7 @@ impl<'a> Options<'a> {
                 if !Path::new(&p).is_file() {
                     return Err(invalid("input_missing"));
                 }
+                self.access.read.push(PathBuf::from(&p));
                 Ok(Some(p))
             }
             Some(_) => Err(invalid("option_type")),
@@ -204,7 +224,12 @@ impl<'a> Options<'a> {
                     return Err(invalid("option_value"));
                 }
                 match path.parent() {
-                    Some(parent) if parent.is_dir() => Ok(Some(p)),
+                    Some(parent) if parent.is_dir() => {
+                        // Verktøyet skriver en midlertidig fil i samme mappe og
+                        // velger «-2», «-3» … selv: mappen må være skrivbar.
+                        set_write_dir(&mut self.access, parent.to_path_buf())?;
+                        Ok(Some(p))
+                    }
                     _ => Err(invalid("out_parent_missing")),
                 }
             }
@@ -262,12 +287,12 @@ impl<'a> Options<'a> {
         }
     }
 
-    /// Avviser valg som ikke står i hvitelisten.
-    fn finish(self) -> JvResult<()> {
+    /// Avviser valg som ikke står i hvitelisten, og gir stiene fra valgene.
+    fn finish(self) -> JvResult<Access> {
         if self.map.keys().any(|k| !self.used.contains(&k.as_str())) {
             return Err(invalid("unknown_option"));
         }
-        Ok(())
+        Ok(self.access)
     }
 }
 
@@ -311,8 +336,23 @@ fn push_out(argv: &mut Vec<OsString>, out: OsString) {
     argv.push(out);
 }
 
-/// Bygger argumentlisten `[<id>, …]` for verktøyet. Den kjørbare filen er pakkens `entry`.
+/// Argumentene og stiene verktøyet får bruke.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Built {
+    pub argv: Vec<OsString>,
+    pub access: Access,
+}
+
+/// Bare argumentlisten (se [`build`]).
+#[cfg(test)]
 pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
+    build(tool_id, req).map(|b| b.argv)
+}
+
+/// Bygger argumentlisten `[<id>, …]` for verktøyet og samler stiene det får
+/// lese og skrive. Den kjørbare filen er pakkens `entry`.
+pub fn build(tool_id: &str, req: &RunRequest) -> JvResult<Built> {
+    let mut acc = Access::default();
     let mut argv: Vec<OsString> = vec![tool_id.into()];
     let mut o = Options::new(&req.options);
     let no_command = |req: &RunRequest| {
@@ -325,7 +365,7 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
     match tool_id {
         "compare" => {
             no_command(req)?;
-            let files = check_inputs(req, Inputs::Exactly(2))?;
+            let files = check_inputs(req, Inputs::Exactly(2), &mut acc)?;
             argv.extend(files);
             if o.flag("ignore_whitespace")? == Some(false) {
                 argv.push("--no-ignore-whitespace".into());
@@ -333,7 +373,7 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
             if o.flag("ignore_case")? == Some(true) {
                 argv.push("--ignore-case".into());
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "metadata" => {
             let cmd = match req.command.as_deref() {
@@ -342,16 +382,16 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 _ => return Err(invalid("command")),
             };
             argv.push(cmd.into());
-            argv.extend(check_inputs(req, Inputs::FilesOrDirs)?);
+            argv.extend(check_inputs(req, Inputs::FilesOrDirs, &mut acc)?);
             if cmd == "vask" {
-                push_out(&mut argv, check_out_dir(req)?);
+                push_out(&mut argv, check_out_dir(req, &mut acc)?);
             } else if req.out_dir.is_some() {
                 return Err(invalid("out_not_allowed"));
             }
         }
         "keyframes" => {
             no_command(req)?;
-            argv.extend(check_inputs(req, Inputs::Files)?);
+            argv.extend(check_inputs(req, Inputs::Files, &mut acc)?);
             let every = o.number("every_seconds", 0.1, 86_400.0)?;
             let scenes = o.number("scene_threshold", 0.01, 0.99)?;
             match (every, scenes) {
@@ -365,11 +405,11 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 }
                 _ => return Err(invalid("keyframes_mode")),
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "loudness" => {
             no_command(req)?;
-            argv.extend(check_inputs(req, Inputs::Files)?);
+            argv.extend(check_inputs(req, Inputs::Files, &mut acc)?);
             let target = o.choice("target", &["podcast", "broadcast"])?;
             let lufs = o.number("lufs", -70.0, -5.0)?;
             match (target, lufs) {
@@ -381,11 +421,11 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 (None, None) => {}
                 _ => return Err(invalid("loudness_target")),
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "subtitles" => {
             no_command(req)?;
-            argv.extend(check_inputs(req, Inputs::Files)?);
+            argv.extend(check_inputs(req, Inputs::Files, &mut acc)?);
             if let Some(v) = o.integer("max_chars", 10, 100)? {
                 argv.extend(["--max-chars".into(), v.to_string().into()]);
             }
@@ -401,11 +441,11 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                     argv.extend([flag.into(), fmt_num(v).into()]);
                 }
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "pdf-tables" => {
             no_command(req)?;
-            argv.extend(check_inputs(req, Inputs::Files)?);
+            argv.extend(check_inputs(req, Inputs::Files, &mut acc)?);
             if let Some(p) = o.pages("pages")? {
                 argv.extend(["--pages".into(), p.into()]);
             }
@@ -415,7 +455,7 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
             if o.flag("csv")? == Some(true) {
                 argv.push("--csv".into());
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "datawrapper" => {
             let cmd = match req.command.as_deref() {
@@ -424,7 +464,7 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 _ => return Err(invalid("command")),
             };
             argv.push(cmd.into());
-            argv.extend(check_inputs(req, Inputs::Exactly(1))?);
+            argv.extend(check_inputs(req, Inputs::Exactly(1), &mut acc)?);
             // Ingen utmappe: resultatet står i rapporten, og CSV-filen er valgfri.
             if req.out_dir.is_some() {
                 return Err(invalid("out_not_allowed"));
@@ -453,11 +493,11 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
         }
         "ocr" => {
             no_command(req)?;
-            argv.extend(check_inputs(req, Inputs::FilesOrDirs)?);
+            argv.extend(check_inputs(req, Inputs::FilesOrDirs, &mut acc)?);
             if o.flag("text")? == Some(true) {
                 argv.push("--text".into());
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "redact" => {
             let cmd = match req.command.as_deref() {
@@ -466,7 +506,7 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 _ => return Err(invalid("command")),
             };
             argv.push(cmd.into());
-            argv.extend(check_inputs(req, Inputs::Exactly(1))?);
+            argv.extend(check_inputs(req, Inputs::Exactly(1), &mut acc)?);
             if cmd == "finn" {
                 if let Some(t) = o.path("terms_file")? {
                     argv.extend(["--terms".into(), t]);
@@ -475,21 +515,25 @@ pub fn build_args(tool_id: &str, req: &RunRequest) -> JvResult<Vec<OsString>> {
                 let plan = o.path("plan_file")?.ok_or(invalid("plan_missing"))?;
                 argv.extend(["--plan".into(), plan]);
             }
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         "nynorsk" => {
             no_command(req)?;
-            argv.extend(check_inputs(req, Inputs::Files)?);
+            argv.extend(check_inputs(req, Inputs::Files, &mut acc)?);
             let to = o
                 .choice("to", &["nn", "nb"])?
                 .ok_or(invalid("to_missing"))?;
             argv.extend(["--to".into(), to.into()]);
-            push_out(&mut argv, check_out_dir(req)?);
+            push_out(&mut argv, check_out_dir(req, &mut acc)?);
         }
         _ => return Err(JvError::UnknownTool),
     }
-    o.finish()?;
-    Ok(argv)
+    let from_options = o.finish()?;
+    acc.read.extend(from_options.read);
+    if let Some(d) = from_options.write_dir {
+        set_write_dir(&mut acc, d)?;
+    }
+    Ok(Built { argv, access: acc })
 }
 
 #[cfg(test)]
@@ -526,6 +570,60 @@ mod tests {
 
     fn strs(v: &[OsString]) -> Vec<String> {
         v.iter().map(|s| s.to_string_lossy().into_owned()).collect()
+    }
+
+    /// Stiene sandkassen åpner (Mac): bare filene fra dialogen og utmappen.
+    #[test]
+    fn access_has_exactly_the_chosen_files_and_the_out_dir() {
+        let d = tmp();
+        let out = d.join("ut");
+        let pdf = file(&d, "sak.pdf");
+        let plan = file(&d, "sak.plan.json");
+        let terms = file(&d, "termer.txt");
+        let p = |s: &str| PathBuf::from(s);
+
+        let mut r = req(vec![pdf.clone()], &out, json!({"terms_file": terms}));
+        r.command = Some("finn".into());
+        let b = build("redact", &r).unwrap();
+        assert_eq!(b.access.read, vec![p(&pdf), p(&terms)]);
+        assert_eq!(b.access.write_dir, Some(out.clone()));
+
+        r.command = Some("sladd".into());
+        r.options = serde_json::from_value(json!({"plan_file": plan})).unwrap();
+        let b = build("redact", &r).unwrap();
+        assert_eq!(b.access.read, vec![p(&pdf), p(&plan)]);
+
+        // metadata vis og datawrapper uten CSV skriver ingen filer.
+        let jpg = file(&d, "bilde.jpg");
+        let mut r = req(vec![jpg.clone()], &out, json!({}));
+        r.out_dir = None;
+        r.command = Some("vis".into());
+        let b = build("metadata", &r).unwrap();
+        assert_eq!(b.access.read, vec![p(&jpg)]);
+        assert_eq!(b.access.write_dir, None);
+
+        // datawrapper lag med CSV: mappen for CSV-filen er skrivbar.
+        let x = file(&d, "tabell.xlsx");
+        let csv = d.join("csv-mappe").join("tabell.csv");
+        std::fs::create_dir_all(csv.parent().unwrap()).unwrap();
+        let mut r = req(vec![x.clone()], &out, json!({"csv_file": csv}));
+        r.out_dir = None;
+        r.command = Some("lag".into());
+        let b = build("datawrapper", &r).unwrap();
+        assert_eq!(b.access.read, vec![p(&x)]);
+        assert_eq!(b.access.write_dir, Some(d.join("csv-mappe")));
+
+        // Mange filer og mapper (ocr).
+        let files: Vec<String> = (0..20).map(|i| file(&d, &format!("s {i}.pdf"))).collect();
+        let mut all = files.clone();
+        all.push(d.to_string_lossy().into_owned());
+        let b = build("ocr", &req(all.clone(), &out, json!({}))).unwrap();
+        assert_eq!(b.access.read, all.iter().map(|s| p(s)).collect::<Vec<_>>());
+        // argv og stiene er de samme som før.
+        assert_eq!(
+            b.argv,
+            build_args("ocr", &req(all, &out, json!({}))).unwrap()
+        );
     }
 
     #[test]
