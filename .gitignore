@@ -9,6 +9,7 @@ src-tauri/gen/schemas/
 # Steg 6: journalistverktøyene (sidecar)
 sidecar/jv/.venv/
 sidecar/build/out/
+/kilder/
 __pycache__/
 .pytest_cache/
 *.egg-info/
