@@ -109,6 +109,7 @@ Verktøyene leser filer fra utenforstående. En fil kan være laget for å utnyt
 - **Kjente grenser** (godkjent av John Inge 22.10.2026):
   - En utnyttet prosess kan oppdage (ikke lese) filnavn i HOME via metadata.
   - `datawrapper` får skrive i hele mappen til CSV-fila (ikke bare én utfil).
+  - Verktøyet kan lese alt i utmappen, ikke bare skrive dit. Andre filer brukeren har der, kan altså leses (ikke sendes, siden nettet er stengt).
   - Velger brukeren HOME selv som utmappe, blir hele HOME lesbart for verktøyet.
 - **Windows** kjører verktøyene uten sandkasse ennå. Det kommer i et eget steg (AppContainer).
 
