@@ -100,7 +100,7 @@
     {
       "id": "CVE-2026-107676",
       "pakke": "ffmpeg",
-      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Gjelder serialisering av HDR10+-metadata ved videokoding. Verktøyene koder ikke video: loudness skriver bare lyd, keyframes henter enkeltbilder som PNG.",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Gjelder serialisering av HDR10+-metadata ved videokoding. Verktøyene koder ikke video: loudness kopierer en eventuell videostrøm uten omkoding (-c:v copy), keyframes henter enkeltbilder som PNG.",
       "utloper": "2026-11-30"
     },
     {
@@ -112,7 +112,7 @@
     {
       "id": "CVE-2026-107678",
       "pakke": "ffmpeg",
-      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Stakkoverflyt ved frigjøring av nøstede pssh-bokser i MP4. Kan bare krasje verktøyprosessen på en fil brukeren selv åpner; ffmpeg kjører i sandkassen og ingen data forlater maskinen.",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Stakkoverflyt ved frigjøring av nøstede pssh-bokser i MP4. Kan bare krasje verktøyprosessen på en fil brukeren selv åpner; ingen kodekjøring, og på Mac kjører ffmpeg i sandkassen.",
       "utloper": "2026-11-30"
     },
     {
