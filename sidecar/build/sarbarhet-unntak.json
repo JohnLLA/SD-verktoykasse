@@ -90,6 +90,42 @@
       "pakke": "pcre2",
       "begrunnelse": "OSS-Fuzz-funn i pcre2_compile; vi kompilerer aldri brukerstyrte mønstre (glib bruker pcre2 internt). Rettet i upstream, ikke utgitt.",
       "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107675",
+      "pakke": "ffmpeg",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Gjelder sftp-protokollen. keyframes og loudness åpner bare lokale filer med -protocol_whitelist file, så ffmpeg kobler seg aldri til en SSH-server.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107676",
+      "pakke": "ffmpeg",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Gjelder serialisering av HDR10+-metadata ved videokoding. Verktøyene koder ikke video: loudness skriver bare lyd, keyframes henter enkeltbilder som PNG.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107677",
+      "pakke": "ffmpeg",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Uendelig løkke i DASH-demuxeren ved en ødelagt manifestfil. Kan bare få verktøyet til å henge på en fil brukeren selv åpner; ingen kodekjøring, og segmenter hentes bare fra lokale filer (-protocol_whitelist file).",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107678",
+      "pakke": "ffmpeg",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Stakkoverflyt ved frigjøring av nøstede pssh-bokser i MP4. Kan bare krasje verktøyprosessen på en fil brukeren selv åpner; ffmpeg kjører i sandkassen og ingen data forlater maskinen.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107696",
+      "pakke": "ffmpeg",
+      "begrunnelse": "Ingen utgitt rettet versjon (9.0.2 er siste). Gjelder omdirigering i RTSP. keyframes og loudness åpner bare lokale filer med -protocol_whitelist file, så RTSP er aldri i bruk.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-107080",
+      "pakke": "openjpeg",
+      "begrunnelse": "Lesing og skriving utenfor grensene i opj_dwt_encode_and_deinterleave_v (koding). Verktøyene dekoder bare JPEG 2000 (leser PDF-er); rettet i upstream, ikke utgitt (2.5.4 er siste).",
+      "utloper": "2026-11-30"
     }
   ]
 }
