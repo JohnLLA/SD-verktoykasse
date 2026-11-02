@@ -54,7 +54,7 @@ Rust- og npm-delene av appen står i `src/assets/tredjepart.txt` (Om-vinduet). D
 | pcre2 | 10.49 | BSD-3-Clause | Homebrew | Mac | redact | https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2 |
 | poppler | 26.10.0 | GPL-2.0-only OR GPL-3.0-only | Homebrew | Mac | redact | https://poppler.freedesktop.org/poppler-26.10.0.tar.xz |
 | svt-av1 | 4.2.0 | BSD-3-Clause | Homebrew | Mac | keyframes, loudness | https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.2.0/SVT-AV1-v4.2.0.tar.bz2 |
-| tesseract | 5.5.3 | Apache-2.0 | Homebrew | Mac | ocr | https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.3.tar.gz |
+| tesseract | 5.5.4 | Apache-2.0 | Homebrew | Mac | ocr | https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.4.tar.gz |
 | tesseract-lang | 4.1.0 | Apache-2.0 | Homebrew | Mac | ocr | https://github.com/tesseract-ocr/tessdata_fast/archive/refs/tags/4.1.0.tar.gz |
 | webp | 1.6.0 | BSD-3-Clause | Homebrew | Mac | ocr, redact | https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz |
 | x264 | r3222 | GPL-2.0-or-later | Homebrew | Mac | keyframes, loudness | https://code.videolan.org/videolan/x264.git |

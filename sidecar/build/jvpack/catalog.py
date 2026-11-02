@@ -259,7 +259,7 @@ def main(argv: list[str]) -> int:
         keep = json.loads(old_bytes.decode("utf-8"))["tools"]
         print(f"Beholder linjer fra {old_path} (signaturen stemmer): {len(keep)}")
     data = make_catalog(dists, base, min_app, notes, keep)
-    if not data["tools"] or (keep is not None and len(data["tools"]) == len(keep)):
+    if not _archives(dists):  # a new version replaces a kept line, so counting lines says nothing
         raise SystemExit(f"Fant ingen pakker i {', '.join(map(str, dists))}. Ingenting er skrevet.")
     text = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
     out_dir.mkdir(parents=True, exist_ok=True)

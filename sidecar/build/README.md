@@ -134,6 +134,22 @@ oppstart.
 **Minste macOS** arves fra Homebrew-programmene på byggemaskinen (står i `bygg-oppsummering.json` og
 `jv-package.json`, og appen viser «krever nyere macOS» fra katalogen).
 
+Hver bottle har macOS-versjonen den er bygget på som `minos`, og Homebrew på byggemaskinen installerer
+bottlen for sin egen versjon. Byggemaskinen er nå på macOS 27 (`arm64_golden_gate`), så en ny `brew upgrade`
+gjør at pakken krever macOS 27. Tesseract 5.5.4 er derfor installert fra bottlen for macOS 26 (`arm64_tahoe`,
+minos 26.6.2, samme krav som før), og den står i `POURED_FROM` i `jvpack/mac/binaries.py`:
+
+```
+curl -sL -H 'Authorization: Bearer QQ==' -o tesseract--5.5.4.arm64_tahoe.bottle.tar.gz \
+  https://ghcr.io/v2/homebrew/core/tesseract/blobs/sha256:776289553b4fa083cc1aff802da6b5e21ce237b3c27ea7f38ab0db69970c8a56
+shasum -a 256 tesseract--5.5.4.arm64_tahoe.bottle.tar.gz   # må være sjekksummen i URL-en
+HOMEBREW_DEVELOPER=1 brew reinstall "$PWD/tesseract--5.5.4.arm64_tahoe.bottle.tar.gz"
+```
+
+`brew reinstall` oppgraderer også utdaterte avhengigheter, med bottler for byggemaskinens macOS. Installer
+dem på samme måte fra `arm64_tahoe`-bottlen som står i `binaries.json` (jpeg-turbo 3.2.0, libarchive 3.8.10),
+og sjekk `Minste macOS` i bygglinja før en pakke publiseres.
+
 ## Windows (runde B)
 
 ### Bygg i GitHub Actions
