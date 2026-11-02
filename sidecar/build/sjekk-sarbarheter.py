@@ -25,6 +25,7 @@ utloper) og i src-tauri/deny.toml (Rust, «utloper: ÅÅÅÅ-MM-DD» i begrunnel
 from __future__ import annotations
 
 import argparse
+import os
 import datetime
 import json
 import re
@@ -173,6 +174,16 @@ def check_expiry(today: datetime.date) -> list[str]:
     return problems
 
 
+def annotate(title: str, message: str) -> None:
+    """Skriv en feilmelding som GitHub viser i varselet og i sjekken, uten innlogging."""
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    def esc(t: str) -> str:
+        return t.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    title = esc(title).replace(":", "%3A").replace(",", "%2C")
+    print(f"::error title={title}::{esc(message)}", flush=True)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--unntak", action="store_true", help="sjekk bare utløpsdatoene (ingen nett)")
@@ -191,6 +202,7 @@ def main() -> int:
     if args.unntak:
         for p in expired:
             print("FEIL:", p)
+            annotate("Utløpt unntak", p)
         print("Unntakene er gyldige." if not expired else "")
         return 1 if expired else 0
 
@@ -205,6 +217,7 @@ def main() -> int:
                 rows.append({"plattform": target, **program_status(name, entry)})
     except (urllib.error.URLError, TimeoutError, OSError) as e:
         print(f"FEIL: OSV kunne ikke nås ({e.__class__.__name__}).", file=sys.stderr)
+        annotate("OSV kunne ikke nås", f"Systemprogrammene ble ikke kontrollert ({e.__class__.__name__}).")
         return 2
 
     bad = 0
@@ -216,6 +229,9 @@ def main() -> int:
         funn = r.get("funn", [])
         ny = [f for f in funn if f["id"] not in allowed and not (set(f.get("aliases", [])) & allowed)]
         bad += len(ny)
+        for f in ny:
+            annotate(f"Sårbarhet i {r['navn']} {r['versjon']}",
+                     f"{f['id']} ({r['plattform']}): {f.get('summary', '').strip()[:200]}")
         if r["status"] == "kontrollert" and not args.json:
             tegn = "FUNN" if ny else ("unntatt" if funn else "ok")
             print(f"{tegn:8} {r['plattform'].split('-')[0]:8} {r['navn']} {r['versjon']}  ({r['kilde']})")
@@ -229,6 +245,7 @@ def main() -> int:
                 print(f"{r['plattform'].split('-')[0]:8} {r['navn']} {r['versjon']}: {r['lenke']}")
     for p in expired:
         print("FEIL:", p)
+        annotate("Utløpt unntak", p)
     n_ok = sum(1 for r in rows if r["status"] == "kontrollert")
     print(f"\n{n_ok} kontrollert, {len(rows) - n_ok} ikke kontrollert, {bad} funn uten unntak, {len(expired)} utløpte unntak.",
           file=sys.stderr if args.json else sys.stdout)
