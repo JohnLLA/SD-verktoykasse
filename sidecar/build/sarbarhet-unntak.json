@@ -4,49 +4,67 @@
     {
       "id": "CVE-2026-88047",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88048",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88049",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88050",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88051",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88052",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88053",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
       "utloper": "2026-11-30"
     },
     {
       "id": "CVE-2026-88054",
       "pakke": "tesseract",
-      "begrunnelse": "Rettet bare i en upstream-endring, ingen utgitt versjon (5.5.3 er siste). Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder ødelagte eller ondsinnede .traineddata-filer; ocr-verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd) og tar aldri språkdata fra brukeren.",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-119338",
+      "pakke": "tesseract",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Gjelder PAGE XML-utdata, som verktøyet ikke bruker (bare TSV og ocrmypdfs PDF).",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-119339",
+      "pakke": "tesseract",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Krever en ondsinnet .traineddata; verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd).",
+      "utloper": "2026-11-30"
+    },
+    {
+      "id": "CVE-2026-119340",
+      "pakke": "tesseract",
+      "begrunnelse": "Gjelder bare Windows-pakken (5.5.3) til et Windows-bygg av 5.5.4 finnes; Mac-pakken er på 5.5.4, der avviket er rettet. Krever en ondsinnet .traineddata; verktøyet bruker bare de medfølgende språkfilene (nor, eng, osd).",
       "utloper": "2026-11-30"
     },
     {

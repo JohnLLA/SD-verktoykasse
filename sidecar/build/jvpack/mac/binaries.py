@@ -20,6 +20,16 @@ from .licenses import Package
 
 PATH = ROOT / "binaries.json"
 
+# `brew info` only knows the bottle for the build Mac's own macOS. A part that
+# was poured from an older bottle, so the package does not start to require
+# the build Mac's macOS, is listed here (sidecar/build/README.md, «Minste macOS»).
+POURED_FROM: dict[tuple[str, str], dict[str, str]] = {
+    ("tesseract", "5.5.4"): {
+        "tag": "arm64_tahoe",
+        "sha256": "776289553b4fa083cc1aff802da6b5e21ce237b3c27ea7f38ab0db69970c8a56",
+    },
+}
+
 
 def _brew_info(formulas: list[str]) -> dict[str, dict]:
     if not formulas:
@@ -39,6 +49,7 @@ def record(target: str, tool_id: str, brew: list[Package]) -> None:
         "source": "Homebrew-bottles (/opt/homebrew), kopiert inn med omskrevne bibliotekstier og signert på nytt",
         "programs": {},
     })
+    previous = {k: dict(v) for k, v in tgt["programs"].items()}
     # This build is the truth for tool_id: forget what it used before (for
     # example Ghostscript in ocr from the spike), and drop parts no tool uses.
     for entry in tgt["programs"].values():
@@ -53,12 +64,22 @@ def record(target: str, tool_id: str, brew: list[Package]) -> None:
         bottle = next(iter(bottles.items()), (None, {}))
         same = f.get("versions", {}).get("stable") == p.version.split("_")[0]
         entry = tgt["programs"].setdefault(p.name, {"used_by": []})
+        old = previous.get(p.name, {})
+        if old.get("version") == p.version:
+            # Same keg as last time. What Homebrew says now may describe a newer
+            # version or another macOS, so the recorded origin stands.
+            entry.update({k: v for k, v in old.items() if k != "used_by"})
+            if tool_id not in entry["used_by"]:
+                entry["used_by"].append(tool_id)
+                entry["used_by"].sort()
+            continue
+        pinned = POURED_FROM.get((p.name, p.version))
         entry.update({
             "version": p.version,
             "license": f.get("license") or p.license,
             "source_url": stable.get("url") or p.source,
             "source_sha256": stable.get("checksum") if same else None,
-            "bottle": {"tag": bottle[0], "sha256": bottle[1].get("sha256")} if same and bottle[0] else None,
+            "bottle": pinned or ({"tag": bottle[0], "sha256": bottle[1].get("sha256")} if same and bottle[0] else None),
             "homepage": f.get("homepage"),
             "built_as_bottle": installed.get("built_as_bottle") if installed else None,
         })
