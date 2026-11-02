@@ -18,6 +18,7 @@ ignore = [
     { id = "RUSTSEC-2026-0367", reason = "zip: bare updater (signert, minisign) og docx-rs (skriver bare); ingen utpakking av uverifiserte arkiv. utloper: 2026-12-31" },
     { id = "RUSTSEC-2026-0368", reason = "zip: som RUSTSEC-2026-0367. utloper: 2026-12-31" },
     { id = "RUSTSEC-2026-0369", reason = "zip: som RUSTSEC-2026-0367. utloper: 2026-12-31" },
+    { id = "RUSTSEC-2026-0429", reason = "zip: krasj ved symlenke i ZipArchive::extract; som RUSTSEC-2026-0367, ingen utpakking av uverifiserte arkiv. utloper: 2026-12-31" },
     # Bare på Linux (GTK/zbus via tauri/wry). Bygges ikke inn på Mac eller Windows, og vi leverer ikke for Linux.
     { id = "RUSTSEC-2024-0370", reason = "proc-macro-error: bare Linux (gtk). utloper: 2026-12-31" },
     { id = "RUSTSEC-2026-0370", reason = "zvariant: bare Linux (zbus). utloper: 2026-12-31" },
